@@ -1,11 +1,12 @@
 <!doctype html>
+<!-- PocketLab v0.10 · dev Grisha Tsvetkov -->
 <html lang="en">
   <head>
     <meta charset="utf-8">
     <title>PocketLab HTML</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
 
-    <!-- Roboto -->
+    <!-- Roboto + normalize -->
     <link rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
     <link rel="stylesheet"
@@ -125,6 +126,16 @@
         border-radius: 4px;
         pointer-events: none;
       }
+      #watermark {
+        position: absolute;
+        right: 8px;
+        bottom: 6px;
+        padding: 2px 4px;
+        font-size: 9px;
+        opacity: 0.45;
+        color: #eee;
+        pointer-events: none;
+      }
 
       /* режимы раскладки: split / viewer */
 
@@ -170,7 +181,7 @@
         <button id="view-btn">view</button>
         <button id="run-btn">run</button>
         <button id="stop-btn">stop</button>
-        <span>paste full HTML or pure JS, run as-is</span>
+        <span>PocketLab v0.10 · paste HTML or JS, run as-is</span>
       </div>
 
       <div id="main">
@@ -188,12 +199,14 @@
             sandbox="allow-scripts"
           ></iframe>
           <div id="hint">tap run to update preview</div>
+          <div id="watermark">PocketLab v0.10 · dev Grisha Tsvetkov</div>
         </div>
       </div>
     </div>
 
     <script>
       (function () {
+        const VERSION = "0.10";
         const STORAGE_KEY = "pocketlab-html-code-v4";
 
         const appEl       = document.getElementById("app");
@@ -211,7 +224,7 @@
         const runBtn      = document.getElementById("run-btn");
         const stopBtn     = document.getElementById("stop-btn");
 
-        let viewMode = "mode-split"; // или "mode-viewer"
+        let viewMode = "mode-split";
 
         // CodeMirror init
         const editor = CodeMirror.fromTextArea(codeTextarea, {
@@ -252,7 +265,8 @@
           } catch (e) {}
 
           const def =
-`// pure JS example
+`// PocketLab v0.10 · dev Grisha Tsvetkov
+// pure JS example
 // this will be wrapped into full HTML with a fullscreen canvas#canvas
 
 const canvas = document.getElementById("canvas");
