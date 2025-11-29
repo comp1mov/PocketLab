@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>PocketLab</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        background: #050505;
+        color: #f5f5f5;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+      #app {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      #toolbar {
+        padding: 6px 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-bottom: 1px solid #333;
+        background: #0a0a0a;
+        font-size: 13px;
+      }
+      #toolbar button {
+        padding: 4px 10px;
+        font-size: 12px;
+        border-radius: 4px;
+        border: 1px solid #555;
+        background: #f5f5f5;
+        color: #111;
+        cursor: pointer;
+      }
+      #toolbar span {
+        opacity: 0.7;
+        font-size: 11px;
+      }
+      #main {
+        flex: 1;
+        display: flex;
+        min-height: 0;
+      }
+      #editor-wrap {
+        width: 45%;
+        min-width: 260px;
+        max-width: 520px;
+        border-right: 1px solid #333;
+        display: flex;
+        flex-direction: column;
+        background: #050505;
+      }
+      #editor {
+        flex: 1;
+        padding: 6px;
+      }
+      #editor textarea {
+        width: 100%;
+        height: 100%;
+        box-sizing: border-box;
+        resize: none;
+        border-radius: 4px;
+        border: 1px solid #444;
+        background: #111;
+        color: #eee;
+        font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace;
+        font-size: 11px;
+        line-height: 1.4;
+        padding: 6px;
+        white-space: pre;
+      }
+      #log {
+        height: 80px;
+        border-top: 1px solid #333;
+        padding: 4px 6px;
+        font-size: 10px;
+        background: #080808;
+        overflow: auto;
+        white-space: pre-wrap;
+      }
+      #preview-wrap {
+        flex: 1;
+        position: relative;
+        background: #000;
+      }
+      #canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+        background: #000;
+        touch-action: none;
+      }
+      #hint {
+        position: absolute;
+        left: 8px;
+        top: 8px;
+        padding: 3px 6px;
+        font-size: 11px;
+        background: rgba(0,0,0,0.45);
+        border-radius: 4px;
+        pointer-events: none;
+      }
+      #app.fullscreen #editor-wrap {
+        display: none;
+      }
+      #app.fullscreen #preview-wrap {
+        flex: 1;
+      }
+      @media (max-width: 800px) {
+        #main {
+          flex-direction: column;
+        }
+        #editor-wrap {
+          width: 100%;
+          max-width: none;
+          height: 40%;
+          border-right: none;
+          border-bottom: 1px solid #333;
+        }
+        #preview-wrap {
+          height: 60%;
+        }
+        #app.fullscreen #editor-wrap {
+          display: none;
+        }
+        #app.fullscreen #preview-wrap {
+          height: calc(100vh - 32px);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div id="toolbar">
+        <button id="run-btn">Run</button>
+        <button id="clear-btn">Clear</button>
+        <button id="toggle-btn">Toggle editor</button>
+        <span>PocketLab · define setup(), update(dt), pointer(type, x, y)</span>
+      </div>
+      <div id="main">
+        <div id="editor-wrap">
+          <div id="editor">
+            <textarea id="code"></textarea>
+          </div>
+          <div id="log"></div>
+        </div>
+        <div id="preview-wrap">
+          <canvas id="canvas"></canvas>
+          <div id="hint">move mouse / finger, tap to beep</div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        const STORAGE_KEY = "pocketlab-code-v1";
+
+        const appEl     = document.getElementById("app");
+        const codeEl    = document.getElementById("code");
+        const logEl     = document.getElementById("log");
+        const canvas    = document.getElementById("canvas");
+        const runBtn    = document.getElementById("run-btn");
+        const clearBtn  = document.getElementById("clear-btn");
+        const toggleBtn = document.getElementById("toggle-btn");
+
+        const ctx = canvas.getContext("2d", { alpha: false });
+
+        let lab = {
+          canvas,
+          ctx,
+          width: 0,
+          height: 0,
+          time: 0,
+          pointerX: 0,
+          pointerY: 0,
+          pointerDown: false,
+          _audioCtx: null,
+          ensureAudio() {
+            const AC = window.AudioContext || window.webkitAudioContext;
+            if (!AC) return null;
+            if (!lab._audioCtx) {
+              lab._audioCtx = new AC();
+            }
+            if (lab._audioCtx.state === "suspended") {
+              lab._audioCtx.resume();
+            }
+            return lab._audioCtx;
+          },
+          beep(freq = 660, duration = 0.2) {
+            const ac = lab.ensureAudio();
+            if (!ac) return;
+            const osc = ac.createOscillator();
+            const gain = ac.createGain();
+            osc.type = "sine";
+            osc.frequency.value = freq;
+            gain.gain.value = 0.18;
+            osc.connect(gain);
+            gain.connect(ac.destination);
+            const now = ac.currentTime;
+            gain.gain.setValueAtTime(0.18, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + duration * 0.75);
+            osc.start(now);
+            osc.stop(now + duration);
+          }
+        };
+
+        let user = {
+          setup: null,
+          update: null,
+          pointer: null
+        };
+
+        function resize() {
+          const rect = canvas.getBoundingClientRect();
+          const dpr = window.devicePixelRatio || 1;
+          lab.width = rect.width;
+          lab.height = rect.height;
+          canvas.width = rect.width * dpr;
+          canvas.height = rect.height * dpr;
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+
+        window.addEventListener("resize", resize);
+        resize();
+
+        function log(msg) {
+          const text = typeof msg === "string" ? msg : JSON.stringify(msg);
+          logEl.textContent += text + "\n";
+          logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        const originalConsoleLog = console.log.bind(console);
+        console.log = function () {
+          originalConsoleLog.apply(console, arguments);
+          try {
+            const joined = Array.from(arguments).map(a =>
+              typeof a === "string" ? a : JSON.stringify(a)
+            ).join(" ");
+            log(joined);
+          } catch (e) {}
+        };
+
+        function clearLog() {
+          logEl.textContent = "";
+        }
+
+        function pointerEvent(type, e) {
+          const rect = canvas.getBoundingClientRect();
+          if (e.touches && e.touches.length > 0) {
+            const t = e.touches[0];
+            lab.pointerX = t.clientX - rect.left;
+            lab.pointerY = t.clientY - rect.top;
+          } else {
+            lab.pointerX = e.clientX - rect.left;
+            lab.pointerY = e.clientY - rect.top;
+          }
+          if (type === "down") lab.pointerDown = true;
+          if (type === "up") lab.pointerDown = false;
+          if (user.pointer) {
+            try {
+              user.pointer(type, lab.pointerX, lab.pointerY);
+            } catch (err) {
+              log("pointer error: " + err.message);
+            }
+          }
+        }
+
+        canvas.addEventListener("pointermove", e => pointerEvent("move", e));
+        canvas.addEventListener("pointerdown", e => {
+          lab.ensureAudio();
+          pointerEvent("down", e);
+        });
+        canvas.addEventListener("pointerup",   e => pointerEvent("up", e));
+        canvas.addEventListener("pointerleave",e => pointerEvent("up", e));
+
+        canvas.addEventListener("touchstart", e => {
+          lab.ensureAudio();
+          pointerEvent("down", e);
+        }, { passive: false });
+        canvas.addEventListener("touchmove", e => {
+          pointerEvent("move", e);
+        }, { passive: false });
+        canvas.addEventListener("touchend", e => pointerEvent("up", e), { passive: false });
+        canvas.addEventListener("touchcancel", e => pointerEvent("up", e), { passive: false });
+
+        function runUserCode(source) {
+          clearLog();
+          user.setup = null;
+          user.update = null;
+          user.pointer = null;
+          lab.time = 0;
+
+          ctx.fillStyle = "#000";
+          ctx.fillRect(0, 0, lab.width, lab.height);
+
+          try {
+            const wrapped = new Function("lab", `
+              "use strict";
+              ${source}
+              return {
+                setup:   (typeof setup   === "function" ? setup   : null),
+                update:  (typeof update  === "function" ? update  : null),
+                pointer: (typeof pointer === "function" ? pointer : null)
+              };
+            `);
+            const res = wrapped(lab);
+            user.setup = res.setup;
+            user.update = res.update;
+            user.pointer = res.pointer;
+          } catch (err) {
+            log("compile error: " + err.message);
+            return;
+          }
+
+          if (user.setup) {
+            try {
+              user.setup();
+            } catch (err) {
+              log("setup error: " + err.message);
+            }
+          } else {
+            log("hint: define function setup() {} and function update(dt) {}");
+          }
+        }
+
+        let lastTime = performance.now();
+        function loop(now) {
+          const dt = (now - lastTime) / 1000;
+          lastTime = now;
+          lab.time += dt;
+          if (user.update) {
+            try {
+              user.update(dt);
+            } catch (err) {
+              log("update error: " + err.message);
+              user.update = null;
+            }
+          }
+          requestAnimationFrame(loop);
+        }
+        requestAnimationFrame(loop);
+
+        function setDefaultCodeIfEmpty() {
+          let stored = null;
+          try {
+            stored = localStorage.getItem(STORAGE_KEY);
+          } catch (e) {}
+          if (stored && stored.trim().length > 0) {
+            codeEl.value = stored;
+            return;
+          }
+
+          codeEl.value =
+`// PocketLab environment
+// доступно: lab.canvas, lab.ctx, lab.width, lab.height, lab.time
+//           lab.pointerX, lab.pointerY, lab.pointerDown, lab.beep(freq, dur)
+// нужно определить как минимум:
+//   function setup() {}
+//   function update(dt) {}   // dt в секундах
+// опционально:
+//   function pointer(type, x, y) {}  // type: "down" | "move" | "up"
+
+function setup() {
+  // настройка начального состояния
+  const ctx = lab.ctx;
+  ctx.fillStyle = "black";
+  ctx.fillRect(0, 0, lab.width, lab.height);
+
+  // создаем массив точек в lab
+  const count = 400;
+  const pts = [];
+  for (let i = 0; i < count; i++) {
+    pts.push({
+      x: Math.random() * lab.width,
+      y: Math.random() * lab.height,
+      angle: Math.random() * Math.PI * 2,
+      speed: 20 + Math.random() * 40
+    });
+  }
+  lab.points = pts;
+}
+
+function update(dt) {
+  const ctx = lab.ctx;
+  const pts = lab.points || [];
+  const w = lab.width;
+  const h = lab.height;
+
+  // лёгкий фейд для хвостов
+  ctx.fillStyle = "rgba(0,0,0,0.18)";
+  ctx.fillRect(0, 0, w, h);
+
+  // свечение под указателем
+  if (lab.pointerDown) {
+    const g = ctx.createRadialGradient(
+      lab.pointerX, lab.pointerY, 0,
+      lab.pointerX, lab.pointerY, 120
+    );
+    g.addColorStop(0, "rgba(0,180,255,0.55)");
+    g.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(lab.pointerX, lab.pointerY, 120, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.fillStyle = "#ffffff";
+  for (let i = 0; i < pts.length; i++) {
+    const p = pts[i];
+
+    const nx = p.x * 0.004;
+    const ny = p.y * 0.004;
+    const n = Math.sin(nx + lab.time * 1.3) * Math.cos(ny - lab.time * 0.8);
+    p.angle += n * 2.0 * dt;
+
+    let vx = Math.cos(p.angle) * p.speed * dt;
+    let vy = Math.sin(p.angle) * p.speed * dt;
+
+    if (lab.pointerDown) {
+      const dx = lab.pointerX - p.x;
+      const dy = lab.pointerY - p.y;
+      const dist = Math.hypot(dx, dy) + 0.001;
+      const force = Math.min(200 / (dist * dist), 80) * dt;
+      vx += dx * force;
+      vy += dy * force;
+    }
+
+    p.x += vx;
+    p.y += vy;
+
+    if (p.x < 0) p.x += w;
+    if (p.x > w) p.x -= w;
+    if (p.y < 0) p.y += h;
+    if (p.y > h) p.y -= h;
+
+    ctx.fillRect(p.x, p.y, 1.2, 1.2);
+  }
+}
+
+function pointer(type, x, y) {
+  // простой пример: бип по тапу
+  if (type === "down") {
+    lab.beep(880, 0.15);
+  }
+  // можно логировать события
+  // console.log("pointer", type, x.toFixed(1), y.toFixed(1));
+}
+`;
+        }
+
+        setDefaultCodeIfEmpty();
+        runUserCode(codeEl.value);
+
+        runBtn.addEventListener("click", () => {
+          const src = codeEl.value;
+          try {
+            localStorage.setItem(STORAGE_KEY, src);
+          } catch (e) {}
+          runUserCode(src);
+        });
+
+        clearBtn.addEventListener("click", () => {
+          ctx.fillStyle = "#000";
+          ctx.fillRect(0, 0, lab.width, lab.height);
+          clearLog();
+        });
+
+        toggleBtn.addEventListener("click", () => {
+          if (appEl.classList.contains("fullscreen")) {
+            appEl.classList.remove("fullscreen");
+          } else {
+            appEl.classList.add("fullscreen");
+          }
+          setTimeout(resize, 50);
+        });
+      })();
+    </script>
+  </body>
+</html>
