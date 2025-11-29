@@ -58,22 +58,6 @@
       gap: 8px;
       padding: 4px 2px;
       user-select: none;
-      flex-wrap: wrap;
-    }
-
-    .top-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .top-right {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      flex-wrap: wrap;
-      margin-left: auto;
     }
 
     .title {
@@ -102,11 +86,11 @@
       box-shadow: 0 0 0 4px rgba(77,163,255,0.28);
     }
 
-    .toolbar-left,
-    .toolbar-right {
+    .toolbar {
       display: flex;
       flex-wrap: wrap;
       gap: 4px;
+      justify-content: flex-end;
     }
 
     .btn {
@@ -200,8 +184,6 @@
       border-bottom: 1px solid rgba(255,255,255,0.03);
       background: linear-gradient(to right, rgba(255,255,255,0.02), transparent);
       user-select: none;
-      gap: 6px;
-      flex-wrap: wrap;
     }
 
     .panel-header-label {
@@ -256,58 +238,30 @@
       flex: 1;
       padding: 6px 8px 8px;
       background: radial-gradient(circle at top, #161624 0, #050509 55%);
-      display: flex;
-    }
-
-    .code-shell {
-      flex: 1;
-      display: flex;
-      position: relative;
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.06);
-      background: rgba(3,3,8,0.96);
-      overflow: hidden;
-    }
-
-    .line-numbers {
-      width: 44px;
-      padding: 9px 4px 9px 8px;
-      border-right: 1px solid rgba(255,255,255,0.05);
-      font-family: "SF Mono", ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-      font-size: 11px;
-      line-height: 1.45;
-      text-align: right;
-      color: rgba(160,160,178,0.72);
-      background: radial-gradient(circle at left, rgba(255,255,255,0.04), transparent 55%);
-      overflow: hidden;
-    }
-
-    .line-number {
-      padding-right: 4px;
-      padding-left: 2px;
-      border-radius: 999px;
-    }
-
-    .line-number.active {
-      color: var(--accent);
-      background: rgba(77,163,255,0.10);
     }
 
     textarea#code {
-      flex: 1;
-      border: none;
-      border-radius: 0;
-      background: transparent;
+      width: 100%;
+      height: 100%;
+      resize: none;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(3,3,8,0.96);
       color: var(--text);
       font-family: "SF Mono", ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-size: 12px;
       line-height: 1.45;
       padding: 9px 10px;
       outline: none;
-      resize: none;
       tab-size: 2;
       -webkit-text-size-adjust: 100%;
-      overflow: auto;
+    }
+
+    textarea#code:focus {
+      border-color: var(--accent);
+      box-shadow:
+        0 0 0 1px var(--accent-soft),
+        0 10px 25px rgba(0,0,0,0.6);
     }
 
     .preview-wrapper {
@@ -423,17 +377,16 @@
       display: inline;
     }
 
-    @media (max-width: 768px) {
-      .top-bar {
-        align-items: flex-start;
-      }
-      .top-right {
-        width: 100%;
-        justify-content: flex-end;
+    @media (min-width: 768px) {
+      .split {
+        flex-direction: column;
       }
     }
 
     @media (max-width: 480px) {
+      .toolbar {
+        justify-content: flex-start;
+      }
       .btn {
         font-size: 11px;
         padding-inline: 8px;
@@ -455,44 +408,32 @@
 <body>
   <div class="app">
     <div class="top-bar">
-      <div class="top-left">
-        <div class="title">
-          <span class="dot"></span>
-          <span>PocketLab</span>
-          <span class="version">v0.35</span>
-        </div>
-        <div class="toolbar-left">
-          <button class="btn btn-pill" id="btnOpen" type="button">
-            <span class="icon">📂</span><span>open</span>
-          </button>
-          <button class="btn btn-pill" id="btnPaste" type="button">
-            <span class="icon">📥</span><span>paste</span>
-          </button>
-          <button class="btn btn-pill" id="btnCopy" type="button">
-            <span class="icon">📋</span><span>copy</span>
-          </button>
-          <button class="btn btn-pill" id="btnClear" type="button">
-            <span class="icon">✕</span><span>clear</span>
-          </button>
-          <button class="btn btn-pill" id="btnDemo" type="button">
-            <span class="icon">✨</span><span>demo</span>
-          </button>
-        </div>
+      <div class="title">
+        <span class="dot"></span>
+        <span>PocketLab</span>
+        <span class="version">v0.34</span>
       </div>
-      <div class="top-right">
-        <div class="toolbar-right">
-          <button class="btn btn-pill" id="btnView" type="button">
-            <span class="icon">▢</span>
-            <span class="btn-view-label-preview">view: preview</span>
-            <span class="btn-view-label-split">view: split</span>
-          </button>
-          <button class="btn btn-danger btn-pill" id="btnStop" type="button">
-            <span class="icon">■</span><span>stop</span>
-          </button>
-          <button class="btn btn-primary btn-pill" id="btnRun" type="button">
-            <span class="icon">▶</span><span>run</span>
-          </button>
-        </div>
+      <div class="toolbar">
+        <button class="btn btn-pill" id="btnPaste" type="button">
+          <span class="icon">📥</span><span>paste</span>
+        </button>
+        <button class="btn btn-pill" id="btnCopy" type="button">
+          <span class="icon">📋</span><span>copy</span>
+        </button>
+        <button class="btn btn-pill" id="btnClear" type="button">
+          <span class="icon">✕</span><span>clear</span>
+        </button>
+        <button class="btn btn-pill" id="btnView" type="button">
+          <span class="icon">▢</span>
+          <span class="btn-view-label-preview">view: preview</span>
+          <span class="btn-view-label-split">view: split</span>
+        </button>
+        <button class="btn btn-danger btn-pill" id="btnStop" type="button">
+          <span class="icon">■</span><span>stop</span>
+        </button>
+        <button class="btn btn-primary btn-pill" id="btnRun" type="button">
+          <span class="icon">▶</span><span>run</span>
+        </button>
       </div>
     </div>
 
@@ -519,10 +460,7 @@
             </div>
           </header>
           <div class="code-area">
-            <div class="code-shell">
-              <div class="line-numbers" id="lineNumbers"></div>
-              <textarea id="code" spellcheck="false"></textarea>
-            </div>
+            <textarea id="code" spellcheck="false"></textarea>
           </div>
         </section>
 
@@ -553,9 +491,6 @@
     </div>
   </div>
 
-  <!-- скрытый input для open -->
-  <input type="file" id="fileInput" accept=".html,.htm,.txt,.svg,.xml,.json,text/html,text/plain" style="display:none">
-
   <script>
     (function () {
       const codeEl = document.getElementById("code");
@@ -566,8 +501,6 @@
       const btnCopy = document.getElementById("btnCopy");
       const btnPaste = document.getElementById("btnPaste");
       const btnView = document.getElementById("btnView");
-      const btnDemo = document.getElementById("btnDemo");
-      const btnOpen = document.getElementById("btnOpen");
       const layout = document.getElementById("layout");
       const divider = document.getElementById("divider");
       const editorPanel = document.getElementById("editorPanel");
@@ -576,8 +509,6 @@
       const btnFind = document.getElementById("btnFind");
       const searchHit = document.getElementById("searchHit");
       const split = document.getElementById("split");
-      const lineNumbersEl = document.getElementById("lineNumbers");
-      const fileInput = document.getElementById("fileInput");
 
       let isPreviewOnly = false;
       let isDragging = false;
@@ -587,16 +518,6 @@
       let lastSearchTerm = "";
       let lastSearchIndex = -1;
       let lastSearchCount = 0;
-
-      const demoConfig = {
-        basePath: "./demo/",
-        // сюда добавишь реальные файлы в своей папке demo/
-        files: [
-          "demo1.html",
-          "demo2.html"
-          // "another-example.html"
-        ]
-      };
 
       const defaultExample = [
         "<!doctype html>",
@@ -762,8 +683,11 @@
 
       function clearCode() {
         codeEl.value = "";
-        resetSearchState();
-        updateLineNumbers();
+        lastSearchTerm = "";
+        lastSearchIndex = -1;
+        lastSearchCount = 0;
+        searchInput.value = "";
+        searchHit.textContent = "";
       }
 
       function copyCode() {
@@ -802,7 +726,6 @@
               if (!text) return;
               codeEl.value = text;
               resetSearchState();
-              updateLineNumbers();
             })
             .catch(function () {
               manualPastePrompt();
@@ -819,7 +742,6 @@
         if (pasted != null) {
           codeEl.value = pasted;
           resetSearchState();
-          updateLineNumbers();
         }
       }
 
@@ -885,19 +807,21 @@
         codeEl.focus();
         codeEl.setSelectionRange(start, end);
 
-        const before = code.slice(0, start);
-        const lineBefore = before.split("\n").length;
+        const lineBefore = code.slice(0, start).split("\n").length;
         searchHit.textContent = (lineBefore > 0 ? "line " + lineBefore + " · " : "") +
           (Math.min(count, Math.floor((start / Math.max(code.length, 1)) * count) + 1)) +
           " / " + count;
 
         try {
+          const selectionTop = codeEl.selectionStart;
+          const before = code.slice(0, selectionTop);
+          const lines = before.split("\n");
           const charCountBefore = before.length;
           const fraction = Math.min(1, Math.max(0, charCountBefore / Math.max(code.length, 1)));
           codeEl.scrollTop = (codeEl.scrollHeight - codeEl.clientHeight) * fraction;
-          lineNumbersEl.scrollTop = codeEl.scrollTop;
-        } catch (e) {}
-        updateActiveLineHighlight();
+        } catch (e) {
+          /* ignore */
+        }
       }
 
       function setInitialSplitHeight() {
@@ -967,108 +891,6 @@
         onDividerPointerUp();
       });
 
-      // line numbers
-
-      function updateLineNumbers() {
-        const value = codeEl.value || "";
-        const lines = value.split("\n").length || 1;
-        let html = "";
-        for (let i = 1; i <= lines; i += 1) {
-          html += '<div class="line-number" data-line="' + i + '">' + i + "</div>";
-        }
-        lineNumbersEl.innerHTML = html;
-        lineNumbersEl.scrollTop = codeEl.scrollTop;
-        updateActiveLineHighlight();
-      }
-
-      function getCurrentLineIndex() {
-        const pos = codeEl.selectionStart || 0;
-        const textBefore = (codeEl.value || "").slice(0, pos);
-        return textBefore.split("\n").length;
-      }
-
-      function updateActiveLineHighlight() {
-        const currentLine = getCurrentLineIndex();
-        const nodes = lineNumbersEl.children;
-        for (let i = 0; i < nodes.length; i += 1) {
-          const el = nodes[i];
-          const line = i + 1;
-          if (line === currentLine) {
-            el.classList.add("active");
-          } else {
-            el.classList.remove("active");
-          }
-        }
-      }
-
-      codeEl.addEventListener("scroll", function () {
-        lineNumbersEl.scrollTop = codeEl.scrollTop;
-      });
-
-      codeEl.addEventListener("click", updateActiveLineHighlight);
-      codeEl.addEventListener("keyup", updateActiveLineHighlight);
-
-      // file open
-
-      function openFile() {
-        fileInput.value = "";
-        fileInput.click();
-      }
-
-      fileInput.addEventListener("change", function () {
-        const file = fileInput.files && fileInput.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          const text = String(e.target.result || "");
-          codeEl.value = text;
-          resetSearchState();
-          updateLineNumbers();
-          runPreview();
-        };
-        reader.readAsText(file);
-      });
-
-      // random demo from /demo
-
-      function pickRandomDemoName() {
-        const list = demoConfig.files || [];
-        if (!list.length) return null;
-        const index = Math.floor(Math.random() * list.length);
-        return list[index];
-      }
-
-      function loadRandomDemo() {
-        const name = pickRandomDemoName();
-        if (!name) {
-          codeEl.value = defaultExample;
-          updateLineNumbers();
-          runPreview();
-          return;
-        }
-        const url = demoConfig.basePath + name;
-        fetch(url)
-          .then(function (res) {
-            if (!res.ok) {
-              throw new Error("demo not found");
-            }
-            return res.text();
-          })
-          .then(function (text) {
-            codeEl.value = text;
-            resetSearchState();
-            updateLineNumbers();
-            runPreview();
-          })
-          .catch(function () {
-            codeEl.value = defaultExample;
-            updateLineNumbers();
-            runPreview();
-          });
-      }
-
-      // handlers
-
       btnRun.addEventListener("click", function () {
         runPreview();
       });
@@ -1106,7 +928,6 @@
 
       codeEl.addEventListener("input", function () {
         resetSearchState();
-        updateLineNumbers();
       });
 
       document.addEventListener("keydown", function (event) {
@@ -1123,20 +944,11 @@
         }
       });
 
-      btnOpen.addEventListener("click", function () {
-        openFile();
-      });
-
-      btnDemo.addEventListener("click", function () {
-        loadRandomDemo();
-      });
-
       function init() {
+        codeEl.value = defaultExample;
         setInitialSplitHeight();
-
-        // если в demoConfig.files нет файлов или fetch падает,
-        // останется встроенный пример
-        loadRandomDemo();
+        stopPreview();
+        runPreview();
       }
 
       if (document.readyState === "loading") {
