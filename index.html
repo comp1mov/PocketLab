@@ -26,6 +26,7 @@
         border-bottom: 1px solid #333;
         background: #0a0a0a;
         font-size: 13px;
+        flex-wrap: wrap;
       }
       #toolbar button {
         padding: 4px 10px;
@@ -137,9 +138,10 @@
     <div id="app">
       <div id="toolbar">
         <button id="run-btn">Run</button>
-        <button id="clear-btn">Clear</button>
+        <button id="clear-code-btn">Clear code</button>
+        <button id="clear-view-btn">Clear view</button>
         <button id="toggle-btn">Toggle editor</button>
-        <span>PocketLab · define setup(), update(dt), pointer(type, x, y)</span>
+        <span>PocketLab · setup(), update(dt), pointer(type, x, y)</span>
       </div>
       <div id="main">
         <div id="editor-wrap">
@@ -159,13 +161,14 @@
       (function () {
         const STORAGE_KEY = "pocketlab-code-v1";
 
-        const appEl     = document.getElementById("app");
-        const codeEl    = document.getElementById("code");
-        const logEl     = document.getElementById("log");
-        const canvas    = document.getElementById("canvas");
-        const runBtn    = document.getElementById("run-btn");
-        const clearBtn  = document.getElementById("clear-btn");
-        const toggleBtn = document.getElementById("toggle-btn");
+        const appEl         = document.getElementById("app");
+        const codeEl        = document.getElementById("code");
+        const logEl         = document.getElementById("log");
+        const canvas        = document.getElementById("canvas");
+        const runBtn        = document.getElementById("run-btn");
+        const clearCodeBtn  = document.getElementById("clear-code-btn");
+        const clearViewBtn  = document.getElementById("clear-view-btn");
+        const toggleBtn     = document.getElementById("toggle-btn");
 
         const ctx = canvas.getContext("2d", { alpha: false });
 
@@ -287,12 +290,16 @@
         canvas.addEventListener("touchend", e => pointerEvent("up", e), { passive: false });
         canvas.addEventListener("touchcancel", e => pointerEvent("up", e), { passive: false });
 
-        function runUserCode(source) {
-          clearLog();
+        function resetUser() {
           user.setup = null;
           user.update = null;
           user.pointer = null;
           lab.time = 0;
+        }
+
+        function runUserCode(source) {
+          clearLog();
+          resetUser();
 
           ctx.fillStyle = "#000";
           ctx.fillRect(0, 0, lab.width, lab.height);
@@ -365,12 +372,10 @@
 //   function pointer(type, x, y) {}  // type: "down" | "move" | "up"
 
 function setup() {
-  // настройка начального состояния
   const ctx = lab.ctx;
   ctx.fillStyle = "black";
   ctx.fillRect(0, 0, lab.width, lab.height);
 
-  // создаем массив точек в lab
   const count = 400;
   const pts = [];
   for (let i = 0; i < count; i++) {
@@ -390,11 +395,9 @@ function update(dt) {
   const w = lab.width;
   const h = lab.height;
 
-  // лёгкий фейд для хвостов
   ctx.fillStyle = "rgba(0,0,0,0.18)";
   ctx.fillRect(0, 0, w, h);
 
-  // свечение под указателем
   if (lab.pointerDown) {
     const g = ctx.createRadialGradient(
       lab.pointerX, lab.pointerY, 0,
@@ -442,12 +445,9 @@ function update(dt) {
 }
 
 function pointer(type, x, y) {
-  // простой пример: бип по тапу
   if (type === "down") {
     lab.beep(880, 0.15);
   }
-  // можно логировать события
-  // console.log("pointer", type, x.toFixed(1), y.toFixed(1));
 }
 `;
         }
@@ -463,7 +463,16 @@ function pointer(type, x, y) {
           runUserCode(src);
         });
 
-        clearBtn.addEventListener("click", () => {
+        clearCodeBtn.addEventListener("click", () => {
+          codeEl.value = "";
+          try {
+            localStorage.removeItem(STORAGE_KEY);
+          } catch (e) {}
+          clearLog();
+        });
+
+        clearViewBtn.addEventListener("click", () => {
+          resetUser();
           ctx.fillStyle = "#000";
           ctx.fillRect(0, 0, lab.width, lab.height);
           clearLog();
