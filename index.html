@@ -1,9 +1,9 @@
 <!doctype html>
-<!-- PocketLab v0.20 · dev Grisha Tsvetkov -->
+<!-- PocketHTML v0.21 · dev Grisha Tsvetkov -->
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>PocketLab HTML</title>
+    <title>PocketHTML</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
 
     <!-- CodeMirror -->
@@ -25,7 +25,7 @@
         background: #050505;
         color: #f5f5f5;
         font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-        overflow: hidden; /* скролл только внутри редактора */
+        overflow: hidden;
       }
       #app {
         height: 100vh;
@@ -73,7 +73,6 @@
         flex: 1;
         padding: 6px;
       }
-      /* прячем нативный textarea, работаем через CodeMirror */
       #editor textarea {
         width: 100%;
         height: 100%;
@@ -120,7 +119,6 @@
         pointer-events: none;
       }
 
-      /* режимы раскладки */
       #app.mode-split #editor-wrap {
         display: flex;
       }
@@ -189,7 +187,7 @@
         <div id="preview-wrap">
           <iframe
             id="preview-frame"
-            sandbox="allow-scripts"
+            sandbox="allow-scripts allow-same-origin allow-modals allow-pointer-lock allow-popups allow-popups-to-escape-sandbox"
           ></iframe>
           <div id="hint">tap run to update preview</div>
         </div>
@@ -249,7 +247,7 @@
             }
           } catch (e) {}
 
-          // дефолтный пример: чистый JS (как в старой рабочей версии)
+          // дефолтный пример: чистый JS
           const def =
 `// pure JS example
 // this will be wrapped into full HTML with a fullscreen canvas#canvas
@@ -333,7 +331,19 @@ safeJs,
 '  </body>',
 '</html>'
           ];
-          return parts.join('\\n');
+          return parts.join('\n');
+        }
+
+        function setFrameHtml(html) {
+          // поддержка старых браузеров без srcdoc
+          if ("srcdoc" in frame) {
+            frame.srcdoc = html;
+          } else {
+            const doc = frame.contentWindow.document;
+            doc.open();
+            doc.write(html);
+            doc.close();
+          }
         }
 
         function run() {
@@ -344,16 +354,17 @@ safeJs,
           } else {
             html = wrapJsAsHtml(src);
           }
-          frame.srcdoc = html;
+          setFrameHtml(html);
           try {
             localStorage.setItem(STORAGE_KEY, src);
           } catch (e) {}
         }
 
         function stop() {
-          frame.srcdoc =
+          const html =
             "<!doctype html><html><head><meta charset='utf-8'><title>stopped</title></head>" +
             "<body style='margin:0;background:#000;'></body></html>";
+          setFrameHtml(html);
         }
 
         function clearCode() {
@@ -434,7 +445,7 @@ safeJs,
 
         // init
         loadStored();
-        // если хочешь, можно сразу запускать дефолтный пример:
+        // при желании можно сразу запускать дефолтный пример:
         // run();
       })();
     </script>
