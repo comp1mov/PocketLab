@@ -2,434 +2,683 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>PocketLab HTML Viewer</title>
+    <title>PocketLab</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
 
-    <link rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
-    <link rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+    <!-- Roboto -->
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap"
+      rel="stylesheet"
+    >
+
+    <!-- normalize.css -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css"
+      integrity="sha512-NhSC1YmyruXifcj/KFRWoC561YpHpc5Jtzgvbuzx5VozKpWvQ+4nXhPdFgmx8xqexRcpAglTj9sIBWINXa8x5w=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    >
+
+    <!-- CodeMirror -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css"
+      integrity="sha512-KK41eJ31r/nytiCaj7P7SjoO2UJ8oeD0MY5FSm5F3DQIa6gFX6w1PoN6bxwAkPorguz2XSh4UrkW39OZnY2+yA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    >
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css"
+      integrity="sha512-XpsyCjqppz4KwFuc+33pWYInkboaL4rthVgfyohvwe1dU1ZvQokmaBRCDxPMzVUwH48hjOS+j6ZGEbAl91Ct5w=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    >
+
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"
+      integrity="sha512-jSwLlN2uHUKm7X0XA6dqmlM9Bm2K/uZpIV85IbJCw5KPBpVq3gsdT5pS9bZ9mCY1g93f2bKfw3ts4lvkrpyoLg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"
+      integrity="sha512-5r5gG72IATnz3/RbLzB7DQWQbZ6BYgUQAr1ajt+9SYV0XhHJXN24k+PqkLCsXsgVFvEIq5LHMFrPUFVyATQppQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"
+      integrity="sha512-yu3xMAdMw7K3uTpLJveWBpKQuPohz63j+wbKiga7VqaDJfL5Ir5RJQrQt7YFjZsjhB0uHcNpv51GKv3Kj2R1hg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"
+      integrity="sha512-RU8J0KJoM9YoFsdj0WkhGpFfJAkEcuSDolcd6205TZVMoe/oZRBFPbQouRFPuZvVi8C2PKsKTZN/A2NpRU0b7Q=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"
+      integrity="sha512-xM5g8pFIsLW3PvsLAu/3Gz4P81AKcELwjG0LPtVgi4scVkh6a2V7Wcs2CNQf4zkwUzYHyK1KtZ6+Y0VLVWeDVg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
 
     <style>
-      html, body {
+      :root {
+        /* легко менять версию здесь */
+        --pocketlab-version: "v0.33";
+        --toolbar-height: 40px;
+        --bg-main: #000;
+        --bg-panel: #050505;
+        --fg-main: #eee;
+        --fg-muted: #888;
+        --accent: #444;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
         margin: 0;
         padding: 0;
         height: 100%;
-        background: #050505;
-        color: #f5f5f5;
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        width: 100%;
         overflow: hidden;
+        background: var(--bg-main);
+        color: var(--fg-main);
+        font-family: "Roboto", system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        -webkit-font-smoothing: antialiased;
       }
-      #app {
-        height: 100vh;
+
+      body {
         display: flex;
         flex-direction: column;
       }
-      #toolbar {
-        padding: 6px 10px;
+
+      .toolbar {
         display: flex;
         align-items: center;
-        gap: 8px;
-        border-bottom: 1px solid #333;
-        background: #0a0a0a;
-        font-size: 13px;
-        flex-wrap: wrap;
+        height: var(--toolbar-height);
+        padding: 0 8px;
+        background: var(--bg-panel);
+        border-bottom: 1px solid #111;
+        gap: 4px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap;
       }
-      #toolbar button {
-        padding: 4px 10px;
-        font-size: 12px;
-        border-radius: 4px;
-        border: 1px solid #555;
-        background: #f5f5f5;
-        color: #111;
-        cursor: pointer;
-      }
-      #toolbar span {
-        opacity: 0.7;
-        font-size: 11px;
-      }
-      #main {
-        flex: 1;
+
+      .toolbar-left {
         display: flex;
-        min-height: 0;
+        align-items: center;
+        gap: 4px;
+        flex: 1 1 auto;
       }
-      #editor-wrap {
-        width: 45%;
-        min-width: 260px;
-        max-width: 520px;
-        border-right: 1px solid #333;
+
+      .toolbar-right {
+        flex: 0 0 auto;
+        margin-left: auto;
+        font-size: 11px;
+        color: var(--fg-muted);
+      }
+
+      .btn {
+        flex: 0 0 auto;
+        border: 1px solid #222;
+        background: #111;
+        color: var(--fg-main);
+        font-size: 12px;
+        padding: 4px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        outline: none;
+        user-select: none;
+      }
+
+      .btn:active {
+        background: #181818;
+      }
+
+      .btn:focus-visible {
+        outline: 1px solid #555;
+        outline-offset: 1px;
+      }
+
+      .btn-primary {
+        border-color: #555;
+        background: #1b1b1b;
+      }
+
+      .btn-danger {
+        border-color: #550000;
+        background: #220000;
+      }
+
+      #app {
+        flex: 1 1 auto;
         display: flex;
         flex-direction: column;
-        background: #050505;
+        height: calc(100% - var(--toolbar-height));
+        width: 100%;
+        background: var(--bg-main);
       }
-      #editor {
-        flex: 1;
-        padding: 6px;
+
+      .split-container {
+        position: relative;
+        display: flex;
+        height: 100%;
+        width: 100%;
+        background: var(--bg-main);
+        overflow: hidden;
       }
+
+      /* по умолчанию десктоп: горизонтальный сплит */
+      .split-container.horizontal {
+        flex-direction: row;
+      }
+
+      .split-container.vertical {
+        flex-direction: column;
+      }
+
+      .pane {
+        position: relative;
+        overflow: hidden;
+        background: var(--bg-main);
+      }
+
+      #editor-pane {
+        flex: 0 0 50%;
+        min-width: 80px;
+        min-height: 80px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      #preview-pane {
+        flex: 1 1 auto;
+        min-width: 80px;
+        min-height: 80px;
+        background: #000;
+        position: relative;
+      }
+
+      .divider {
+        flex: 0 0 auto;
+        background: #111;
+        position: relative;
+        z-index: 10;
+      }
+
+      .divider.horizontal {
+        width: 10px;
+        cursor: col-resize;
+      }
+
+      .divider.vertical {
+        height: 12px;
+        cursor: row-resize;
+      }
+
+      .divider::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(
+          to var(--divider-direction, right),
+          #222,
+          #222 1px,
+          #111 1px,
+          #111 3px
+        );
+      }
+
+      .divider.vertical::before {
+        --divider-direction: bottom;
+      }
+
+      .divider.horizontal::before {
+        --divider-direction: right;
+      }
+
+      /* CodeMirror контейнер занимает все внутри editor-pane */
+      .editor-wrapper {
+        flex: 1 1 auto;
+        position: relative;
+        overflow: hidden;
+        background: var(--bg-main);
+      }
+
       .CodeMirror {
         height: 100%;
-        background: #111;
-        color: #eee;
-        font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace;
-        font-size: 11px;
-        line-height: 1.4;
-      }
-      #preview-wrap {
-        flex: 1;
-        position: relative;
+        width: 100%;
         background: #000;
+        color: var(--fg-main);
+        font-size: 13px;
       }
-      #preview-frame {
+
+      .CodeMirror-gutters {
+        background: #000;
+        border-right: 1px solid #111;
+        color: #555;
+      }
+
+      .CodeMirror-scroll {
+        overflow: auto !important;
+      }
+
+      #preview-wrapper {
+        position: relative;
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+      }
+
+      #preview {
+        border: none;
         width: 100%;
         height: 100%;
-        border: none;
         background: #000;
       }
-      #hint {
+
+      .watermark {
         position: absolute;
-        left: 8px;
-        top: 8px;
-        padding: 3px 6px;
-        font-size: 11px;
-        background: rgba(0,0,0,0.45);
-        border-radius: 4px;
+        right: 6px;
+        bottom: 4px;
+        font-size: 10px;
+        color: rgba(255, 255, 255, 0.35);
         pointer-events: none;
       }
-      #app.mode-split #editor-wrap {
-        display: flex;
+
+      /* viewer mode: только превью на весь экран */
+      body.viewer-mode .split-container {
+        padding: 0;
       }
-      #app.mode-split #preview-wrap {
-        display: block;
-      }
-      #app.mode-editor #editor-wrap {
-        display: flex;
-        width: 100%;
-        max-width: none;
-      }
-      #app.mode-editor #preview-wrap {
+
+      body.viewer-mode #editor-pane,
+      body.viewer-mode .divider {
         display: none;
       }
-      #app.mode-viewer #editor-wrap {
-        display: none;
+
+      body.viewer-mode #preview-pane {
+        flex: 1 1 auto;
       }
-      #app.mode-viewer #preview-wrap {
-        display: block;
-      }
-      @media (max-width: 800px) {
-        #main {
+
+      /* мобильный вертикальный сплит */
+      @media (max-width: 768px), (max-height: 540px) {
+        .split-container {
           flex-direction: column;
         }
-        #editor-wrap {
+
+        .split-container.horizontal {
+          flex-direction: column;
+        }
+
+        .split-container.vertical {
+          flex-direction: column;
+        }
+
+        .divider {
+          height: 12px;
           width: 100%;
-          max-width: none;
-          height: 40%;
-          border-right: none;
-          border-bottom: 1px solid #333;
         }
-        #preview-wrap {
-          height: 60%;
+
+        .divider.horizontal {
+          height: 12px;
+          width: 100%;
+          cursor: row-resize;
         }
-        #app.mode-editor #editor-wrap {
-          height: calc(100vh - 32px);
-        }
-        #app.mode-viewer #preview-wrap {
-          height: calc(100vh - 32px);
+
+        #editor-pane {
+          flex-basis: 55%;
         }
       }
     </style>
   </head>
   <body>
-    <div id="app" class="mode-split">
-      <div id="toolbar">
-        <button id="paste-btn">paste</button>
-        <button id="copy-btn">copy</button>
-        <button id="clear-btn">clear</button>
-        <button id="editor-btn">editor</button>
-        <button id="viewer-btn">viewer</button>
-        <button id="run-btn">run</button>
-        <button id="stop-btn">stop</button>
-        <span>paste full HTML page, then run</span>
+    <div class="toolbar" aria-label="PocketLab toolbar">
+      <div class="toolbar-left">
+        <button class="btn" id="btn-paste" type="button">paste</button>
+        <button class="btn" id="btn-copy" type="button">copy</button>
+        <button class="btn btn-danger" id="btn-clear" type="button">clear</button>
+        <button class="btn" id="btn-view" type="button" aria-pressed="false">
+          view
+        </button>
+        <button class="btn btn-primary" id="btn-run" type="button">run</button>
+        <button class="btn" id="btn-stop" type="button">stop</button>
       </div>
-      <div id="main">
-        <div id="editor-wrap">
-          <div id="editor">
-            <textarea id="code"></textarea>
+      <div class="toolbar-right" id="status-text">
+        PocketLab · loading
+      </div>
+    </div>
+
+    <div id="app">
+      <div class="split-container horizontal" id="split-container">
+        <section class="pane" id="editor-pane" aria-label="HTML editor">
+          <div class="editor-wrapper">
+            <textarea id="editor"></textarea>
           </div>
-        </div>
-        <div id="preview-wrap">
-          <iframe
-            id="preview-frame"
-            allow="fullscreen; microphone; camera; geolocation; clipboard-read; clipboard-write"
-          ></iframe>
-          <div id="hint">tap run to update preview</div>
-        </div>
+        </section>
+
+        <div class="divider horizontal" id="divider" aria-hidden="true"></div>
+
+        <section class="pane" id="preview-pane" aria-label="Preview">
+          <div id="preview-wrapper">
+            <iframe id="preview"></iframe>
+            <div class="watermark">&lt;3</div>
+          </div>
+        </section>
       </div>
     </div>
 
     <script>
       (function () {
-        var STORAGE_KEY = "pocketlab-html-viewer-v2";
+        const VERSION = "v0.13";
+        const STORAGE_KEY = "pocketlab-src-v1";
 
-        var appEl   = document.getElementById("app");
-        var codeEl  = document.getElementById("code");
-        var frame   = document.getElementById("preview-frame");
+        const statusText = document.getElementById("status-text");
+        statusText.textContent =
+          "PocketLab " + VERSION + " · paste HTML, press run";
 
-        var pasteBtn  = document.getElementById("paste-btn");
-        var copyBtn   = document.getElementById("copy-btn");
-        var clearBtn  = document.getElementById("clear-btn");
-        var editorBtn = document.getElementById("editor-btn");
-        var viewerBtn = document.getElementById("viewer-btn");
-        var runBtn    = document.getElementById("run-btn");
-        var stopBtn   = document.getElementById("stop-btn");
+        const splitContainer = document.getElementById("split-container");
+        const editorPane = document.getElementById("editor-pane");
+        const previewFrame = document.getElementById("preview");
+        const divider = document.getElementById("divider");
 
-        var editor = CodeMirror.fromTextArea(codeEl, {
-          lineNumbers: true,
-          theme: "material-darker",
-          mode: "htmlmixed",
-          tabSize: 2,
-          indentUnit: 2,
-          smartIndent: true
-        });
+        const btnPaste = document.getElementById("btn-paste");
+        const btnCopy = document.getElementById("btn-copy");
+        const btnClear = document.getElementById("btn-clear");
+        const btnView = document.getElementById("btn-view");
+        const btnRun = document.getElementById("btn-run");
+        const btnStop = document.getElementById("btn-stop");
 
-        function getCode() {
-          return editor.getValue();
+        // CodeMirror init
+        const cm = CodeMirror.fromTextArea(
+          document.getElementById("editor"),
+          {
+            mode: "htmlmixed",
+            lineNumbers: true,
+            theme: "material-darker",
+            tabSize: 2,
+            indentUnit: 2,
+            indentWithTabs: false,
+            lineWrapping: false,
+          }
+        );
+
+        cm.setSize("100%", "100%");
+
+        function isVerticalMode() {
+          // Считаем "вертикальным" режимом мобильный или если высота заметно меньше ширины
+          const rect = splitContainer.getBoundingClientRect();
+          const verticalBySize = rect.height > rect.width;
+          const mobile = window.innerWidth <= 768 || window.innerHeight <= 540;
+          return mobile || verticalBySize;
         }
 
-        function setCode(text) {
-          editor.setValue(text);
-          editor.refresh();
+        function applyStoppedPreview() {
+          const stoppedHtml =
+            "<!doctype html>" +
+            "<html>" +
+            "<head><meta charset='utf-8'><title>stopped</title></head>" +
+            "<body style='margin:0;background:#000;'></body>" +
+            "</html>";
+          previewFrame.srcdoc = stoppedHtml;
         }
 
-        function loadStored() {
-          try {
-            var saved = localStorage.getItem(STORAGE_KEY);
-            if (saved && saved.trim().length > 0) {
-              setCode(saved);
-              return;
-            }
-          } catch (e) {}
+        function buildHtmlFromSource(src) {
+          const trimmed = src.trim();
+          if (!trimmed) {
+            // пустой ввод трактуем как фрагмент с пустым body
+            return (
+              "<!doctype html>" +
+              "<html>" +
+              "<head>" +
+              "<meta charset='utf-8'>" +
+              "<meta name='viewport' content='width=device-width,initial-scale=1'>" +
+              "<title>PocketLab sketch</title>" +
+              "</head>" +
+              "<body></body>" +
+              "</html>"
+            );
+          }
 
-          // дефолтная сцена, похожая на твои
-          var defLines = [
-            "<!doctype html>",
-            "<html lang=\\\"en\\\">",
-            "  <head>",
-            "    <meta charset=\\\"utf-8\\\">",
-            "    <title>PocketLab test scene</title>",
-            "    <meta name=\\\"viewport\\\" content=\\\"width=device-width,initial-scale=1.0\\\">",
-            "    <style>",
-            "      * { margin:0; padding:0; box-sizing:border-box; }",
-            "      body {",
-            "        overflow:hidden;",
-            "        background:#020617;",
-            "        font-family:-apple-system, BlinkMacSystemFont, \\\"Segoe UI\\\", sans-serif;",
-            "      }",
-            "      canvas {",
-            "        display:block;",
-            "        width:100vw;",
-            "        height:100vh;",
-            "        background:#000;",
-            "      }",
-            "      #panel {",
-            "        position:fixed;",
-            "        top:16px;",
-            "        left:50%;",
-            "        transform:translateX(-50%);",
-            "        background:rgba(0,0,0,0.9);",
-            "        border:1px solid #ff006e;",
-            "        border-radius:10px;",
-            "        padding:8px 14px;",
-            "        color:#fff;",
-            "        font-size:11px;",
-            "        display:flex;",
-            "        align-items:center;",
-            "        gap:10px;",
-            "        z-index:10;",
-            "      }",
-            "      #panel span.label {",
-            "        color:#9ca3af;",
-            "        text-transform:uppercase;",
-            "        letter-spacing:.08em;",
-            "        font-size:9px;",
-            "      }",
-            "      #panel input[type=\\\"range\\\"] {",
-            "        width:120px;",
-            "      }",
-            "      #panel button {",
-            "        background:#fff;",
-            "        color:#000;",
-            "        border:none;",
-            "        border-radius:4px;",
-            "        padding:4px 8px;",
-            "        font-size:10px;",
-            "        cursor:pointer;",
-            "      }",
-            "    </style>",
-            "  </head>",
-            "  <body>",
-            "    <canvas id=\\\"canvas\\\"></canvas>",
-            "    <div id=\\\"panel\\\">",
-            "      <span class=\\\"label\\\">density</span>",
-            "      <input id=\\\"density\\\" type=\\\"range\\\" min=\\\"10\\\" max=\\\"200\\\" value=\\\"80\\\">",
-            "      <button id=\\\"shuffle\\\">shuffle</button>",
-            "    </div>",
-            "    <script>",
-            "      (function () {",
-            "        var canvas = document.getElementById('canvas');",
-            "        var ctx = canvas.getContext('2d');",
-            "        var densitySlider = document.getElementById('density');",
-            "        var shuffleBtn = document.getElementById('shuffle');",
-            "",
-            "        var W = 0, H = 0;",
-            "        var seed = 1;",
-            "",
-            "        function resize() {",
-            "          W = window.innerWidth;",
-            "          H = window.innerHeight;",
-            "          canvas.width = W;",
-            "          canvas.height = H;",
-            "          draw();",
-            "        }",
-            "",
-            "        function rnd() {",
-            "          var x = Math.sin(seed++) * 10000;",
-            "          return x - Math.floor(x);",
-            "        }",
-            "",
-            "        function draw() {",
-            "          var d = parseInt(densitySlider.value, 10);",
-            "          ctx.clearRect(0, 0, W, H);",
-            "          var bgGrad = ctx.createLinearGradient(0, 0, W, H);",
-            "          bgGrad.addColorStop(0, '#020617');",
-            "          bgGrad.addColorStop(1, '#1e293b');",
-            "          ctx.fillStyle = bgGrad;",
-            "          ctx.fillRect(0, 0, W, H);",
-            "",
-            "          var cols = Math.max(1, Math.round(Math.sqrt(d * W / H)));",
-            "          var rows = Math.max(1, Math.round(d / cols));",
-            "          var cellW = W / cols;",
-            "          var cellH = H / rows;",
-            "",
-            "          for (var y = 0; y < rows; y++) {",
-            "            for (var x = 0; x < cols; x++) {",
-            "              var cx = (x + 0.5) * cellW;",
-            "              var cy = (y + 0.5) * cellH;",
-            "              var t = rnd();",
-            "              var w = cellW * (0.2 + t * 0.8);",
-            "              var h = cellH * (0.2 + (1 - t) * 0.7);",
-            "",
-            "              ctx.save();",
-            "              ctx.translate(cx, cy);",
-            "              ctx.rotate((t - 0.5) * 0.8);",
-            "              var c = 0.3 + t * 0.7;",
-            "              ctx.fillStyle = 'rgba(' + Math.floor(255*c) + ', ' + Math.floor(80 + 120*(1-c)) + ', 255, 0.9)';",
-            "              ctx.fillRect(-w/2, -h/2, w, h);",
-            "              ctx.restore();",
-            "            }",
-            "          }",
-            "        }",
-            "",
-            "        densitySlider.addEventListener('input', draw);",
-            "        shuffleBtn.addEventListener('click', function () {",
-            "          seed = Date.now() % 100000;",
-            "          draw();",
-            "        });",
-            "",
-            "        window.addEventListener('resize', resize);",
-            "        resize();",
-            "      })();",
-            "    <\\/script>",
-            "  </body>",
+          const fullDocPattern = /<!doctype|<html|<body/i;
+          if (fullDocPattern.test(trimmed)) {
+            return src;
+          }
+
+          return (
+            "<!doctype html>" +
+            "<html>" +
+            "<head>" +
+            "<meta charset='utf-8'>" +
+            "<meta name='viewport' content='width=device-width,initial-scale=1'>" +
+            "<title>PocketLab sketch</title>" +
+            "</head>" +
+            "<body>" +
+            trimmed +
+            "</body>" +
             "</html>"
-          ];
-          setCode(defLines.join("\\n"));
+          );
         }
 
-        function setFrameHtml(html) {
-          if ("srcdoc" in frame) {
-            frame.srcdoc = html;
-          } else {
-            var doc = frame.contentWindow.document;
-            doc.open();
-            doc.write(html);
-            doc.close();
+        function runPreview() {
+          const src = cm.getValue();
+          const html = buildHtmlFromSource(src);
+          previewFrame.srcdoc = html;
+          try {
+            if (src.trim()) {
+              localStorage.setItem(STORAGE_KEY, src);
+            }
+          } catch (e) {
+            // игнорируем ошибки доступа к localStorage
           }
         }
 
-        function run() {
-          var src = getCode() || "";
-          setFrameHtml(src);
-          try {
-            localStorage.setItem(STORAGE_KEY, src);
-          } catch (e) {}
+        function stopPreview() {
+          applyStoppedPreview();
         }
 
-        function stop() {
-          var html = "<!doctype html><html><head><meta charset='utf-8'><title>stopped</title></head>" +
-            "<body style='margin:0;background:#000;'></body></html>";
-          setFrameHtml(html);
-        }
-
-        function clearCode() {
-          setCode("");
+        function clearEditor() {
+          cm.setValue("");
           try {
             localStorage.removeItem(STORAGE_KEY);
           } catch (e) {}
         }
 
-        function setMode(mode) {
-          appEl.classList.remove("mode-split", "mode-editor", "mode-viewer");
-          appEl.classList.add(mode);
-          setTimeout(function () { editor.refresh(); }, 30);
-        }
-
-        function pasteFromClipboard() {
+        // Clipboard helpers
+        async function handlePaste() {
           if (!navigator.clipboard || !navigator.clipboard.readText) {
-            alert("clipboard not available");
+            alert("Clipboard API is not available in this browser.");
             return;
           }
-          navigator.clipboard.readText().then(function (text) {
-            if (text) {
-              setCode(text);
+          try {
+            const text = await navigator.clipboard.readText();
+            if (text != null && text !== "") {
+              cm.setValue(text);
             }
-          }).catch(function () {
-            alert("cannot read from clipboard");
-          });
+          } catch (err) {
+            alert("Unable to read from clipboard.");
+          }
         }
 
-        function copyToClipboard() {
+        async function handleCopy() {
           if (!navigator.clipboard || !navigator.clipboard.writeText) {
-            alert("clipboard not available");
+            alert("Clipboard API is not available in this browser.");
             return;
           }
-          navigator.clipboard.writeText(getCode() || "").catch(function () {
-            alert("cannot write to clipboard");
-          });
+          try {
+            const text = cm.getValue();
+            await navigator.clipboard.writeText(text);
+          } catch (err) {
+            alert("Unable to write to clipboard.");
+          }
         }
 
-        pasteBtn.addEventListener("click", pasteFromClipboard);
-        copyBtn.addEventListener("click", copyToClipboard);
-        clearBtn.addEventListener("click", clearCode);
+        // View mode toggle
+        let viewerMode = false;
+        function toggleViewMode() {
+          viewerMode = !viewerMode;
+          document.body.classList.toggle("viewer-mode", viewerMode);
+          btnView.setAttribute("aria-pressed", viewerMode ? "true" : "false");
+        }
 
-        editorBtn.addEventListener("click", function () {
-          var current = appEl.classList.contains("mode-editor");
-          setMode(current ? "mode-split" : "mode-editor");
+        // Divider drag
+        let isDragging = false;
+        let dragStartPos = 0;
+        let startEditorSize = 0;
+
+        function onDragStart(clientX, clientY) {
+          isDragging = true;
+          const vertical = isVerticalMode();
+          if (vertical) {
+            dragStartPos = clientY;
+            startEditorSize = editorPane.getBoundingClientRect().height;
+          } else {
+            dragStartPos = clientX;
+            startEditorSize = editorPane.getBoundingClientRect().width;
+          }
+          document.body.style.cursor = vertical ? "row-resize" : "col-resize";
+        }
+
+        function onDragMove(clientX, clientY) {
+          if (!isDragging) return;
+
+          const rect = splitContainer.getBoundingClientRect();
+          const vertical = isVerticalMode();
+
+          if (vertical) {
+            const delta = clientY - dragStartPos;
+            const newHeight = Math.max(
+              80,
+              Math.min(rect.height - 80, startEditorSize + delta)
+            );
+            const ratio = newHeight / rect.height;
+            editorPane.style.flexBasis = Math.round(ratio * 100) + "%";
+          } else {
+            const delta = clientX - dragStartPos;
+            const newWidth = Math.max(
+              80,
+              Math.min(rect.width - 80, startEditorSize + delta)
+            );
+            const ratio = newWidth / rect.width;
+            editorPane.style.flexBasis = Math.round(ratio * 100) + "%";
+          }
+        }
+
+        function onDragEnd() {
+          if (!isDragging) return;
+          isDragging = false;
+          document.body.style.cursor = "default";
+        }
+
+        divider.addEventListener("mousedown", function (e) {
+          e.preventDefault();
+          onDragStart(e.clientX, e.clientY);
         });
 
-        viewerBtn.addEventListener("click", function () {
-          var current = appEl.classList.contains("mode-viewer");
-          setMode(current ? "mode-split" : "mode-viewer");
+        window.addEventListener("mousemove", function (e) {
+          if (!isDragging) return;
+          e.preventDefault();
+          onDragMove(e.clientX, e.clientY);
         });
 
-        runBtn.addEventListener("click", run);
-        stopBtn.addEventListener("click", stop);
+        window.addEventListener("mouseup", function () {
+          onDragEnd();
+        });
 
-        loadStored();
+        // touch support
+        divider.addEventListener(
+          "touchstart",
+          function (e) {
+            const t = e.touches[0];
+            onDragStart(t.clientX, t.clientY);
+          },
+          { passive: true }
+        );
+
+        window.addEventListener(
+          "touchmove",
+          function (e) {
+            if (!isDragging) return;
+            const t = e.touches[0];
+            onDragMove(t.clientX, t.clientY);
+          },
+          { passive: false }
+        );
+
+        window.addEventListener("touchend", function () {
+          onDragEnd();
+        });
+
+        // кнопки
+        btnPaste.addEventListener("click", handlePaste);
+        btnCopy.addEventListener("click", handleCopy);
+        btnClear.addEventListener("click", function () {
+          clearEditor();
+        });
+        btnRun.addEventListener("click", function () {
+          runPreview();
+        });
+        btnStop.addEventListener("click", function () {
+          stopPreview();
+        });
+        btnView.addEventListener("click", function () {
+          toggleViewMode();
+        });
+
+        // клавиатурное сокращение Ctrl+Enter или Cmd+Enter для run
+        window.addEventListener("keydown", function (e) {
+          if (
+            (e.ctrlKey || e.metaKey) &&
+            e.key === "Enter" &&
+            !e.defaultPrevented
+          ) {
+            e.preventDefault();
+            runPreview();
+          }
+        });
+
+        // восстановление кода из localStorage
+        (function restoreFromStorage() {
+          try {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved && typeof saved === "string") {
+              cm.setValue(saved);
+              runPreview();
+              return;
+            }
+          } catch (e) {}
+          // если сохраненного нет, просто показываем stopped
+          applyStoppedPreview();
+        })();
+
+        // при изменении размеров окна пересчитаем направление split
+        function updateSplitDirection() {
+          if (isVerticalMode()) {
+            splitContainer.classList.remove("horizontal");
+            splitContainer.classList.add("vertical");
+            divider.classList.remove("horizontal");
+            divider.classList.add("vertical");
+          } else {
+            splitContainer.classList.remove("vertical");
+            splitContainer.classList.add("horizontal");
+            divider.classList.remove("vertical");
+            divider.classList.add("horizontal");
+          }
+        }
+
+        window.addEventListener("resize", updateSplitDirection);
+        updateSplitDirection();
       })();
     </script>
   </body>
