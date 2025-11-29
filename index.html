@@ -8,7 +8,7 @@
     :root {
       color-scheme: dark;
 
-      /* базовая темная тема, легко заменяется на другую */
+      /* PALETTE: все, что отвечает за цветовую схему */
       --c-bg: #050509;
       --c-surface: #0b0c12;
       --c-surface-soft: #111321;
@@ -54,8 +54,6 @@
       gap: 6px;
       min-height: 0;
     }
-
-    /* top bar */
 
     .top-bar {
       display: flex;
@@ -170,8 +168,6 @@
     .btn-pill {
       padding-inline: 8px;
     }
-
-    /* layout */
 
     .layout {
       flex: 1;
@@ -334,14 +330,17 @@
       box-sizing: border-box;
     }
 
+    /* divider: сделал выше и дал явный z-index */
+
     .divider {
-      height: 6px;
+      height: 12px;
       background: #070812;
       position: relative;
       cursor: row-resize;
       touch-action: none;
       border-top: 1px solid rgba(255,255,255,0.05);
       border-bottom: 1px solid rgba(0,0,0,0.7);
+      z-index: 5;
     }
 
     .divider-hit {
@@ -349,8 +348,8 @@
       left: 50%;
       top: 50%;
       transform: translate(-50%, -50%);
-      width: 44px;
-      height: 14px;
+      width: 72px;
+      height: 20px;
       border-radius: var(--radius);
       background: #05060b;
       border: 1px solid rgba(255,255,255,0.12);
@@ -371,8 +370,6 @@
       border-color: var(--c-accent);
       box-shadow: 0 0 0 1px var(--c-accent-soft);
     }
-
-    /* preview */
 
     .preview-wrapper {
       flex: 1;
@@ -436,8 +433,6 @@
       box-sizing: border-box;
     }
 
-    /* full preview mode */
-
     body.full-preview .top-bar,
     body.full-preview #editorPanel,
     body.full-preview #divider {
@@ -453,8 +448,8 @@
     }
 
     body.full-preview .preview-wrapper,
-    body.full-preview .preview-inner,
-    body.full-preview #preview {
+      body.full-preview .preview-inner,
+      body.full-preview #preview {
       border-radius: 0;
     }
 
@@ -499,7 +494,7 @@
       <div class="title-line">
         <span class="title-dot"></span>
         <span class="title-name">POCKETLAB</span>
-        <span class="title-version">v0.43</span>
+        <span class="title-version">v0.44</span>
         <span class="title-dev">dev by Grisha Tsvetkov</span>
       </div>
       <div class="toolbar">
@@ -530,8 +525,7 @@
                   class="search-input"
                   type="search"
                   placeholder="search in code"
-                  autocomplete="off"
-                >
+                  autocomplete="off">
                 <button class="btn btn-pill" id="btnFind" type="button">SEARCH</button>
                 <div class="search-hit" id="searchHit"></div>
               </div>
@@ -563,8 +557,7 @@
                 id="preview"
                 title="PocketLab preview"
                 sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-downloads allow-modals allow-popups"
-                allow="camera; microphone; autoplay; fullscreen"
-              ></iframe>
+                allow="camera; microphone; autoplay; fullscreen"></iframe>
               <div class="preview-watermark">&lt;3</div>
               <button class="fullscreen-exit" id="btnExitFull" type="button">
                 <div class="fullscreen-exit-icon"></div>
@@ -1148,8 +1141,6 @@
         const url = URL.createObjectURL(blob);
         window.open(url, "_blank");
       }
-
-      /* handlers */
 
       btnRunToggle.addEventListener("click", function () {
         if (isPreviewLive) {
