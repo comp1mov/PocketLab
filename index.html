@@ -7,18 +7,20 @@
   <style>
     :root {
       color-scheme: dark;
-      --bg: #050509;
-      --bg-elevated: #101018;
-      --border: #262637;
-      --accent: #4da3ff;
-      --accent-soft: rgba(77, 163, 255, 0.16);
-      --text: #f5f5f7;
-      --text-muted: #a0a0b2;
-      --btn-bg: #181824;
-      --btn-bg-hover: #202033;
-      --btn-border: #2b2b3d;
-      --danger: #ff4f6a;
-      --danger-soft: rgba(255, 79, 106, 0.16);
+
+      /* базовая темная тема, легко заменяется на другую */
+      --c-bg: #050509;
+      --c-surface: #0b0c12;
+      --c-surface-soft: #111321;
+      --c-border: #2a2d3b;
+      --c-border-soft: #202330;
+      --c-text: #f5f5f7;
+      --c-muted: #9a9fb3;
+      --c-accent: #4da3ff;
+      --c-accent-soft: rgba(77, 163, 255, 0.16);
+      --c-danger: #ff4f6a;
+      --c-danger-soft: rgba(255, 79, 106, 0.16);
+
       --radius: 1px;
     }
 
@@ -31,8 +33,8 @@
       padding: 0;
       height: 100%;
       width: 100%;
-      background: radial-gradient(circle at top, #181826 0, #050509 55%);
-      color: var(--text);
+      background: var(--c-bg);
+      color: var(--c-text);
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
                    "Segoe UI", sans-serif;
       -webkit-font-smoothing: antialiased;
@@ -48,77 +50,65 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      padding: 10px 10px 14px;
-      gap: 8px;
+      padding: 8px 8px 12px;
+      gap: 6px;
       min-height: 0;
     }
+
+    /* top bar */
 
     .top-bar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
-      padding: 4px 2px;
+      gap: 8px;
+      padding: 2px 0;
       user-select: none;
       flex-wrap: wrap;
     }
 
-    .title-block {
-      display: flex;
-      flex-direction: column;
-      gap: 1px;
-      min-width: 0;
-    }
-
-    .title-main {
+    .title-line {
       display: flex;
       align-items: baseline;
       gap: 6px;
-      font-size: 14px;
-      letter-spacing: 0.05em;
+      font-size: 13px;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
-      color: var(--text-muted);
+      color: var(--c-muted);
+      white-space: nowrap;
     }
 
-    .title-main .title-name {
-      color: var(--text);
-    }
-
-    .title-main .dot {
+    .title-dot {
       width: 4px;
       height: 4px;
       border-radius: 50%;
-      background: var(--accent);
-      box-shadow: 0 0 0 4px rgba(77,163,255,0.28);
+      background: var(--c-accent);
+      box-shadow: 0 0 0 3px rgba(77,163,255,0.3);
+      flex-shrink: 0;
     }
 
-    .title-main .version {
+    .title-name {
+      color: var(--c-text);
+    }
+
+    .title-version {
       font-size: 11px;
       padding: 1px 6px;
       border-radius: var(--radius);
-      border: 1px solid rgba(255,255,255,0.06);
-      background: rgba(0,0,0,0.35);
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(0,0,0,0.4);
     }
 
-    .title-meta {
-      font-size: 10px;
-      color: var(--text-muted);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      display: flex;
-      gap: 4px;
-      align-items: baseline;
-    }
-
-    .title-author {
-      color: rgba(245,245,247,0.88);
-      font-size: 7px;
+    .title-dev {
+      font-size: 9px;
+      color: var(--c-muted);
+      opacity: 0.9;
     }
 
     .toolbar {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 6px;
       justify-content: flex-end;
     }
 
@@ -128,18 +118,22 @@
       gap: 4px;
     }
 
+    .toolbar-group + .toolbar-group {
+      margin-left: 4px;
+    }
+
     .btn {
-      border: 1px solid var(--btn-border);
-      background: var(--btn-bg);
-      color: var(--text);
-      font-size: 11px;
-      padding: 6px 10px;
+      border: 1px solid var(--c-border-soft);
+      background: var(--c-surface-soft);
+      color: var(--c-text);
+      font-size: 10px;
+      padding: 4px 8px;
       border-radius: var(--radius);
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
       cursor: pointer;
-      min-height: 26px;
+      min-height: 22px;
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
       outline: none;
@@ -149,7 +143,7 @@
     }
 
     .btn:hover {
-      background: var(--btn-bg-hover);
+      background: #171a25;
     }
 
     .btn:active {
@@ -157,39 +151,33 @@
     }
 
     .btn-primary {
-      border-color: var(--accent);
-      background: linear-gradient(145deg, #4da3ff, #78c0ff);
+      border-color: var(--c-accent);
+      background: var(--c-accent);
       color: #02030b;
       font-weight: 500;
     }
 
     .btn-primary:hover {
-      background: linear-gradient(145deg, #5bb0ff, #89c9ff);
+      background: #5bb0ff;
     }
 
     .btn-danger {
-      border-color: var(--danger);
-      background: var(--danger-soft);
-      color: #ffd9df;
+      border-color: var(--c-danger);
+      background: var(--c-danger-soft);
+      color: #ffdce1;
     }
 
     .btn-pill {
-      padding-inline: 10px;
+      padding-inline: 8px;
     }
 
-    #btnSave {
-      margin-right: 12px;
-    }
-
-    #btnClear {
-      margin-right: 12px;
-    }
+    /* layout */
 
     .layout {
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 4px;
       min-height: 0;
     }
 
@@ -199,8 +187,8 @@
       flex-direction: column;
       border-radius: var(--radius);
       overflow: hidden;
-      border: 1px solid var(--border);
-      background: radial-gradient(circle at top, rgba(255,255,255,0.04), transparent 55%);
+      border: 1px solid var(--c-border);
+      background: var(--c-surface);
       min-height: 0;
     }
 
@@ -210,23 +198,23 @@
       min-height: 40px;
       display: flex;
       flex-direction: column;
-      background: linear-gradient(to bottom, #101018, #050509);
+      background: var(--c-surface);
       min-height: 0;
     }
 
     .panel-header {
-      padding: 6px 10px;
-      font-size: 11px;
+      padding: 5px 8px;
+      font-size: 10px;
       text-transform: uppercase;
-      letter-spacing: 0.09em;
-      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      color: var(--c-muted);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 1px solid rgba(255,255,255,0.03);
-      background: linear-gradient(to right, rgba(255,255,255,0.02), transparent);
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      background: #090a10;
       user-select: none;
-      gap: 12px;
+      gap: 8px;
       flex-wrap: wrap;
     }
 
@@ -234,35 +222,8 @@
     .panel-header-right {
       display: flex;
       align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .panel-header-label {
-      display: inline-flex;
-      align-items: center;
       gap: 6px;
-    }
-
-    .pill {
-      font-size: 10px;
-      padding: 2px 6px;
-      border-radius: var(--radius);
-      border: 1px solid rgba(255,255,255,0.06);
-      color: var(--text-muted);
-      background: rgba(0,0,0,0.3);
-    }
-
-    .pill-status-live {
-      border-color: var(--accent);
-      color: var(--accent);
-      background: rgba(77,163,255,0.10);
-    }
-
-    .pill-status-stopped {
-      border-color: var(--danger);
-      color: var(--danger);
-      background: rgba(255,79,106,0.16);
+      flex-wrap: wrap;
     }
 
     .search-box {
@@ -273,36 +234,36 @@
     }
 
     .search-input {
-      background: rgba(11,11,18,0.85);
+      background: #05060b;
       border-radius: var(--radius);
-      border: 1px solid rgba(255,255,255,0.06);
-      padding: 4px 8px;
-      font-size: 11px;
-      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 3px 7px;
+      font-size: 10px;
+      color: var(--c-text);
       width: 140px;
     }
 
     .search-input::placeholder {
-      color: rgba(160,160,178,0.7);
+      color: rgba(154,159,179,0.8);
     }
 
     .search-input:focus {
       outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 1px var(--accent-soft);
+      border-color: var(--c-accent);
+      box-shadow: 0 0 0 1px var(--c-accent-soft);
     }
 
     .search-hit {
-      font-size: 10px;
-      color: var(--text-muted);
+      font-size: 9px;
+      color: var(--c-muted);
       min-width: 52px;
       text-align: right;
     }
 
     .code-area {
       flex: 1;
-      padding: 6px 8px 8px;
-      background: radial-gradient(circle at top, #161624 0, #050509 55%);
+      padding: 6px 6px 6px;
+      background: #05060b;
       display: flex;
       min-height: 0;
     }
@@ -312,8 +273,8 @@
       display: flex;
       position: relative;
       border-radius: var(--radius);
-      border: 1px solid rgba(255,255,255,0.06);
-      background: rgba(3,3,8,0.96);
+      border: 1px solid rgba(255,255,255,0.08);
+      background: #05060b;
       overflow: hidden;
       min-height: 0;
     }
@@ -328,28 +289,28 @@
     }
 
     .line-numbers {
-      width: 44px;
-      padding: 9px 4px 9px 8px;
-      border-right: 1px solid rgba(255,255,255,0.05);
+      width: 40px;
+      padding: 7px 3px 7px 6px;
+      border-right: 1px solid rgba(255,255,255,0.06);
       font-family: "SF Mono", ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-      font-size: 12px;
-      line-height: 1.45;
+      font-size: 11px;
+      line-height: 1.4;
       text-align: right;
-      color: rgba(160,160,178,0.72);
-      background: radial-gradient(circle at left, rgba(255,255,255,0.04), transparent 55%);
+      color: rgba(160,160,178,0.7);
+      background: #05060b;
       flex: 0 0 auto;
       pointer-events: none;
     }
 
     .line-number {
-      padding-right: 4px;
-      padding-left: 2px;
+      padding-right: 3px;
+      padding-left: 1px;
       border-radius: var(--radius);
     }
 
     .line-number.active {
-      color: var(--accent);
-      background: rgba(77,163,255,0.10);
+      color: var(--c-accent);
+      background: rgba(77,163,255,0.12);
     }
 
     textarea#code {
@@ -357,11 +318,11 @@
       border: none;
       border-radius: 0;
       background: transparent;
-      color: var(--text);
+      color: var(--c-text);
       font-family: "SF Mono", ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-      font-size: 12px;
-      line-height: 1.45;
-      padding: 9px 10px;
+      font-size: 11px;
+      line-height: 1.4;
+      padding: 7px 8px;
       outline: none;
       resize: none;
       tab-size: 2;
@@ -372,6 +333,46 @@
       overflow: hidden;
       box-sizing: border-box;
     }
+
+    .divider {
+      height: 6px;
+      background: #070812;
+      position: relative;
+      cursor: row-resize;
+      touch-action: none;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      border-bottom: 1px solid rgba(0,0,0,0.7);
+    }
+
+    .divider-hit {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 44px;
+      height: 14px;
+      border-radius: var(--radius);
+      background: #05060b;
+      border: 1px solid rgba(255,255,255,0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+    }
+
+    .divider-dot {
+      width: 3px;
+      height: 3px;
+      border-radius: var(--radius);
+      background: rgba(180,182,198,0.9);
+    }
+
+    .divider.dragging .divider-hit {
+      border-color: var(--c-accent);
+      box-shadow: 0 0 0 1px var(--c-accent-soft);
+    }
+
+    /* preview */
 
     .preview-wrapper {
       flex: 1;
@@ -400,25 +401,14 @@
     .preview-watermark {
       position: absolute;
       right: 8px;
-      bottom: 6px;
-      font-size: 11px;
-      color: rgba(255,255,255,0.38);
+      bottom: 5px;
+      font-size: 10px;
+      color: rgba(255,255,255,0.45);
       letter-spacing: 0.12em;
       text-transform: uppercase;
       z-index: 3;
       pointer-events: none;
       user-select: none;
-    }
-
-    .preview-overlay {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      border-radius: 0;
-      box-shadow:
-        inset 0 0 0 1px rgba(255,255,255,0.02),
-        0 -25px 60px rgba(0,0,0,0.7);
-      z-index: 2;
     }
 
     .fullscreen-exit {
@@ -428,8 +418,8 @@
       width: 22px;
       height: 22px;
       border-radius: var(--radius);
-      border: 1px solid rgba(255,255,255,0.5);
-      background: rgba(0,0,0,0.6);
+      border: 1px solid rgba(255,255,255,0.6);
+      background: rgba(0,0,0,0.65);
       display: none;
       align-items: center;
       justify-content: center;
@@ -446,57 +436,20 @@
       box-sizing: border-box;
     }
 
-    .divider {
-      height: 7px;
-      background: radial-gradient(circle at center, rgba(255,255,255,0.2), transparent 55%);
-      position: relative;
-      cursor: row-resize;
-      touch-action: none;
-    }
-
-    .divider-hit {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      width: 60px;
-      height: 18px;
-      border-radius: var(--radius);
-      background: rgba(7,7,14,0.86);
-      border: 1px solid rgba(255,255,255,0.06);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 2px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
-    }
-
-    .divider-dot {
-      width: 3px;
-      height: 3px;
-      border-radius: var(--radius);
-      background: rgba(198,198,216,0.8);
-    }
-
-    .divider.dragging .divider-hit {
-      border-color: var(--accent);
-      box-shadow:
-        0 0 0 1px var(--accent-soft),
-        0 10px 30px rgba(0,0,0,0.8);
-    }
+    /* full preview mode */
 
     body.full-preview .top-bar,
     body.full-preview #editorPanel,
-    body.full-preview #divider,
-    body.full-preview .panel-header-preview {
+    body.full-preview #divider {
       display: none;
     }
 
-    body.full-preview .panel-preview {
+    body.full-preview #previewPanel {
       position: fixed;
       inset: 0;
       z-index: 10;
       border-radius: 0;
+      border: none;
     }
 
     body.full-preview .preview-wrapper,
@@ -510,26 +463,32 @@
     }
 
     @media (max-width: 768px) {
-      .top-bar {
-        align-items: flex-start;
+      .title-line {
+        font-size: 12px;
+      }
+      .toolbar {
+        justify-content: flex-start;
       }
     }
 
     @media (max-width: 480px) {
       .btn {
-        font-size: 10px;
-        padding-inline: 8px;
+        font-size: 9px;
+        padding-inline: 6px;
       }
       .search-input {
-        width: 110px;
+        width: 118px;
+      }
+      .title-line {
+        font-size: 11px;
       }
     }
 
     @media (prefers-reduced-motion: reduce) {
       * {
-        scroll-behavior: auto !important;
         animation: none !important;
         transition: none !important;
+        scroll-behavior: auto !important;
       }
     }
   </style>
@@ -537,15 +496,11 @@
 <body>
   <div class="app">
     <div class="top-bar">
-      <div class="title-block">
-        <div class="title-main">
-          <span class="dot"></span>
-          <span class="title-name">PocketLab</span>
-          <span class="version">v0.42</span>
-        </div>
-        <div class="title-meta">
-          <span>dev by</span><span class="title-author">Grisha Tsvetkov</span>
-        </div>
+      <div class="title-line">
+        <span class="title-dot"></span>
+        <span class="title-name">POCKETLAB</span>
+        <span class="title-version">v0.43</span>
+        <span class="title-dev">dev by Grisha Tsvetkov</span>
       </div>
       <div class="toolbar">
         <div class="toolbar-group">
@@ -556,12 +511,17 @@
           <button class="btn btn-pill" id="btnClear" type="button">CLEAR</button>
           <button class="btn btn-pill" id="btnDemo" type="button">DEMO</button>
         </div>
+        <div class="toolbar-group">
+          <button class="btn btn-primary btn-pill" id="btnRunToggle" type="button">RUN</button>
+          <button class="btn btn-pill" id="btnFull" type="button">FULL</button>
+          <button class="btn btn-pill" id="btnPopout" type="button">OPEN PAGE</button>
+        </div>
       </div>
     </div>
 
-    <div class="layout" id="layout">
+    <div class="layout">
       <div class="split" id="split">
-        <section class="panel panel-editor" id="editorPanel">
+        <section class="panel" id="editorPanel">
           <header class="panel-header">
             <div class="panel-header-left">
               <div class="search-box">
@@ -569,19 +529,14 @@
                   id="searchInput"
                   class="search-input"
                   type="search"
-                  placeholder="find in code"
+                  placeholder="search in code"
                   autocomplete="off"
                 >
-                <button class="btn btn-pill" id="btnFind" type="button">FIND</button>
+                <button class="btn btn-pill" id="btnFind" type="button">SEARCH</button>
                 <div class="search-hit" id="searchHit"></div>
               </div>
             </div>
-            <div class="panel-header-right">
-              <div class="panel-header-label">
-                <span>INPUT</span>
-                <span class="pill">HTML FRAGMENT OR FULL PAGE</span>
-              </div>
-            </div>
+            <div class="panel-header-right"></div>
           </header>
           <div class="code-area">
             <div class="code-shell">
@@ -601,21 +556,7 @@
           </div>
         </div>
 
-        <section class="panel panel-preview" id="previewPanel">
-          <header class="panel-header panel-header-preview">
-            <div class="panel-header-left">
-              <button class="btn btn-primary btn-pill" id="btnRun" type="button">RUN</button>
-              <button class="btn btn-danger btn-pill" id="btnStop" type="button">STOP</button>
-            </div>
-            <div class="panel-header-right">
-              <div class="panel-header-label">
-                <span>PREVIEW</span>
-                <span class="pill pill-status-live" id="previewStatus">LIVE</span>
-              </div>
-              <button class="btn btn-pill" id="btnView" type="button">FULL</button>
-              <button class="btn btn-pill" id="btnPopout" type="button">OPEN PAGE</button>
-            </div>
-          </header>
+        <section class="panel" id="previewPanel">
           <div class="preview-wrapper">
             <div class="preview-inner">
               <iframe
@@ -624,7 +565,6 @@
                 sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-downloads allow-modals allow-popups"
                 allow="camera; microphone; autoplay; fullscreen"
               ></iframe>
-              <div class="preview-overlay"></div>
               <div class="preview-watermark">&lt;3</div>
               <button class="fullscreen-exit" id="btnExitFull" type="button">
                 <div class="fullscreen-exit-icon"></div>
@@ -636,24 +576,27 @@
     </div>
   </div>
 
-  <input type="file" id="fileInput" accept=".html,.htm,.txt,.svg,.xml,.json,text/html,text/plain" style="display:none">
+  <input type="file" id="fileInput"
+         accept=".html,.htm,.txt,.svg,.xml,.json,text/html,text/plain"
+         style="display:none">
 
   <script>
     (function () {
       const codeEl = document.getElementById("code");
       const previewEl = document.getElementById("preview");
-      const btnRun = document.getElementById("btnRun");
-      const btnStop = document.getElementById("btnStop");
+
+      const btnRunToggle = document.getElementById("btnRunToggle");
+      const btnFull = document.getElementById("btnFull");
       const btnClear = document.getElementById("btnClear");
       const btnCopy = document.getElementById("btnCopy");
       const btnPaste = document.getElementById("btnPaste");
-      const btnView = document.getElementById("btnView");
       const btnDemo = document.getElementById("btnDemo");
       const btnOpen = document.getElementById("btnOpen");
       const btnSave = document.getElementById("btnSave");
       const btnFind = document.getElementById("btnFind");
       const btnPopout = document.getElementById("btnPopout");
       const btnExitFull = document.getElementById("btnExitFull");
+
       const divider = document.getElementById("divider");
       const editorPanel = document.getElementById("editorPanel");
       const previewPanel = document.getElementById("previewPanel");
@@ -662,7 +605,6 @@
       const split = document.getElementById("split");
       const lineNumbersEl = document.getElementById("lineNumbers");
       const fileInput = document.getElementById("fileInput");
-      const previewStatus = document.getElementById("previewStatus");
       const codeScroll = document.getElementById("codeScroll");
 
       let isDragging = false;
@@ -686,8 +628,8 @@
         "<!doctype html>",
         "<html>",
         "<head>",
-        '  <meta charset="utf-8">',
-        '  <meta name="viewport" content="width=device-width, initial-scale=1">',
+        '  <meta charset=\"utf-8\">',
+        '  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">',
         "  <title>PocketLab example</title>",
         "  <style>",
         "    * { box-sizing: border-box; }",
@@ -696,7 +638,7 @@
         "      padding: 0;",
         "      height: 100%;",
         "      width: 100%;",
-        "      background: radial-gradient(circle at top, #161625, #020204);",
+        "      background: #020204;",
         "      color: #f5f5f7;",
         "      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;",
         "    }",
@@ -748,16 +690,13 @@
         "  <div class=\"card\" id=\"card\">",
         "    <div class=\"label\">tap or click</div>",
         "    <div class=\"value\" id=\"count\">0</div>",
-        "    <div class=\"hint\">",
-        "      <span>works with mouse and touch</span>",
-        "    </div>",
+        "    <div class=\"hint\"><span>works with mouse and touch</span></div>",
         "  </div>",
         "  <script>",
         "    (function () {",
         "      var count = 0;",
         "      var card = document.getElementById('card');",
         "      var countEl = document.getElementById('count');",
-        "",
         "      function increment() {",
         "        count += 1;",
         "        countEl.textContent = count;",
@@ -767,12 +706,10 @@
         "          card.classList.remove('active');",
         "        }, 130);",
         "      }",
-        "",
         "      card.addEventListener('click', function (event) {",
         "        event.preventDefault();",
         "        increment();",
         "      });",
-        "",
         "      card.addEventListener('touchend', function (event) {",
         "        event.preventDefault();",
         "        increment();",
@@ -797,8 +734,8 @@
           "<!doctype html>",
           "<html>",
           "<head>",
-          '  <meta charset="utf-8">',
-          '  <meta name="viewport" content="width=device-width, initial-scale=1">',
+          '  <meta charset=\"utf-8\">',
+          '  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">',
           "  <title>PocketLab fragment</title>",
           "</head>",
           "<body>",
@@ -808,16 +745,16 @@
         ].join("\n");
       }
 
-      function updatePreviewStatus() {
-        if (!previewStatus) return;
+      function updateRunButtonState() {
+        if (!btnRunToggle) return;
         if (isPreviewLive) {
-          previewStatus.textContent = "LIVE";
-          previewStatus.classList.remove("pill-status-stopped");
-          previewStatus.classList.add("pill-status-live");
+          btnRunToggle.textContent = "STOP";
+          btnRunToggle.classList.remove("btn-primary");
+          btnRunToggle.classList.add("btn-danger");
         } else {
-          previewStatus.textContent = "STOPPED";
-          previewStatus.classList.remove("pill-status-live");
-          previewStatus.classList.add("pill-status-stopped");
+          btnRunToggle.textContent = "RUN";
+          btnRunToggle.classList.remove("btn-danger");
+          btnRunToggle.classList.add("btn-primary");
         }
       }
 
@@ -826,7 +763,7 @@
           "<!doctype html>",
           "<html>",
           "<head>",
-          '  <meta charset="utf-8">',
+          '  <meta charset=\"utf-8\">',
           "  <title>PocketLab stopped</title>",
           "  <style>",
           "    html, body {",
@@ -843,14 +780,14 @@
         ].join("\n");
         previewEl.srcdoc = blank;
         isPreviewLive = false;
-        updatePreviewStatus();
+        updateRunButtonState();
       }
 
       function getCurrentDocumentHtml() {
         const raw = codeEl.value || "";
         const trimmed = raw.trim();
         if (!trimmed) return "";
-        return looksLikeFullDocument(trimmed) ? raw : wrapFragment(raw);
+        return looksLikeFullDocument(trimmed) ? raw : wrapFragment(trimmed);
       }
 
       function runPreview() {
@@ -861,7 +798,7 @@
         }
         previewEl.srcdoc = html;
         isPreviewLive = true;
-        updatePreviewStatus();
+        updateRunButtonState();
       }
 
       function clearCode() {
@@ -929,9 +866,7 @@
       }
 
       function toggleFullPreview() {
-        const isFull = document.body.classList.toggle("full-preview");
-        if (!isFull) {
-        }
+        document.body.classList.toggle("full-preview");
       }
 
       function exitFullPreview() {
@@ -993,21 +928,23 @@
 
         const before = code.slice(0, start);
         const lineBefore = before.split("\n").length;
-        searchHit.textContent = (lineBefore > 0 ? "LINE " + lineBefore + " · " : "") +
+        searchHit.textContent =
+          (lineBefore > 0 ? "LINE " + lineBefore + " · " : "") +
           (Math.min(count, Math.floor((start / Math.max(code.length, 1)) * count) + 1)) +
           " / " + count;
 
         try {
           const charCountBefore = before.length;
           const fraction = Math.min(1, Math.max(0, charCountBefore / Math.max(code.length, 1)));
-          codeScroll.scrollTop = (codeScroll.scrollHeight - codeScroll.clientHeight) * fraction;
+          codeScroll.scrollTop =
+            (codeScroll.scrollHeight - codeScroll.clientHeight) * fraction;
         } catch (e) {}
         updateActiveLineHighlight();
       }
 
       function setInitialSplitHeight() {
         const rect = split.getBoundingClientRect();
-        const initialEditorRatio = 0.54;
+        const initialEditorRatio = 0.55;
         const editorHeight = rect.height * initialEditorRatio;
         editorPanel.style.flex = "0 0 " + editorHeight + "px";
         previewPanel.style.flex = "1 1 auto";
@@ -1138,9 +1075,10 @@
       function saveCode() {
         const text = codeEl.value || "";
         if (!text) return;
+
         const now = new Date();
-        const pad = function (n) { return n.toString().padStart(2, "0"); };
-        const name = "p.lab_sketch_" +
+        const pad = n => n.toString().padStart(2, "0");
+        const defaultName = "p.lab_sketch_" +
           pad(now.getDate()) +
           pad(now.getMonth() + 1) +
           String(now.getFullYear()).slice(-2) +
@@ -1149,11 +1087,15 @@
           pad(now.getMinutes()) +
           ".html";
 
+        const inputName = window.prompt("File name:", defaultName);
+        if (inputName === null) return;
+        const finalName = inputName.trim() || defaultName;
+
         const blob = new Blob([text], { type: "text/html" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = name;
+        a.download = finalName;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -1207,33 +1149,26 @@
         window.open(url, "_blank");
       }
 
-      btnRun.addEventListener("click", function () {
-        runPreview();
+      /* handlers */
+
+      btnRunToggle.addEventListener("click", function () {
+        if (isPreviewLive) {
+          stopPreview();
+        } else {
+          runPreview();
+        }
       });
 
-      btnStop.addEventListener("click", function () {
-        stopPreview();
-      });
-
-      btnClear.addEventListener("click", function () {
-        clearCode();
-      });
-
-      btnCopy.addEventListener("click", function () {
-        copyCode();
-      });
-
-      btnPaste.addEventListener("click", function () {
-        pasteCode();
-      });
-
-      btnView.addEventListener("click", function () {
-        toggleFullPreview();
-      });
-
-      btnFind.addEventListener("click", function () {
-        performSearch();
-      });
+      btnClear.addEventListener("click", clearCode);
+      btnCopy.addEventListener("click", copyCode);
+      btnPaste.addEventListener("click", pasteCode);
+      btnFull.addEventListener("click", toggleFullPreview);
+      btnFind.addEventListener("click", performSearch);
+      btnOpen.addEventListener("click", openFile);
+      btnSave.addEventListener("click", saveCode);
+      btnDemo.addEventListener("click", loadRandomDemo);
+      btnPopout.addEventListener("click", openPreviewInNewTab);
+      btnExitFull.addEventListener("click", exitFullPreview);
 
       searchInput.addEventListener("keydown", function (event) {
         if (event.key === "Enter") {
@@ -1256,41 +1191,18 @@
           }
           return;
         }
-
         if (event.key === "Escape") {
           stopPreview();
         }
       });
 
-      btnOpen.addEventListener("click", function () {
-        openFile();
-      });
-
-      btnSave.addEventListener("click", function () {
-        saveCode();
-      });
-
-      btnDemo.addEventListener("click", function () {
-        loadRandomDemo();
-      });
-
-      btnPopout.addEventListener("click", function () {
-        openPreviewInNewTab();
-      });
-
-      btnExitFull.addEventListener("click", function () {
-        exitFullPreview();
-      });
-
-      window.addEventListener("resize", function () {
-        autoResizeCode();
-      });
+      window.addEventListener("resize", autoResizeCode);
 
       function init() {
         setInitialSplitHeight();
         loadRandomDemo();
-        updatePreviewStatus();
         autoResizeCode();
+        updateRunButtonState();
       }
 
       if (document.readyState === "loading") {
