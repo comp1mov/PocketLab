@@ -4,6 +4,11 @@
     <meta charset="utf-8">
     <title>PocketLab HTML</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <!-- Roboto -->
+    <link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap">
+
     <style>
       html, body {
         margin: 0;
@@ -11,7 +16,7 @@
         height: 100%;
         background: #050505;
         color: #f5f5f5;
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        font-family: "Roboto", system-ui, -apple-system, sans-serif;
       }
       #app {
         height: 100vh;
@@ -26,7 +31,13 @@
         border-bottom: 1px solid #333;
         background: #0a0a0a;
         font-size: 13px;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+      #toolbar button,
+      #toolbar span {
+        flex: 0 0 auto;
       }
       #toolbar button {
         padding: 4px 10px;
@@ -41,15 +52,17 @@
         opacity: 0.7;
         font-size: 11px;
       }
+
       #main {
         flex: 1;
         display: flex;
         min-height: 0;
       }
+
       #editor-wrap {
         width: 45%;
-        min-width: 260px;
-        max-width: 520px;
+        min-width: 220px;
+        max-width: 60%;
         border-right: 1px solid #333;
         display: flex;
         flex-direction: column;
@@ -59,25 +72,55 @@
         flex: 1;
         padding: 6px;
       }
-      #editor textarea {
-        width: 100%;
+      #code-container {
         height: 100%;
-        box-sizing: border-box;
-        resize: none;
-        border-radius: 4px;
-        border: 1px solid #444;
-        background: #111;
-        color: #eee;
+        display: flex;
         font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace;
         font-size: 11px;
         line-height: 1.4;
+      }
+      #line-numbers {
+        width: 3.2em;
+        padding: 6px 4px;
+        box-sizing: border-box;
+        text-align: right;
+        background: #050505;
+        color: #555;
+        border: 1px solid #333;
+        border-right: none;
+        border-radius: 4px 0 0 4px;
+        overflow: hidden;
+      }
+      #line-numbers pre {
+        margin: 0;
+        font: inherit;
+      }
+      #editor textarea {
+        flex: 1;
+        box-sizing: border-box;
+        resize: none;
+        border-radius: 0 4px 4px 0;
+        border: 1px solid #444;
+        border-left: none;
+        background: #000;
+        color: #eee;
+        font: inherit;
         padding: 6px;
         white-space: pre;
+        outline: none;
       }
+
+      #divider {
+        width: 4px;
+        background: #181818;
+        cursor: col-resize;
+      }
+
       #preview-wrap {
         flex: 1;
         position: relative;
         background: #000;
+        overflow: hidden;
       }
       #preview-frame {
         width: 100%;
@@ -96,29 +139,42 @@
         pointer-events: none;
       }
 
-      /* режимы раскладки */
-      #app.mode-split #editor-wrap {
-        display: flex;
+      /* ripple */
+      .ripple {
+        position: absolute;
+        border-radius: 999px;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        background: rgba(255,255,255,0.18);
+        width: 0;
+        height: 0;
+        opacity: 0.7;
+        animation: ripple 0.6s ease-out;
       }
-      #app.mode-split #preview-wrap {
-        display: block;
+      @keyframes ripple {
+        to {
+          width: 220px;
+          height: 220px;
+          opacity: 0;
+        }
       }
 
-      #app.mode-editor #editor-wrap {
+      /* режимы раскладки */
+      #app.mode-split #editor-wrap   { display: flex; }
+      #app.mode-split #divider       { display: block; }
+      #app.mode-split #preview-wrap  { display: block; }
+
+      #app.mode-editor #editor-wrap  {
         display: flex;
         width: 100%;
         max-width: none;
       }
-      #app.mode-editor #preview-wrap {
-        display: none;
-      }
+      #app.mode-editor #divider      { display: none; }
+      #app.mode-editor #preview-wrap { display: none; }
 
-      #app.mode-viewer #editor-wrap {
-        display: none;
-      }
-      #app.mode-viewer #preview-wrap {
-        display: block;
-      }
+      #app.mode-viewer #editor-wrap  { display: none; }
+      #app.mode-viewer #divider      { display: none; }
+      #app.mode-viewer #preview-wrap { display: block; }
 
       @media (max-width: 800px) {
         #main {
@@ -131,10 +187,14 @@
           border-right: none;
           border-bottom: 1px solid #333;
         }
+        #divider {
+          width: 100%;
+          height: 6px;
+          cursor: row-resize;
+        }
         #preview-wrap {
           height: 60%;
         }
-
         #app.mode-editor #editor-wrap {
           height: calc(100vh - 32px);
         }
@@ -150,8 +210,7 @@
         <button id="paste-btn">paste</button>
         <button id="copy-btn">copy</button>
         <button id="clear-btn">clear</button>
-        <button id="editor-btn">editor</button>
-        <button id="viewer-btn">viewer</button>
+        <button id="view-btn">view</button>
         <button id="run-btn">run</button>
         <button id="stop-btn">stop</button>
         <span>paste full HTML or pure JS, run as-is</span>
@@ -159,9 +218,17 @@
       <div id="main">
         <div id="editor-wrap">
           <div id="editor">
-            <textarea id="code"></textarea>
+            <div id="code-container">
+              <div id="line-numbers">
+                <pre id="line-numbers-pre"></pre>
+              </div>
+              <textarea id="code"></textarea>
+            </div>
           </div>
         </div>
+
+        <div id="divider"></div>
+
         <div id="preview-wrap">
           <iframe
             id="preview-frame"
@@ -174,25 +241,44 @@
 
     <script>
       (function () {
-        const STORAGE_KEY = "pocketlab-html-code-v2";
+        const STORAGE_KEY = "pocketlab-html-code-v3";
 
         const appEl      = document.getElementById("app");
+        const mainEl     = document.getElementById("main");
         const codeEl     = document.getElementById("code");
         const frame      = document.getElementById("preview-frame");
+        const editorWrap = document.getElementById("editor-wrap");
+        const previewWrap = document.getElementById("preview-wrap");
+        const dividerEl  = document.getElementById("divider");
+        const lineNumsEl = document.getElementById("line-numbers");
+        const lineNumsPre = document.getElementById("line-numbers-pre");
 
         const pasteBtn   = document.getElementById("paste-btn");
         const copyBtn    = document.getElementById("copy-btn");
         const clearBtn   = document.getElementById("clear-btn");
-        const editorBtn  = document.getElementById("editor-btn");
-        const viewerBtn  = document.getElementById("viewer-btn");
+        const viewBtn    = document.getElementById("view-btn");
         const runBtn     = document.getElementById("run-btn");
         const stopBtn    = document.getElementById("stop-btn");
+
+        const viewModes = ["mode-split", "mode-viewer", "mode-editor"];
+        let viewModeIndex = 0;
+
+        function updateLineNumbers() {
+          const value = codeEl.value || "";
+          const lines = value.split("\n").length || 1;
+          let out = "";
+          for (let i = 1; i <= lines; i++) {
+            out += i + "\n";
+          }
+          lineNumsPre.textContent = out;
+        }
 
         function loadStored() {
           try {
             const saved = localStorage.getItem(STORAGE_KEY);
             if (saved && saved.trim().length > 0) {
               codeEl.value = saved;
+              updateLineNumbers();
               return;
             }
           } catch (e) {}
@@ -233,14 +319,15 @@ function loop() {
   requestAnimationFrame(loop);
 }
 loop();`;
+          updateLineNumbers();
         }
 
         function isHtmlLike(src) {
           return /<!doctype/i.test(src)
-              || /<html[\s>]/i.test(src)
-              || /<body[\s>]/i.test(src)
-              || /<head[\s>]/i.test(src)
-              || /<canvas[\s>]/i.test(src);
+              || /<html[\\s>]/i.test(src)
+              || /<body[\\s>]/i.test(src)
+              || /<head[\\s>]/i.test(src)
+              || /<canvas[\\s>]/i.test(src);
         }
 
         function wrapJsAsHtml(js) {
@@ -275,11 +362,11 @@ loop();`;
 '    <canvas id="canvas"></canvas>',
 '    <script>',
 safeJs,
-'    <\/script>',
+'    <\\/script>',
 '  </body>',
 '</html>'
           ];
-          return parts.join('\n');
+          return parts.join("\\n");
         }
 
         function run() {
@@ -297,11 +384,14 @@ safeJs,
         }
 
         function stop() {
-          frame.srcdoc = "<!doctype html><html><head><meta charset='utf-8'><title>stopped</title></head><body style='margin:0;background:#000;'></body></html>";
+          frame.srcdoc =
+            "<!doctype html><html><head><meta charset='utf-8'><title>stopped</title></head>" +
+            "<body style='margin:0;background:#000;'></body></html>";
         }
 
         function clearCode() {
           codeEl.value = "";
+          updateLineNumbers();
           try {
             localStorage.removeItem(STORAGE_KEY);
           } catch (e) {}
@@ -310,6 +400,8 @@ safeJs,
         function setMode(mode) {
           appEl.classList.remove("mode-split", "mode-editor", "mode-viewer");
           appEl.classList.add(mode);
+          const idx = viewModes.indexOf(mode);
+          viewModeIndex = idx >= 0 ? idx : 0;
         }
 
         // clipboard helpers
@@ -322,6 +414,7 @@ safeJs,
             const text = await navigator.clipboard.readText();
             if (text) {
               codeEl.value = text;
+              updateLineNumbers();
             }
           } catch (e) {
             alert("cannot read from clipboard");
@@ -340,6 +433,64 @@ safeJs,
           }
         }
 
+        // resize divider
+        let isDragging = false;
+        let dragPointerId = null;
+
+        dividerEl.addEventListener("pointerdown", (e) => {
+          isDragging = true;
+          dragPointerId = e.pointerId;
+          dividerEl.setPointerCapture(dragPointerId);
+        });
+
+        function handleDrag(e) {
+          if (!isDragging) return;
+          const rect = mainEl.getBoundingClientRect();
+          const isMobile = window.matchMedia("(max-width: 800px)").matches;
+          if (isMobile) {
+            const offsetY = e.clientY - rect.top;
+            const ratio = Math.min(0.8, Math.max(0.2, offsetY / rect.height));
+            editorWrap.style.height = (ratio * 100) + "%";
+            editorWrap.style.width = "100%";
+          } else {
+            const offsetX = e.clientX - rect.left;
+            const ratio = Math.min(0.8, Math.max(0.2, offsetX / rect.width));
+            editorWrap.style.width = (ratio * 100) + "%";
+            editorWrap.style.height = "100%";
+          }
+        }
+
+        function endDrag() {
+          if (!isDragging) return;
+          isDragging = false;
+          if (dragPointerId != null) {
+            try { dividerEl.releasePointerCapture(dragPointerId); } catch (e) {}
+          }
+          dragPointerId = null;
+        }
+
+        dividerEl.addEventListener("pointermove", handleDrag);
+        dividerEl.addEventListener("pointerup", endDrag);
+        dividerEl.addEventListener("pointercancel", endDrag);
+
+        // scroll sync line numbers
+        codeEl.addEventListener("scroll", () => {
+          lineNumsEl.scrollTop = codeEl.scrollTop;
+        });
+
+        // ripple on preview
+        previewWrap.addEventListener("pointerdown", (e) => {
+          const rect = previewWrap.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          const ripple = document.createElement("span");
+          ripple.className = "ripple";
+          ripple.style.left = x + "px";
+          ripple.style.top = y + "px";
+          previewWrap.appendChild(ripple);
+          setTimeout(() => ripple.remove(), 650);
+        });
+
         // events
         pasteBtn.addEventListener("click", () => {
           pasteFromClipboard();
@@ -353,14 +504,9 @@ safeJs,
           clearCode();
         });
 
-        editorBtn.addEventListener("click", () => {
-          const current = appEl.classList.contains("mode-editor");
-          setMode(current ? "mode-split" : "mode-editor");
-        });
-
-        viewerBtn.addEventListener("click", () => {
-          const current = appEl.classList.contains("mode-viewer");
-          setMode(current ? "mode-split" : "mode-viewer");
+        viewBtn.addEventListener("click", () => {
+          const nextIndex = (viewModeIndex + 1) % viewModes.length;
+          setMode(viewModes[nextIndex]);
         });
 
         runBtn.addEventListener("click", () => {
@@ -371,9 +517,12 @@ safeJs,
           stop();
         });
 
+        codeEl.addEventListener("input", updateLineNumbers);
+
         // init
         loadStored();
-        // при желании можно сразу запускать дефолтный пример:
+        setMode("mode-split");
+        // можно авто-ран включить, если нужно:
         // run();
       })();
     </script>
