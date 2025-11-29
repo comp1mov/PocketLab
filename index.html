@@ -1,1 +1,962 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>PocketLab</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #050509;
+      --bg-elevated: #101018;
+      --border: #262637;
+      --accent: #4da3ff;
+      --accent-soft: rgba(77, 163, 255, 0.16);
+      --text: #f5f5f7;
+      --text-muted: #a0a0b2;
+      --btn-bg: #181824;
+      --btn-bg-hover: #202033;
+      --btn-border: #2b2b3d;
+      --danger: #ff4f6a;
+      --danger-soft: rgba(255, 79, 106, 0.16);
+    }
 
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      background: radial-gradient(circle at top, #181826 0, #050509 55%);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+                   "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .app {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 10px 10px 14px;
+      gap: 8px;
+    }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 4px 2px;
+      user-select: none;
+    }
+
+    .title {
+      font-size: 14px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+
+    .title span.version {
+      font-size: 11px;
+      padding: 1px 6px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(0,0,0,0.35);
+    }
+
+    .title span.dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 4px rgba(77,163,255,0.28);
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      justify-content: flex-end;
+    }
+
+    .btn {
+      border: 1px solid var(--btn-border);
+      background: var(--btn-bg);
+      color: var(--text);
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      min-height: 28px;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      outline: none;
+      white-space: nowrap;
+    }
+
+    .btn span.icon {
+      font-size: 11px;
+      opacity: 0.9;
+    }
+
+    .btn:hover {
+      background: var(--btn-bg-hover);
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+    }
+
+    .btn-primary {
+      border-color: var(--accent);
+      background: linear-gradient(145deg, #4da3ff, #78c0ff);
+      color: #02030b;
+      font-weight: 500;
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(145deg, #5bb0ff, #89c9ff);
+    }
+
+    .btn-danger {
+      border-color: var(--danger);
+      background: var(--danger-soft);
+      color: #ffd9df;
+    }
+
+    .btn-pill {
+      padding-inline: 8px;
+    }
+
+    .layout {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-height: 0;
+    }
+
+    .split {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: radial-gradient(circle at top, rgba(255,255,255,0.04), transparent 55%);
+    }
+
+    .panel {
+      flex: 1;
+      position: relative;
+      min-height: 40px;
+      display: flex;
+      flex-direction: column;
+      background: linear-gradient(to bottom, #101018, #050509);
+    }
+
+    .panel-header {
+      padding: 6px 10px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      background: linear-gradient(to right, rgba(255,255,255,0.02), transparent);
+      user-select: none;
+    }
+
+    .panel-header-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pill {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.06);
+      color: var(--text-muted);
+      background: rgba(0,0,0,0.3);
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .search-input {
+      background: rgba(11,11,18,0.85);
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.06);
+      padding: 4px 8px;
+      font-size: 11px;
+      color: var(--text);
+      width: 120px;
+    }
+
+    .search-input::placeholder {
+      color: rgba(160,160,178,0.7);
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent-soft);
+    }
+
+    .search-hit {
+      font-size: 10px;
+      color: var(--text-muted);
+      min-width: 52px;
+      text-align: right;
+    }
+
+    .code-area {
+      flex: 1;
+      padding: 6px 8px 8px;
+      background: radial-gradient(circle at top, #161624 0, #050509 55%);
+    }
+
+    textarea#code {
+      width: 100%;
+      height: 100%;
+      resize: none;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(3,3,8,0.96);
+      color: var(--text);
+      font-family: "SF Mono", ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 12px;
+      line-height: 1.45;
+      padding: 9px 10px;
+      outline: none;
+      tab-size: 2;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    textarea#code:focus {
+      border-color: var(--accent);
+      box-shadow:
+        0 0 0 1px var(--accent-soft),
+        0 10px 25px rgba(0,0,0,0.6);
+    }
+
+    .preview-wrapper {
+      flex: 1;
+      position: relative;
+      background: #000;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .preview-inner {
+      flex: 1;
+      position: relative;
+      background: #000;
+    }
+
+    iframe#preview {
+      border: none;
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: #000;
+    }
+
+    .preview-watermark {
+      position: absolute;
+      right: 8px;
+      bottom: 6px;
+      font-size: 11px;
+      color: rgba(255,255,255,0.38);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      z-index: 3;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .preview-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      border-radius: 0;
+      box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,0.02),
+        0 -25px 60px rgba(0,0,0,0.7);
+      z-index: 2;
+    }
+
+    .divider {
+      height: 7px;
+      background: radial-gradient(circle at center, rgba(255,255,255,0.2), transparent 55%);
+      position: relative;
+      cursor: row-resize;
+      touch-action: none;
+    }
+
+    .divider-hit {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 60px;
+      height: 18px;
+      border-radius: 999px;
+      background: rgba(7,7,14,0.86);
+      border: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    }
+
+    .divider-dot {
+      width: 3px;
+      height: 3px;
+      border-radius: 999px;
+      background: rgba(198,198,216,0.8);
+    }
+
+    .divider.dragging .divider-hit {
+      border-color: var(--accent);
+      box-shadow:
+        0 0 0 1px var(--accent-soft),
+        0 10px 30px rgba(0,0,0,0.8);
+    }
+
+    .layout.preview-only .panel-editor {
+      display: none;
+    }
+
+    .layout.preview-only .divider {
+      display: none;
+    }
+
+    .layout.preview-only .panel-preview {
+      flex: 1 1 auto;
+    }
+
+    .layout.preview-only .btn-view-label-split {
+      display: inline;
+    }
+
+    .layout.preview-only .btn-view-label-preview {
+      display: none;
+    }
+
+    .btn-view-label-split {
+      display: none;
+    }
+
+    .btn-view-label-preview {
+      display: inline;
+    }
+
+    @media (min-width: 768px) {
+      .split {
+        flex-direction: column;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .toolbar {
+        justify-content: flex-start;
+      }
+      .btn {
+        font-size: 11px;
+        padding-inline: 8px;
+      }
+      .search-input {
+        width: 96px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        scroll-behavior: auto !important;
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="top-bar">
+      <div class="title">
+        <span class="dot"></span>
+        <span>PocketLab</span>
+        <span class="version">v0.34</span>
+      </div>
+      <div class="toolbar">
+        <button class="btn btn-pill" id="btnPaste" type="button">
+          <span class="icon">📥</span><span>paste</span>
+        </button>
+        <button class="btn btn-pill" id="btnCopy" type="button">
+          <span class="icon">📋</span><span>copy</span>
+        </button>
+        <button class="btn btn-pill" id="btnClear" type="button">
+          <span class="icon">✕</span><span>clear</span>
+        </button>
+        <button class="btn btn-pill" id="btnView" type="button">
+          <span class="icon">▢</span>
+          <span class="btn-view-label-preview">view: preview</span>
+          <span class="btn-view-label-split">view: split</span>
+        </button>
+        <button class="btn btn-danger btn-pill" id="btnStop" type="button">
+          <span class="icon">■</span><span>stop</span>
+        </button>
+        <button class="btn btn-primary btn-pill" id="btnRun" type="button">
+          <span class="icon">▶</span><span>run</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="layout" id="layout">
+      <div class="split" id="split">
+        <section class="panel panel-editor" id="editorPanel">
+          <header class="panel-header">
+            <div class="panel-header-label">
+              <span>input</span>
+              <span class="pill">html fragment or full page</span>
+            </div>
+            <div class="search-box">
+              <input
+                id="searchInput"
+                class="search-input"
+                type="search"
+                placeholder="find in code"
+                autocomplete="off"
+              >
+              <button class="btn btn-pill" id="btnFind" type="button">
+                <span class="icon">🔍</span><span>find</span>
+              </button>
+              <div class="search-hit" id="searchHit"></div>
+            </div>
+          </header>
+          <div class="code-area">
+            <textarea id="code" spellcheck="false"></textarea>
+          </div>
+        </section>
+
+        <div class="divider" id="divider">
+          <div class="divider-hit">
+            <div class="divider-dot"></div>
+            <div class="divider-dot"></div>
+            <div class="divider-dot"></div>
+          </div>
+        </div>
+
+        <section class="panel panel-preview" id="previewPanel">
+          <header class="panel-header">
+            <div class="panel-header-label">
+              <span>preview</span>
+              <span class="pill">sandboxed iframe</span>
+            </div>
+          </header>
+          <div class="preview-wrapper">
+            <div class="preview-inner">
+              <iframe id="preview" title="PocketLab preview" sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-downloads allow-modals allow-popups"></iframe>
+              <div class="preview-overlay"></div>
+              <div class="preview-watermark">&lt;3</div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const codeEl = document.getElementById("code");
+      const previewEl = document.getElementById("preview");
+      const btnRun = document.getElementById("btnRun");
+      const btnStop = document.getElementById("btnStop");
+      const btnClear = document.getElementById("btnClear");
+      const btnCopy = document.getElementById("btnCopy");
+      const btnPaste = document.getElementById("btnPaste");
+      const btnView = document.getElementById("btnView");
+      const layout = document.getElementById("layout");
+      const divider = document.getElementById("divider");
+      const editorPanel = document.getElementById("editorPanel");
+      const previewPanel = document.getElementById("previewPanel");
+      const searchInput = document.getElementById("searchInput");
+      const btnFind = document.getElementById("btnFind");
+      const searchHit = document.getElementById("searchHit");
+      const split = document.getElementById("split");
+
+      let isPreviewOnly = false;
+      let isDragging = false;
+      let dragStartY = 0;
+      let editorStartHeight = 0;
+
+      let lastSearchTerm = "";
+      let lastSearchIndex = -1;
+      let lastSearchCount = 0;
+
+      const defaultExample = [
+        "<!doctype html>",
+        "<html>",
+        "<head>",
+        '  <meta charset="utf-8">',
+        '  <meta name="viewport" content="width=device-width, initial-scale=1">',
+        "  <title>PocketLab example</title>",
+        "  <style>",
+        "    * { box-sizing: border-box; }",
+        "    html, body {",
+        "      margin: 0;",
+        "      padding: 0;",
+        "      height: 100%;",
+        "      width: 100%;",
+        "      background: radial-gradient(circle at top, #161625, #020204);",
+        "      color: #f5f5f7;",
+        "      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;",
+        "    }",
+        "    body {",
+        "      display: flex;",
+        "      align-items: center;",
+        "      justify-content: center;",
+        "    }",
+        "    .card {",
+        "      border-radius: 18px;",
+        "      border: 1px solid rgba(255,255,255,0.12);",
+        "      padding: 18px 18px 16px;",
+        "      background: rgba(5,5,18,0.86);",
+        "      box-shadow: 0 18px 45px rgba(0,0,0,0.7);",
+        "      text-align: center;",
+        "      min-width: 240px;",
+        "      max-width: 320px;",
+        "      cursor: pointer;",
+        "      -webkit-tap-highlight-color: transparent;",
+        "      transition: transform 160ms ease-out, box-shadow 160ms ease-out, border-color 160ms ease-out;",
+        "    }",
+        "    .card.active {",
+        "      transform: translateY(-4px) scale(1.02);",
+        "      box-shadow: 0 30px 80px rgba(0,0,0,0.9);",
+        "      border-color: #4da3ff;",
+        "    }",
+        "    .label {",
+        "      font-size: 11px;",
+        "      text-transform: uppercase;",
+        "      letter-spacing: 0.16em;",
+        "      color: rgba(245,245,247,0.55);",
+        "      margin-bottom: 4px;",
+        "    }",
+        "    .value {",
+        "      font-size: 32px;",
+        "      font-variant-numeric: tabular-nums;",
+        "      margin-bottom: 6px;",
+        "    }",
+        "    .hint {",
+        "      font-size: 12px;",
+        "      color: rgba(245,245,247,0.7);",
+        "    }",
+        "    .hint span {",
+        "      opacity: 0.85;",
+        "    }",
+        "  </style>",
+        "</head>",
+        "<body>",
+        "  <div class=\"card\" id=\"card\">",
+        "    <div class=\"label\">tap or click</div>",
+        "    <div class=\"value\" id=\"count\">0</div>",
+        "    <div class=\"hint\">",
+        "      <span>works with mouse and touch</span>",
+        "    </div>",
+        "  </div>",
+        "  <script>",
+        "    (function () {",
+        "      var count = 0;",
+        "      var card = document.getElementById('card');",
+        "      var countEl = document.getElementById('count');",
+        "",
+        "      function increment() {",
+        "        count += 1;",
+        "        countEl.textContent = count;",
+        "        card.classList.add('active');",
+        "        clearTimeout(card._t);",
+        "        card._t = setTimeout(function () {",
+        "          card.classList.remove('active');",
+        "        }, 130);",
+        "      }",
+        "",
+        "      card.addEventListener('click', function (event) {",
+        "        event.preventDefault();",
+        "        increment();",
+        "      });",
+        "",
+        "      card.addEventListener('touchend', function (event) {",
+        "        event.preventDefault();",
+        "        increment();",
+        "      }, { passive: false });",
+        "    })();",
+        "  <\/script>",
+        "</body>",
+        "</html>"
+      ].join("\n");
+
+      function looksLikeFullDocument(html) {
+        const lower = html.toLowerCase();
+        if (lower.includes("<!doctype html")) return true;
+        if (lower.includes("<html")) return true;
+        if (lower.includes("<head")) return true;
+        if (lower.includes("<body")) return true;
+        return false;
+      }
+
+      function wrapFragment(html) {
+        return [
+          "<!doctype html>",
+          "<html>",
+          "<head>",
+          '  <meta charset="utf-8">',
+          '  <meta name="viewport" content="width=device-width, initial-scale=1">',
+          "  <title>PocketLab fragment</title>",
+          "</head>",
+          "<body>",
+          html,
+          "</body>",
+          "</html>"
+        ].join("\n");
+      }
+
+      function stopPreview() {
+        const blank = [
+          "<!doctype html>",
+          "<html>",
+          "<head>",
+          '  <meta charset="utf-8">',
+          "  <title>PocketLab stopped</title>",
+          "  <style>",
+          "    html, body {",
+          "      margin: 0;",
+          "      padding: 0;",
+          "      height: 100%;",
+          "      width: 100%;",
+          "      background: #000;",
+          "    }",
+          "  </style>",
+          "</head>",
+          "<body></body>",
+          "</html>"
+        ].join("\n");
+        previewEl.srcdoc = blank;
+      }
+
+      function runPreview() {
+        const raw = codeEl.value || "";
+        const trimmed = raw.trim();
+        if (!trimmed) {
+          stopPreview();
+          return;
+        }
+        const docHtml = looksLikeFullDocument(trimmed)
+          ? raw
+          : wrapFragment(raw);
+        previewEl.srcdoc = docHtml;
+      }
+
+      function clearCode() {
+        codeEl.value = "";
+        lastSearchTerm = "";
+        lastSearchIndex = -1;
+        lastSearchCount = 0;
+        searchInput.value = "";
+        searchHit.textContent = "";
+      }
+
+      function copyCode() {
+        const text = codeEl.value;
+        if (!text) return;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).catch(function () {
+            fallbackCopy(text);
+          });
+        } else {
+          fallbackCopy(text);
+        }
+      }
+
+      function fallbackCopy(text) {
+        const temp = document.createElement("textarea");
+        temp.value = text;
+        temp.style.position = "fixed";
+        temp.style.left = "-9999px";
+        temp.style.top = "0";
+        temp.setAttribute("readonly", "readonly");
+        document.body.appendChild(temp);
+        temp.select();
+        try {
+          document.execCommand("copy");
+        } catch (e) {
+          /* ignore */
+        }
+        document.body.removeChild(temp);
+      }
+
+      function pasteCode() {
+        if (navigator.clipboard && navigator.clipboard.readText) {
+          navigator.clipboard.readText()
+            .then(function (text) {
+              if (!text) return;
+              codeEl.value = text;
+              resetSearchState();
+            })
+            .catch(function () {
+              manualPastePrompt();
+            });
+        } else {
+          manualPastePrompt();
+        }
+      }
+
+      function manualPastePrompt() {
+        const existing = codeEl.value;
+        const hint = existing ? "\n\n(current content will be replaced)" : "";
+        const pasted = window.prompt("Paste your HTML here:" + hint, "");
+        if (pasted != null) {
+          codeEl.value = pasted;
+          resetSearchState();
+        }
+      }
+
+      function toggleViewMode() {
+        isPreviewOnly = !isPreviewOnly;
+        if (isPreviewOnly) {
+          layout.classList.add("preview-only");
+        } else {
+          layout.classList.remove("preview-only");
+        }
+      }
+
+      function resetSearchState() {
+        lastSearchTerm = "";
+        lastSearchIndex = -1;
+        lastSearchCount = 0;
+        searchHit.textContent = "";
+      }
+
+      function performSearch() {
+        const term = (searchInput.value || "").toString();
+        const code = codeEl.value || "";
+
+        if (!term) {
+          resetSearchState();
+          return;
+        }
+
+        if (term !== lastSearchTerm) {
+          lastSearchTerm = term;
+          lastSearchIndex = -1;
+          lastSearchCount = 0;
+        }
+
+        const fromIndex = lastSearchIndex >= 0
+          ? lastSearchIndex + term.length
+          : 0;
+
+        let index = code.indexOf(term, fromIndex);
+        if (index === -1 && lastSearchIndex !== -1) {
+          index = code.indexOf(term, 0);
+        }
+
+        if (index === -1) {
+          searchHit.textContent = "0 / 0";
+          lastSearchIndex = -1;
+          lastSearchCount = 0;
+          return;
+        }
+
+        let count = 0;
+        let pos = code.indexOf(term, 0);
+        while (pos !== -1) {
+          count += 1;
+          pos = code.indexOf(term, pos + term.length);
+        }
+
+        lastSearchIndex = index;
+        lastSearchCount = count;
+
+        const start = index;
+        const end = index + term.length;
+        codeEl.focus();
+        codeEl.setSelectionRange(start, end);
+
+        const lineBefore = code.slice(0, start).split("\n").length;
+        searchHit.textContent = (lineBefore > 0 ? "line " + lineBefore + " · " : "") +
+          (Math.min(count, Math.floor((start / Math.max(code.length, 1)) * count) + 1)) +
+          " / " + count;
+
+        try {
+          const selectionTop = codeEl.selectionStart;
+          const before = code.slice(0, selectionTop);
+          const lines = before.split("\n");
+          const charCountBefore = before.length;
+          const fraction = Math.min(1, Math.max(0, charCountBefore / Math.max(code.length, 1)));
+          codeEl.scrollTop = (codeEl.scrollHeight - codeEl.clientHeight) * fraction;
+        } catch (e) {
+          /* ignore */
+        }
+      }
+
+      function setInitialSplitHeight() {
+        const rect = split.getBoundingClientRect();
+        const initialEditorRatio = 0.54;
+        const editorHeight = rect.height * initialEditorRatio;
+        editorPanel.style.flex = "0 0 " + editorHeight + "px";
+        previewPanel.style.flex = "1 1 auto";
+      }
+
+      function onDividerPointerDown(clientY) {
+        isDragging = true;
+        divider.classList.add("dragging");
+        dragStartY = clientY;
+        const panelRect = editorPanel.getBoundingClientRect();
+        editorStartHeight = panelRect.height;
+      }
+
+      function onDividerPointerMove(clientY) {
+        if (!isDragging) return;
+        const delta = clientY - dragStartY;
+        const newHeight = Math.max(80, editorStartHeight + delta);
+        const splitRect = split.getBoundingClientRect();
+        const maxHeight = splitRect.height - 80;
+        const clamped = Math.min(maxHeight, newHeight);
+        editorPanel.style.flex = "0 0 " + clamped + "px";
+        previewPanel.style.flex = "1 1 auto";
+      }
+
+      function onDividerPointerUp() {
+        if (!isDragging) return;
+        isDragging = false;
+        divider.classList.remove("dragging");
+      }
+
+      divider.addEventListener("mousedown", function (event) {
+        event.preventDefault();
+        onDividerPointerDown(event.clientY);
+      });
+
+      window.addEventListener("mousemove", function (event) {
+        if (!isDragging) return;
+        event.preventDefault();
+        onDividerPointerMove(event.clientY);
+      });
+
+      window.addEventListener("mouseup", function () {
+        onDividerPointerUp();
+      });
+
+      divider.addEventListener("touchstart", function (event) {
+        const touch = event.touches[0];
+        if (!touch) return;
+        event.preventDefault();
+        onDividerPointerDown(touch.clientY);
+      }, { passive: false });
+
+      window.addEventListener("touchmove", function (event) {
+        if (!isDragging) return;
+        const touch = event.touches[0];
+        if (!touch) return;
+        event.preventDefault();
+        onDividerPointerMove(touch.clientY);
+      }, { passive: false });
+
+      window.addEventListener("touchend", function () {
+        onDividerPointerUp();
+      });
+
+      btnRun.addEventListener("click", function () {
+        runPreview();
+      });
+
+      btnStop.addEventListener("click", function () {
+        stopPreview();
+      });
+
+      btnClear.addEventListener("click", function () {
+        clearCode();
+      });
+
+      btnCopy.addEventListener("click", function () {
+        copyCode();
+      });
+
+      btnPaste.addEventListener("click", function () {
+        pasteCode();
+      });
+
+      btnView.addEventListener("click", function () {
+        toggleViewMode();
+      });
+
+      btnFind.addEventListener("click", function () {
+        performSearch();
+      });
+
+      searchInput.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          performSearch();
+        }
+      });
+
+      codeEl.addEventListener("input", function () {
+        resetSearchState();
+      });
+
+      document.addEventListener("keydown", function (event) {
+        if (event.target === codeEl || event.target === searchInput) {
+          if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "enter") {
+            event.preventDefault();
+            runPreview();
+          }
+          return;
+        }
+
+        if (event.key === "Escape") {
+          stopPreview();
+        }
+      });
+
+      function init() {
+        codeEl.value = defaultExample;
+        setInitialSplitHeight();
+        stopPreview();
+        runPreview();
+      }
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", init);
+      } else {
+        init();
+      }
+    })();
+  </script>
+</body>
+</html>
