@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- PocketLab v0.11 · dev Grisha Tsvetkov -->
+<!-- PocketLab v0.12 · dev Grisha Tsvetkov -->
 <html lang="en">
   <head>
     <meta charset="utf-8">
@@ -31,7 +31,7 @@
         background: #050505;
         color: #f5f5f5;
         font-family: "Roboto", system-ui, -apple-system, sans-serif;
-        overflow: hidden; /* чтобы не скроллился весь экран */
+        overflow: hidden; /* отдельный скролл только у кода */
       }
       #app {
         height: 100vh;
@@ -87,7 +87,7 @@
         border-right: 1px solid #333;
         display: flex;
         flex-direction: column;
-        background: #000; /* фон под кодом */
+        background: #000;
         overflow: hidden;
       }
       #editor {
@@ -141,7 +141,7 @@
         pointer-events: none;
       }
 
-      /* режимы раскладки: split / viewer */
+      /* split / fullscreen preview */
 
       #app.mode-split #editor-wrap   { display: flex; }
       #app.mode-split #divider       { display: block; }
@@ -185,7 +185,7 @@
         <button id="view-btn">view</button>
         <button id="run-btn">run</button>
         <button id="stop-btn">stop</button>
-        <span>PocketLab v0.11 · paste HTML or JS, run as-is</span>
+        <span>PocketLab v0.12 · paste HTML or JS, run as-is</span>
       </div>
 
       <div id="main">
@@ -203,14 +203,14 @@
             sandbox="allow-scripts"
           ></iframe>
           <div id="hint">tap run to update preview</div>
-          <div id="watermark">PocketLab v0.11 · dev Grisha Tsvetkov</div>
+          <div id="watermark">PocketLab v0.12 · dev Grisha Tsvetkov</div>
         </div>
       </div>
     </div>
 
     <script>
       (function () {
-        const STORAGE_KEY = "pocketlab-html-code-v5";
+        const STORAGE_KEY = "pocketlab-html-code-v6";
 
         const appEl       = document.getElementById("app");
         const mainEl      = document.getElementById("main");
@@ -228,23 +228,38 @@
 
         let viewMode = "mode-split";
 
-        // страница-оболочка для JS: только канвас, без <script>
-        const JS_SHELL_HTML =
-          "<!doctype html>" +
-          "<html><head>" +
-          "<meta charset='utf-8'>" +
-          "<meta name='viewport' content='width=device-width,initial-scale=1'>" +
-          "<title>PocketLab sketch</title>" +
-          "<style>" +
-          "html,body{margin:0;padding:0;height:100%;background:#000;}" +
-          "body{overflow:hidden;}" +
-          "canvas{display:block;width:100vw;height:100vh;background:#000;touch-action:none;}" +
-          "</style>" +
-          "</head><body>" +
-          "<canvas id='canvas'></canvas>" +
-          "</body></html>";
+        // оболочка для JS (только canvas)
+        const JS_SHELL_HTML = `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>PocketLab sketch</title>
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        background: #000;
+      }
+      body {
+        overflow: hidden;
+      }
+      canvas {
+        display: block;
+        width: 100vw;
+        height: 100vh;
+        background: #000;
+        touch-action: none;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+  </body>
+</html>`;
 
-        // CodeMirror init
+        // CodeMirror
         const editor = CodeMirror.fromTextArea(codeTextarea, {
           lineNumbers: true,
           theme: "material-darker",
@@ -281,10 +296,9 @@
             }
           } catch (e) {}
 
-          const def =
-`// PocketLab v0.11 · dev Grisha Tsvetkov
+          const def = `// PocketLab v0.12 · dev Grisha Tsvetkov
 // pure JS example
-// this will be wrapped into full HTML with a fullscreen canvas#canvas
+// this will be executed inside iframe with a fullscreen canvas#canvas
 
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
@@ -333,11 +347,10 @@ loop();`;
           const src = getCode() || "";
 
           if (isHtmlLike(src)) {
-            // если это полноценный HTML, просто подставляем
             frame.onload = null;
             frame.srcdoc = src;
           } else {
-            // если это JS – грузим оболочку и после onload выполняем код внутри iframe
+            // JS: сначала грузим оболочку, потом eval внутри iframe
             frame.onload = function () {
               try {
                 frame.contentWindow.eval(src);
@@ -371,3 +384,97 @@ loop();`;
           appEl.classList.remove("mode-split", "mode-viewer");
           appEl.classList.add(mode);
           viewMode = mode;
+          setTimeout(() => editor.refresh(), 50);
+        }
+
+        // clipboard
+        async function pasteFromClipboard() {
+          if (!navigator.clipboard || !navigator.clipboard.readText) {
+            alert("clipboard not available");
+            return;
+          }
+          try {
+            const text = await navigator.clipboard.readText();
+            if (text) setCode(text);
+          } catch (e) {
+            alert("cannot read from clipboard");
+          }
+        }
+
+        async function copyToClipboard() {
+          if (!navigator.clipboard || !navigator.clipboard.writeText) {
+            alert("clipboard not available");
+            return;
+          }
+          try {
+            await navigator.clipboard.writeText(getCode() || "");
+          } catch (e) {
+            alert("cannot write to clipboard");
+          }
+        }
+
+        // resizable divider
+        let isDragging = false;
+        let dragPointerId = null;
+
+        dividerEl.addEventListener("pointerdown", (e) => {
+          isDragging = true;
+          dragPointerId = e.pointerId;
+          dividerEl.setPointerCapture(dragPointerId);
+        });
+
+        function handleDrag(e) {
+          if (!isDragging) return;
+          const rect = mainEl.getBoundingClientRect();
+          const isMobile = window.matchMedia("(max-width: 800px)").matches;
+          if (isMobile) {
+            const offsetY = e.clientY - rect.top;
+            const ratio = Math.min(0.8, Math.max(0.2, offsetY / rect.height));
+            editorWrap.style.height = (ratio * 100) + "%";
+            editorWrap.style.width = "100%";
+          } else {
+            const offsetX = e.clientX - rect.left;
+            const ratio = Math.min(0.8, Math.max(0.2, offsetX / rect.width));
+            editorWrap.style.width = (ratio * 100) + "%";
+            editorWrap.style.height = "100%";
+          }
+          editor.refresh();
+        }
+
+        function endDrag() {
+          if (!isDragging) return;
+          isDragging = false;
+          if (dragPointerId != null) {
+            try { dividerEl.releasePointerCapture(dragPointerId); } catch (e) {}
+          }
+          dragPointerId = null;
+        }
+
+        dividerEl.addEventListener("pointermove", handleDrag);
+        dividerEl.addEventListener("pointerup", endDrag);
+        dividerEl.addEventListener("pointercancel", endDrag);
+
+        // events
+        pasteBtn.addEventListener("click", () => pasteFromClipboard());
+        copyBtn.addEventListener("click", () => copyToClipboard());
+        clearBtn.addEventListener("click", () => clearCode());
+
+        viewBtn.addEventListener("click", () => {
+          if (viewMode === "mode-split") setMode("mode-viewer");
+          else setMode("mode-split");
+        });
+
+        runBtn.addEventListener("click", () => run());
+        stopBtn.addEventListener("click", () => stop());
+
+        editor.on("change", () => {
+          detectModeByContent(getCode());
+        });
+
+        // init
+        loadStored();
+        setMode("mode-split");
+      })();
+    </script>
+  </body>
+</html>
