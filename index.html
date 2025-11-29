@@ -275,11 +275,11 @@ loop();`;
 '    <canvas id="canvas"></canvas>',
 '    <script>',
 safeJs,
-'    </script>',
+'    <\/script>',
 '  </body>',
 '</html>'
           ];
-          return parts.join("\\n");
+          return parts.join('\n');
         }
 
         function run() {
@@ -345,4 +345,37 @@ safeJs,
           pasteFromClipboard();
         });
 
-        copyBtn.ad
+        copyBtn.addEventListener("click", () => {
+          copyToClipboard();
+        });
+
+        clearBtn.addEventListener("click", () => {
+          clearCode();
+        });
+
+        editorBtn.addEventListener("click", () => {
+          const current = appEl.classList.contains("mode-editor");
+          setMode(current ? "mode-split" : "mode-editor");
+        });
+
+        viewerBtn.addEventListener("click", () => {
+          const current = appEl.classList.contains("mode-viewer");
+          setMode(current ? "mode-split" : "mode-viewer");
+        });
+
+        runBtn.addEventListener("click", () => {
+          run();
+        });
+
+        stopBtn.addEventListener("click", () => {
+          stop();
+        });
+
+        // init
+        loadStored();
+        // при желании можно сразу запускать дефолтный пример:
+        // run();
+      })();
+    </script>
+  </body>
+</html>
