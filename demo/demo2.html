@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Input Test Canvas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            overflow: hidden;
+            background: #0a0a0a;
+            font-family: monospace;
+        }
+        canvas {
+            display: block;
+        }
+        #info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #00ff88;
+            font-size: 12px;
+            line-height: 1.6;
+            pointer-events: none;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div id="info">
+        POCKET VIEWER TEST<br>
+        move: trail particles<br>
+        click: spawn burst<br>
+        hold: continuous spawn<br>
+        touch: full support
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        let w = canvas.width = window.innerWidth;
+        let h = canvas.height = window.innerHeight;
+        
+        // Particle system
+        const particles = [];
+        let mouse = { x: w / 2, y: h / 2, isDown: false };
+        
+        class Particle {
+            constructor(x, y, vx = 0, vy = 0) {
+                this.x = x;
+                this.y = y;
+                this.vx = vx + (Math.random() - 0.5) * 2;
+                this.vy = vy + (Math.random() - 0.5) * 2;
+                this.life = 1;
+                this.decay = Math.random() * 0.01 + 0.005;
+                this.size = Math.random() * 3 + 1;
+                this.hue = (Date.now() / 20) % 360;
+            }
+            
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += 0.1; // gravity
+                this.vx *= 0.99;
+                this.vy *= 0.99;
+                this.life -= this.decay;
+            }
+            
+            draw() {
+                ctx.globalAlpha = this.life;
+                ctx.fillStyle = `hsl(${this.hue}, 80%, 60%)`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        // Mouse trail particles
+        let lastMouse = { x: mouse.x, y: mouse.y };
+        
+        function spawnTrailParticle() {
+            const dx = mouse.x - lastMouse.x;
+            const dy = mouse.y - lastMouse.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            
+            if (dist > 2) {
+                particles.push(new Particle(
+                    mouse.x,
+                    mouse.y,
+                    -dx * 0.1,
+                    -dy * 0.1
+                ));
+                lastMouse = { ...mouse };
+            }
+        }
+        
+        // Click burst
+        function spawnBurst(x, y) {
+            const count = 20;
+            for (let i = 0; i < count; i++) {
+                const angle = (Math.PI * 2 * i) / count;
+                const speed = Math.random() * 3 + 2;
+                particles.push(new Particle(
+                    x,
+                    y,
+                    Math.cos(angle) * speed,
+                    Math.sin(angle) * speed
+                ));
+            }
+        }
+        
+        // Animation loop
+        function animate() {
+            // Trail effect
+            ctx.fillStyle = 'rgba(10, 10, 10, 0.1)';
+            ctx.fillRect(0, 0, w, h);
+            
+            // Spawn particles on movement
+            spawnTrailParticle();
+            
+            // Spawn on hold
+            if (mouse.isDown && Math.random() > 0.7) {
+                particles.push(new Particle(mouse.x, mouse.y));
+            }
+            
+            // Update and draw particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.update();
+                p.draw();
+                
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+            
+            // Draw cursor indicator
+            ctx.globalAlpha = 0.5;
+            ctx.strokeStyle = '#00ff88';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(mouse.x, mouse.y, 20 + Math.sin(Date.now() / 200) * 5, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            ctx.globalAlpha = 1;
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // Event handlers
+        function updateMouse(e) {
+            const rect = canvas.getBoundingClientRect();
+            const touches = e.touches ? e.touches[0] : e;
+            mouse.x = (touches.clientX || e.clientX) - rect.left;
+            mouse.y = (touches.clientY || e.clientY) - rect.top;
+        }
+        
+        canvas.addEventListener('mousemove', updateMouse);
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            updateMouse(e);
+        }, { passive: false });
+        
+        canvas.addEventListener('mousedown', (e) => {
+            mouse.isDown = true;
+            updateMouse(e);
+            spawnBurst(mouse.x, mouse.y);
+        });
+        
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            mouse.isDown = true;
+            updateMouse(e);
+            spawnBurst(mouse.x, mouse.y);
+        }, { passive: false });
+        
+        canvas.addEventListener('mouseup', () => mouse.isDown = false);
+        canvas.addEventListener('touchend', () => mouse.isDown = false);
+        
+        // Resize handler
+        window.addEventListener('resize', () => {
+            w = canvas.width = window.innerWidth;
+            h = canvas.height = window.innerHeight;
+        });
+        
+        // Start
+        animate();
+    </script>
+</body>
+</html>
