@@ -54,26 +54,10 @@
     .top-bar {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 8px;
+      gap: 10px;
       padding: 4px 2px;
       user-select: none;
       flex-wrap: wrap;
-    }
-
-    .top-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .top-right {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      flex-wrap: wrap;
-      margin-left: auto;
     }
 
     .title {
@@ -102,11 +86,11 @@
       box-shadow: 0 0 0 4px rgba(77,163,255,0.28);
     }
 
-    .toolbar-left,
-    .toolbar-right {
+    .toolbar-left {
       display: flex;
       flex-wrap: wrap;
       gap: 4px;
+      margin-left: 10px;
     }
 
     .btn {
@@ -196,11 +180,11 @@
       color: var(--text-muted);
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-start;
       border-bottom: 1px solid rgba(255,255,255,0.03);
       background: linear-gradient(to right, rgba(255,255,255,0.02), transparent);
       user-select: none;
-      gap: 6px;
+      gap: 12px;
       flex-wrap: wrap;
     }
 
@@ -219,10 +203,23 @@
       background: rgba(0,0,0,0.3);
     }
 
+    .pill-status-live {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(77,163,255,0.10);
+    }
+
+    .pill-status-stopped {
+      border-color: var(--danger);
+      color: var(--danger);
+      background: rgba(255,79,106,0.16);
+    }
+
     .search-box {
       display: flex;
       align-items: center;
       gap: 4px;
+      flex-wrap: nowrap;
     }
 
     .search-input {
@@ -271,10 +268,10 @@
 
     .line-numbers {
       width: 44px;
-      padding: 9px 4px 320px 8px;
+      padding: 9px 4px 9px 8px;
       border-right: 1px solid rgba(255,255,255,0.05);
       font-family: "SF Mono", ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-      font-size: 11px;
+      font-size: 12px;
       line-height: 1.45;
       text-align: right;
       color: rgba(160,160,178,0.72);
@@ -301,14 +298,16 @@
       background: transparent;
       color: var(--text);
       font-family: "SF Mono", ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-      font-size: 11px;
+      font-size: 12px;
       line-height: 1.45;
-      padding: 9px 10px 120px 10px;
+      padding: 9px 10px;
       outline: none;
       resize: none;
       tab-size: 2;
       -webkit-text-size-adjust: 100%;
       overflow: auto;
+      touch-action: manipulation;
+      -webkit-user-select: text;
     }
 
     .preview-wrapper {
@@ -357,6 +356,31 @@
       z-index: 2;
     }
 
+    .fullscreen-exit {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.5);
+      background: rgba(0,0,0,0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 5;
+      padding: 0;
+    }
+
+    .fullscreen-exit-icon {
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+      border: 1px solid #ffffff;
+      box-sizing: border-box;
+    }
+
     .divider {
       height: 7px;
       background: radial-gradient(circle at center, rgba(255,255,255,0.2), transparent 55%);
@@ -396,41 +420,35 @@
         0 10px 30px rgba(0,0,0,0.8);
     }
 
-    .layout.preview-only .panel-editor {
+    /* full preview mode */
+
+    body.full-preview .top-bar,
+    body.full-preview #editorPanel,
+    body.full-preview #divider,
+    body.full-preview .panel-header-preview {
       display: none;
     }
 
-    .layout.preview-only .divider {
-      display: none;
+    body.full-preview .panel-preview {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      border-radius: 0;
     }
 
-    .layout.preview-only .panel-preview {
-      flex: 1 1 auto;
+    body.full-preview .preview-wrapper,
+    body.full-preview .preview-inner,
+    body.full-preview #preview {
+      border-radius: 0;
     }
 
-    .layout.preview-only .btn-view-label-split {
-      display: inline;
-    }
-
-    .layout.preview-only .btn-view-label-preview {
-      display: none;
-    }
-
-    .btn-view-label-split {
-      display: none;
-    }
-
-    .btn-view-label-preview {
-      display: inline;
+    body.full-preview .fullscreen-exit {
+      display: flex;
     }
 
     @media (max-width: 768px) {
       .top-bar {
         align-items: flex-start;
-      }
-      .top-right {
-        width: 100%;
-        justify-content: flex-end;
       }
     }
 
@@ -456,44 +474,39 @@
 <body>
   <div class="app">
     <div class="top-bar">
-      <div class="top-left">
-        <div class="title">
-          <span class="dot"></span>
-          <span>PocketLab</span>
-          <span class="version">v0.35</span>
-        </div>
-        <div class="toolbar-left">
-          <button class="btn btn-pill" id="btnOpen" type="button">
-            <span class="icon">📂</span><span>open</span>
-          </button>
-          <button class="btn btn-pill" id="btnPaste" type="button">
-            <span class="icon">📥</span><span>paste</span>
-          </button>
-          <button class="btn btn-pill" id="btnCopy" type="button">
-            <span class="icon">📋</span><span>copy</span>
-          </button>
-          <button class="btn btn-pill" id="btnClear" type="button">
-            <span class="icon">✕</span><span>clear</span>
-          </button>
-          <button class="btn btn-pill" id="btnDemo" type="button">
-            <span class="icon">✨</span><span>demo</span>
-          </button>
-        </div>
+      <div class="title">
+        <span class="dot"></span>
+        <span>PocketLab</span>
+        <span class="version">v0.36</span>
       </div>
-      <div class="top-right">
-        <div class="toolbar-right">
-          <button class="btn btn-pill" id="btnView" type="button">
-            <span class="icon">▢</span>
-            <span class="btn-view-label-preview">view: preview</span>
-            <span class="btn-view-label-split">view: split</span>
-          </button>
-          <button class="btn btn-danger btn-pill" id="btnStop" type="button">
-            <span class="icon">■</span><span>stop</span>
-          </button>
-          <button class="btn btn-primary btn-pill" id="btnRun" type="button">
-            <span class="icon">▶</span><span>run</span>
-          </button>
-        </div>
+      <div class="toolbar-left">
+        <button class="btn btn-pill" id="btnOpen" type="button">
+          <span class="icon">📂</span><span>open</span>
+        </button>
+        <button class="btn btn-pill" id="btnSave" type="button">
+          <span class="icon">💾</span><span>save</span>
+        </button>
+        <button class="btn btn-pill" id="btnPaste" type="button">
+          <span class="icon">📥</span><span>paste</span>
+        </button>
+        <button class="btn btn-pill" id="btnCopy" type="button">
+          <span class="icon">📋</span><span>copy</span>
+        </button>
+        <button class="btn btn-pill" id="btnClear" type="button">
+          <span class="icon">✕</span><span>clear</span>
+        </button>
+        <button class="btn btn-pill" id="btnDemo" type="button">
+          <span class="icon">✨</span><span>demo</span>
+        </button>
+        <button class="btn btn-pill" id="btnView" type="button">
+          <span class="icon">▢</span><span>full</span>
+        </button>
+        <button class="btn btn-danger btn-pill" id="btnStop" type="button">
+          <span class="icon">■</span><span>stop</span>
+        </button>
+        <button class="btn btn-primary btn-pill" id="btnRun" type="button">
+          <span class="icon">▶</span><span>run</span>
+        </button>
       </div>
     </div>
 
@@ -536,17 +549,28 @@
         </div>
 
         <section class="panel panel-preview" id="previewPanel">
-          <header class="panel-header">
+          <header class="panel-header panel-header-preview">
             <div class="panel-header-label">
               <span>preview</span>
-              <span class="pill">sandboxed iframe</span>
+              <span class="pill pill-status-live" id="previewStatus">live</span>
             </div>
+            <button class="btn btn-pill" id="btnPopout" type="button">
+              <span class="icon">🡥</span><span>open page</span>
+            </button>
           </header>
           <div class="preview-wrapper">
             <div class="preview-inner">
-              <iframe id="preview" title="PocketLab preview" sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-downloads allow-modals allow-popups"></iframe>
+              <iframe
+                id="preview"
+                title="PocketLab preview"
+                sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-downloads allow-modals allow-popups"
+                allow="camera; microphone; autoplay; fullscreen"
+              ></iframe>
               <div class="preview-overlay"></div>
               <div class="preview-watermark">&lt;3</div>
+              <button class="fullscreen-exit" id="btnExitFull" type="button">
+                <div class="fullscreen-exit-icon"></div>
+              </button>
             </div>
           </div>
         </section>
@@ -554,7 +578,7 @@
     </div>
   </div>
 
-  <!-- скрытый input для open -->
+  <!-- hidden input for open -->
   <input type="file" id="fileInput" accept=".html,.htm,.txt,.svg,.xml,.json,text/html,text/plain" style="display:none">
 
   <script>
@@ -569,18 +593,21 @@
       const btnView = document.getElementById("btnView");
       const btnDemo = document.getElementById("btnDemo");
       const btnOpen = document.getElementById("btnOpen");
+      const btnSave = document.getElementById("btnSave");
+      const btnFind = document.getElementById("btnFind");
+      const btnPopout = document.getElementById("btnPopout");
+      const btnExitFull = document.getElementById("btnExitFull");
       const layout = document.getElementById("layout");
       const divider = document.getElementById("divider");
       const editorPanel = document.getElementById("editorPanel");
       const previewPanel = document.getElementById("previewPanel");
       const searchInput = document.getElementById("searchInput");
-      const btnFind = document.getElementById("btnFind");
       const searchHit = document.getElementById("searchHit");
       const split = document.getElementById("split");
       const lineNumbersEl = document.getElementById("lineNumbers");
       const fileInput = document.getElementById("fileInput");
+      const previewStatus = document.getElementById("previewStatus");
 
-      let isPreviewOnly = false;
       let isDragging = false;
       let dragStartY = 0;
       let editorStartHeight = 0;
@@ -588,14 +615,13 @@
       let lastSearchTerm = "";
       let lastSearchIndex = -1;
       let lastSearchCount = 0;
+      let isPreviewLive = true;
 
       const demoConfig = {
         basePath: "./demo/",
-        // сюда добавишь реальные файлы в своей папке demo/
         files: [
           "demo1.html",
           "demo2.html"
-          // "another-example.html"
         ]
       };
 
@@ -725,6 +751,19 @@
         ].join("\n");
       }
 
+      function updatePreviewStatus() {
+        if (!previewStatus) return;
+        if (isPreviewLive) {
+          previewStatus.textContent = "live";
+          previewStatus.classList.remove("pill-status-stopped");
+          previewStatus.classList.add("pill-status-live");
+        } else {
+          previewStatus.textContent = "stopped";
+          previewStatus.classList.remove("pill-status-live");
+          previewStatus.classList.add("pill-status-stopped");
+        }
+      }
+
       function stopPreview() {
         const blank = [
           "<!doctype html>",
@@ -746,19 +785,26 @@
           "</html>"
         ].join("\n");
         previewEl.srcdoc = blank;
+        isPreviewLive = false;
+        updatePreviewStatus();
+      }
+
+      function getCurrentDocumentHtml() {
+        const raw = codeEl.value || "";
+        const trimmed = raw.trim();
+        if (!trimmed) return "";
+        return looksLikeFullDocument(trimmed) ? raw : wrapFragment(raw);
       }
 
       function runPreview() {
-        const raw = codeEl.value || "";
-        const trimmed = raw.trim();
-        if (!trimmed) {
+        const html = getCurrentDocumentHtml();
+        if (!html) {
           stopPreview();
           return;
         }
-        const docHtml = looksLikeFullDocument(trimmed)
-          ? raw
-          : wrapFragment(raw);
-        previewEl.srcdoc = docHtml;
+        previewEl.srcdoc = html;
+        isPreviewLive = true;
+        updatePreviewStatus();
       }
 
       function clearCode() {
@@ -790,9 +836,7 @@
         temp.select();
         try {
           document.execCommand("copy");
-        } catch (e) {
-          /* ignore */
-        }
+        } catch (e) {}
         document.body.removeChild(temp);
       }
 
@@ -824,13 +868,15 @@
         }
       }
 
-      function toggleViewMode() {
-        isPreviewOnly = !isPreviewOnly;
-        if (isPreviewOnly) {
-          layout.classList.add("preview-only");
-        } else {
-          layout.classList.remove("preview-only");
+      function toggleFullPreview() {
+        const isFull = document.body.classList.toggle("full-preview");
+        if (!isFull) {
+          // просто возвращаемся, содержимое iframe не трогаем
         }
+      }
+
+      function exitFullPreview() {
+        document.body.classList.remove("full-preview");
       }
 
       function resetSearchState() {
@@ -1030,6 +1076,33 @@
         reader.readAsText(file);
       });
 
+      // save file
+
+      function saveCode() {
+        const text = codeEl.value || "";
+        if (!text) return;
+        const now = new Date();
+        const pad = function (n) { return n.toString().padStart(2, "0"); };
+        const name = "p.lab_sketch_" +
+          pad(now.getDate()) +
+          pad(now.getMonth() + 1) +
+          String(now.getFullYear()).slice(-2) +
+          "_" +
+          pad(now.getHours()) +
+          pad(now.getMinutes()) +
+          ".html";
+
+        const blob = new Blob([text], { type: "text/html" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
       // random demo from /demo
 
       function pickRandomDemoName() {
@@ -1068,6 +1141,16 @@
           });
       }
 
+      // popout into new tab
+
+      function openPreviewInNewTab() {
+        const html = getCurrentDocumentHtml();
+        if (!html) return;
+        const blob = new Blob([html], { type: "text/html" });
+        const url = URL.createObjectURL(blob);
+        window.open(url, "_blank");
+      }
+
       // handlers
 
       btnRun.addEventListener("click", function () {
@@ -1091,7 +1174,7 @@
       });
 
       btnView.addEventListener("click", function () {
-        toggleViewMode();
+        toggleFullPreview();
       });
 
       btnFind.addEventListener("click", function () {
@@ -1128,16 +1211,26 @@
         openFile();
       });
 
+      btnSave.addEventListener("click", function () {
+        saveCode();
+      });
+
       btnDemo.addEventListener("click", function () {
         loadRandomDemo();
       });
 
+      btnPopout.addEventListener("click", function () {
+        openPreviewInNewTab();
+      });
+
+      btnExitFull.addEventListener("click", function () {
+        exitFullPreview();
+      });
+
       function init() {
         setInitialSplitHeight();
-
-        // если в demoConfig.files нет файлов или fetch падает,
-        // останется встроенный пример
         loadRandomDemo();
+        updatePreviewStatus();
       }
 
       if (document.readyState === "loading") {
