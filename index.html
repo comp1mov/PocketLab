@@ -95,12 +95,31 @@
         border-radius: 4px;
         pointer-events: none;
       }
-      #app.fullscreen #editor-wrap {
+
+      /* режимы раскладки */
+      #app.mode-split #editor-wrap {
+        display: flex;
+      }
+      #app.mode-split #preview-wrap {
+        display: block;
+      }
+
+      #app.mode-editor #editor-wrap {
+        display: flex;
+        width: 100%;
+        max-width: none;
+      }
+      #app.mode-editor #preview-wrap {
         display: none;
       }
-      #app.fullscreen #preview-wrap {
-        flex: 1;
+
+      #app.mode-viewer #editor-wrap {
+        display: none;
       }
+      #app.mode-viewer #preview-wrap {
+        display: block;
+      }
+
       @media (max-width: 800px) {
         #main {
           flex-direction: column;
@@ -115,22 +134,27 @@
         #preview-wrap {
           height: 60%;
         }
-        #app.fullscreen #editor-wrap {
-          display: none;
+
+        #app.mode-editor #editor-wrap {
+          height: calc(100vh - 32px);
         }
-        #app.fullscreen #preview-wrap {
+        #app.mode-viewer #preview-wrap {
           height: calc(100vh - 32px);
         }
       }
     </style>
   </head>
   <body>
-    <div id="app">
+    <div id="app" class="mode-split">
       <div id="toolbar">
-        <button id="run-btn">Run</button>
-        <button id="clear-code-btn">Clear code</button>
-        <button id="toggle-btn">Toggle editor</button>
-        <span>Paste full HTML or pure JS, runs as-is</span>
+        <button id="paste-btn">paste</button>
+        <button id="copy-btn">copy</button>
+        <button id="clear-btn">clear</button>
+        <button id="editor-btn">editor</button>
+        <button id="viewer-btn">viewer</button>
+        <button id="run-btn">run</button>
+        <button id="stop-btn">stop</button>
+        <span>paste full HTML or pure JS, run as-is</span>
       </div>
       <div id="main">
         <div id="editor-wrap">
@@ -141,23 +165,28 @@
         <div id="preview-wrap">
           <iframe
             id="preview-frame"
-            sandbox="allow-scripts allow-same-origin"
+            sandbox="allow-scripts"
           ></iframe>
-          <div id="hint">Tap Run, then use the preview on the right / below</div>
+          <div id="hint">tap run to update preview</div>
         </div>
       </div>
     </div>
 
     <script>
       (function () {
-        const STORAGE_KEY = "pocketlab-html-code-v1";
+        const STORAGE_KEY = "pocketlab-html-code-v2";
 
-        const appEl        = document.getElementById("app");
-        const codeEl       = document.getElementById("code");
-        const runBtn       = document.getElementById("run-btn");
-        const clearCodeBtn = document.getElementById("clear-code-btn");
-        const toggleBtn    = document.getElementById("toggle-btn");
-        const frame        = document.getElementById("preview-frame");
+        const appEl      = document.getElementById("app");
+        const codeEl     = document.getElementById("code");
+        const frame      = document.getElementById("preview-frame");
+
+        const pasteBtn   = document.getElementById("paste-btn");
+        const copyBtn    = document.getElementById("copy-btn");
+        const clearBtn   = document.getElementById("clear-btn");
+        const editorBtn  = document.getElementById("editor-btn");
+        const viewerBtn  = document.getElementById("viewer-btn");
+        const runBtn     = document.getElementById("run-btn");
+        const stopBtn    = document.getElementById("stop-btn");
 
         function loadStored() {
           try {
@@ -167,11 +196,10 @@
               return;
             }
           } catch (e) {}
-          // дефолтный пример: чистый JS без HTML
+          // дефолтный пример: чистый JS
           codeEl.value =
-`// Если вставляешь только JS:
-// код будет обёрнут в минимальную HTML-страницу
-// с фуллскрин канвасом <canvas id="canvas">
+`// pure JS example
+// this will be wrapped into full HTML with a fullscreen canvas#canvas
 
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
@@ -189,7 +217,7 @@ resize();
 let t = 0;
 function loop() {
   t += 0.01;
-  ctx.fillStyle = "rgba(0,0,0,0.2)";
+  ctx.fillStyle = "rgba(0,0,0,0.25)";
   ctx.fillRect(0, 0, w, h);
 
   const cx = w * 0.5;
@@ -211,43 +239,47 @@ loop();`;
           return /<!doctype/i.test(src)
               || /<html[\s>]/i.test(src)
               || /<body[\s>]/i.test(src)
-              || /<canvas[\s>]/i.test(src)
-              || /<head[\s>]/i.test(src);
+              || /<head[\s>]/i.test(src)
+              || /<canvas[\s>]/i.test(src);
         }
 
         function wrapJsAsHtml(js) {
-          return `<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>PocketLab sketch</title>
-    <style>
-      html, body {
-        margin: 0;
-        padding: 0;
-        height: 100%;
-        background: #000;
-      }
-      body {
-        overflow: hidden;
-      }
-      canvas {
-        display: block;
-        width: 100vw;
-        height: 100vh;
-        background: #000;
-        touch-action: none;
-      }
-    </style>
-  </head>
-  <body>
-    <canvas id="canvas"></canvas>
-    <script>
-${js.replace(/<\/script>/gi, "<\\/script>")}
-    </script>
-  </body>
-</html>`;
+          const safeJs = js.replace(/<\/script/gi, "<\\/script");
+          const parts = [
+'<!doctype html>',
+'<html>',
+'  <head>',
+'    <meta charset="utf-8">',
+'    <meta name="viewport" content="width=device-width,initial-scale=1">',
+'    <title>PocketLab sketch</title>',
+'    <style>',
+'      html, body {',
+'        margin: 0;',
+'        padding: 0;',
+'        height: 100%;',
+'        background: #000;',
+'      }',
+'      body {',
+'        overflow: hidden;',
+'      }',
+'      canvas {',
+'        display: block;',
+'        width: 100vw;',
+'        height: 100vh;',
+'        background: #000;',
+'        touch-action: none;',
+'      }',
+'    </style>',
+'  </head>',
+'  <body>',
+'    <canvas id="canvas"></canvas>',
+'    <script>',
+safeJs,
+'    </script>',
+'  </body>',
+'</html>'
+          ];
+          return parts.join("\\n");
         }
 
         function run() {
@@ -264,6 +296,10 @@ ${js.replace(/<\/script>/gi, "<\\/script>")}
           } catch (e) {}
         }
 
+        function stop() {
+          frame.srcdoc = "<!doctype html><html><head><meta charset='utf-8'><title>stopped</title></head><body style='margin:0;background:#000;'></body></html>";
+        }
+
         function clearCode() {
           codeEl.value = "";
           try {
@@ -271,30 +307,42 @@ ${js.replace(/<\/script>/gi, "<\\/script>")}
           } catch (e) {}
         }
 
-        function toggleEditor() {
-          if (appEl.classList.contains("fullscreen")) {
-            appEl.classList.remove("fullscreen");
-          } else {
-            appEl.classList.add("fullscreen");
+        function setMode(mode) {
+          appEl.classList.remove("mode-split", "mode-editor", "mode-viewer");
+          appEl.classList.add(mode);
+        }
+
+        // clipboard helpers
+        async function pasteFromClipboard() {
+          if (!navigator.clipboard || !navigator.clipboard.readText) {
+            alert("clipboard not available");
+            return;
+          }
+          try {
+            const text = await navigator.clipboard.readText();
+            if (text) {
+              codeEl.value = text;
+            }
+          } catch (e) {
+            alert("cannot read from clipboard");
           }
         }
 
-        runBtn.addEventListener("click", run);
-        clearCodeBtn.addEventListener("click", clearCode);
-        toggleBtn.addEventListener("click", () => {
-          toggleEditor();
-          // небольшая задержка на ресайз iframe
-          setTimeout(() => {
-            if (frame.contentWindow && frame.contentWindow.dispatchEvent) {
-              frame.contentWindow.dispatchEvent(new Event("resize"));
-            }
-          }, 100);
+        async function copyToClipboard() {
+          if (!navigator.clipboard || !navigator.clipboard.writeText) {
+            alert("clipboard not available");
+            return;
+          }
+          try {
+            await navigator.clipboard.writeText(codeEl.value || "");
+          } catch (e) {
+            alert("cannot write to clipboard");
+          }
+        }
+
+        // events
+        pasteBtn.addEventListener("click", () => {
+          pasteFromClipboard();
         });
 
-        loadStored();
-        // опционально – сразу один раз запустить
-        // run();
-      })();
-    </script>
-  </body>
-</html>
+        copyBtn.ad
