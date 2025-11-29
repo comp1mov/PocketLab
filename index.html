@@ -49,6 +49,7 @@
       flex-direction: column;
       padding: 10px 10px 14px;
       gap: 8px;
+      min-height: 0;
     }
 
     .top-bar {
@@ -161,6 +162,7 @@
       overflow: hidden;
       border: 1px solid var(--border);
       background: radial-gradient(circle at top, rgba(255,255,255,0.04), transparent 55%);
+      min-height: 0;
     }
 
     .panel {
@@ -170,6 +172,7 @@
       display: flex;
       flex-direction: column;
       background: linear-gradient(to bottom, #101018, #050509);
+      min-height: 0;
     }
 
     .panel-header {
@@ -254,6 +257,7 @@
       padding: 6px 8px 8px;
       background: radial-gradient(circle at top, #161624 0, #050509 55%);
       display: flex;
+      min-height: 0;
     }
 
     .code-shell {
@@ -264,6 +268,16 @@
       border: 1px solid rgba(255,255,255,0.06);
       background: rgba(3,3,8,0.96);
       overflow: hidden;
+      min-height: 0;
+    }
+
+    .code-scroll {
+      flex: 1;
+      display: flex;
+      overflow: auto;
+      min-height: 0;
+      max-height: 100%;
+      -webkit-overflow-scrolling: touch;
     }
 
     .line-numbers {
@@ -276,7 +290,7 @@
       text-align: right;
       color: rgba(160,160,178,0.72);
       background: radial-gradient(circle at left, rgba(255,255,255,0.04), transparent 55%);
-      overflow: hidden;
+      flex: 0 0 auto;
       pointer-events: none;
     }
 
@@ -305,7 +319,7 @@
       resize: none;
       tab-size: 2;
       -webkit-text-size-adjust: 100%;
-      overflow: auto;
+      min-height: 100%;
       touch-action: manipulation;
       -webkit-user-select: text;
     }
@@ -316,12 +330,14 @@
       background: #000;
       display: flex;
       flex-direction: column;
+      min-height: 0;
     }
 
     .preview-inner {
       flex: 1;
       position: relative;
       background: #000;
+      min-height: 0;
     }
 
     iframe#preview {
@@ -477,7 +493,7 @@
       <div class="title">
         <span class="dot"></span>
         <span>PocketLab</span>
-        <span class="version">v0.36</span>
+        <span class="version">v0.37</span>
       </div>
       <div class="toolbar-left">
         <button class="btn btn-pill" id="btnOpen" type="button">
@@ -534,8 +550,10 @@
           </header>
           <div class="code-area">
             <div class="code-shell">
-              <div class="line-numbers" id="lineNumbers"></div>
-              <textarea id="code" spellcheck="false"></textarea>
+              <div class="code-scroll" id="codeScroll">
+                <div class="line-numbers" id="lineNumbers"></div>
+                <textarea id="code" spellcheck="false"></textarea>
+              </div>
             </div>
           </div>
         </section>
@@ -578,7 +596,6 @@
     </div>
   </div>
 
-  <!-- hidden input for open -->
   <input type="file" id="fileInput" accept=".html,.htm,.txt,.svg,.xml,.json,text/html,text/plain" style="display:none">
 
   <script>
@@ -597,7 +614,6 @@
       const btnFind = document.getElementById("btnFind");
       const btnPopout = document.getElementById("btnPopout");
       const btnExitFull = document.getElementById("btnExitFull");
-      const layout = document.getElementById("layout");
       const divider = document.getElementById("divider");
       const editorPanel = document.getElementById("editorPanel");
       const previewPanel = document.getElementById("previewPanel");
@@ -607,6 +623,7 @@
       const lineNumbersEl = document.getElementById("lineNumbers");
       const fileInput = document.getElementById("fileInput");
       const previewStatus = document.getElementById("previewStatus");
+      const codeScroll = document.getElementById("codeScroll");
 
       let isDragging = false;
       let dragStartY = 0;
@@ -941,8 +958,7 @@
         try {
           const charCountBefore = before.length;
           const fraction = Math.min(1, Math.max(0, charCountBefore / Math.max(code.length, 1)));
-          codeEl.scrollTop = (codeEl.scrollHeight - codeEl.clientHeight) * fraction;
-          lineNumbersEl.scrollTop = codeEl.scrollTop;
+          codeScroll.scrollTop = (codeScroll.scrollHeight - codeScroll.clientHeight) * fraction;
         } catch (e) {}
         updateActiveLineHighlight();
       }
@@ -1014,7 +1030,7 @@
         onDividerPointerUp();
       });
 
-      // line numbers
+      // line numbers + scroll
 
       function updateLineNumbers() {
         const value = codeEl.value || "";
@@ -1024,7 +1040,6 @@
           html += '<div class="line-number" data-line="' + i + '">' + i + "</div>";
         }
         lineNumbersEl.innerHTML = html;
-        lineNumbersEl.scrollTop = codeEl.scrollTop;
         updateActiveLineHighlight();
       }
 
@@ -1048,8 +1063,8 @@
         }
       }
 
-      codeEl.addEventListener("scroll", function () {
-        lineNumbersEl.scrollTop = codeEl.scrollTop;
+      codeScroll.addEventListener("scroll", function () {
+        // lineNumbers автоматически в том же scroll-контейнере, так что доп. синхронизация не нужна
       });
 
       codeEl.addEventListener("click", updateActiveLineHighlight);
