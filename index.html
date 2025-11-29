@@ -19,6 +19,7 @@
       --btn-border: #2b2b3d;
       --danger: #ff4f6a;
       --danger-soft: rgba(255, 79, 106, 0.16);
+      --radius: 1px;
     }
 
     * {
@@ -65,7 +66,7 @@
     .title-block {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 1px;
       min-width: 0;
     }
 
@@ -94,13 +95,13 @@
     .title-main .version {
       font-size: 11px;
       padding: 1px 6px;
-      border-radius: 999px;
+      border-radius: var(--radius);
       border: 1px solid rgba(255,255,255,0.06);
       background: rgba(0,0,0,0.35);
     }
 
     .title-meta {
-      font-size: 11px;
+      font-size: 10px;
       color: var(--text-muted);
       letter-spacing: 0.08em;
       text-transform: uppercase;
@@ -111,6 +112,7 @@
 
     .title-author {
       color: rgba(245,245,247,0.88);
+      font-size: 7px;
     }
 
     .toolbar {
@@ -126,17 +128,13 @@
       gap: 4px;
     }
 
-    .toolbar-group + .toolbar-group {
-      margin-left: 8px;
-    }
-
     .btn {
       border: 1px solid var(--btn-border);
       background: var(--btn-bg);
       color: var(--text);
       font-size: 11px;
       padding: 6px 10px;
-      border-radius: 999px;
+      border-radius: var(--radius);
       display: inline-flex;
       align-items: center;
       gap: 6px;
@@ -179,6 +177,14 @@
       padding-inline: 10px;
     }
 
+    #btnSave {
+      margin-right: 12px;
+    }
+
+    #btnClear {
+      margin-right: 12px;
+    }
+
     .layout {
       flex: 1;
       display: flex;
@@ -191,7 +197,7 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      border-radius: 12px;
+      border-radius: var(--radius);
       overflow: hidden;
       border: 1px solid var(--border);
       background: radial-gradient(circle at top, rgba(255,255,255,0.04), transparent 55%);
@@ -241,7 +247,7 @@
     .pill {
       font-size: 10px;
       padding: 2px 6px;
-      border-radius: 999px;
+      border-radius: var(--radius);
       border: 1px solid rgba(255,255,255,0.06);
       color: var(--text-muted);
       background: rgba(0,0,0,0.3);
@@ -268,7 +274,7 @@
 
     .search-input {
       background: rgba(11,11,18,0.85);
-      border-radius: 999px;
+      border-radius: var(--radius);
       border: 1px solid rgba(255,255,255,0.06);
       padding: 4px 8px;
       font-size: 11px;
@@ -305,7 +311,7 @@
       flex: 1;
       display: flex;
       position: relative;
-      border-radius: 8px;
+      border-radius: var(--radius);
       border: 1px solid rgba(255,255,255,0.06);
       background: rgba(3,3,8,0.96);
       overflow: hidden;
@@ -338,7 +344,7 @@
     .line-number {
       padding-right: 4px;
       padding-left: 2px;
-      border-radius: 999px;
+      border-radius: var(--radius);
     }
 
     .line-number.active {
@@ -421,7 +427,7 @@
       right: 8px;
       width: 22px;
       height: 22px;
-      border-radius: 6px;
+      border-radius: var(--radius);
       border: 1px solid rgba(255,255,255,0.5);
       background: rgba(0,0,0,0.6);
       display: none;
@@ -435,7 +441,7 @@
     .fullscreen-exit-icon {
       width: 12px;
       height: 12px;
-      border-radius: 2px;
+      border-radius: var(--radius);
       border: 1px solid #ffffff;
       box-sizing: border-box;
     }
@@ -455,7 +461,7 @@
       transform: translate(-50%, -50%);
       width: 60px;
       height: 18px;
-      border-radius: 999px;
+      border-radius: var(--radius);
       background: rgba(7,7,14,0.86);
       border: 1px solid rgba(255,255,255,0.06);
       display: flex;
@@ -468,7 +474,7 @@
     .divider-dot {
       width: 3px;
       height: 3px;
-      border-radius: 999px;
+      border-radius: var(--radius);
       background: rgba(198,198,216,0.8);
     }
 
@@ -478,8 +484,6 @@
         0 0 0 1px var(--accent-soft),
         0 10px 30px rgba(0,0,0,0.8);
     }
-
-    /* full preview mode */
 
     body.full-preview .top-bar,
     body.full-preview #editorPanel,
@@ -537,7 +541,7 @@
         <div class="title-main">
           <span class="dot"></span>
           <span class="title-name">PocketLab</span>
-          <span class="version">v0.39</span>
+          <span class="version">v0.42</span>
         </div>
         <div class="title-meta">
           <span>dev by</span><span class="title-author">Grisha Tsvetkov</span>
@@ -551,11 +555,6 @@
           <button class="btn btn-pill" id="btnCopy" type="button">COPY</button>
           <button class="btn btn-pill" id="btnClear" type="button">CLEAR</button>
           <button class="btn btn-pill" id="btnDemo" type="button">DEMO</button>
-        </div>
-        <div class="toolbar-group">
-          <button class="btn btn-pill" id="btnView" type="button">FULL</button>
-          <button class="btn btn-danger btn-pill" id="btnStop" type="button">STOP</button>
-          <button class="btn btn-primary btn-pill" id="btnRun" type="button">RUN</button>
         </div>
       </div>
     </div>
@@ -605,12 +604,15 @@
         <section class="panel panel-preview" id="previewPanel">
           <header class="panel-header panel-header-preview">
             <div class="panel-header-left">
+              <button class="btn btn-primary btn-pill" id="btnRun" type="button">RUN</button>
+              <button class="btn btn-danger btn-pill" id="btnStop" type="button">STOP</button>
+            </div>
+            <div class="panel-header-right">
               <div class="panel-header-label">
                 <span>PREVIEW</span>
                 <span class="pill pill-status-live" id="previewStatus">LIVE</span>
               </div>
-            </div>
-            <div class="panel-header-right">
+              <button class="btn btn-pill" id="btnView" type="button">FULL</button>
               <button class="btn btn-pill" id="btnPopout" type="button">OPEN PAGE</button>
             </div>
           </header>
@@ -704,7 +706,7 @@
         "      justify-content: center;",
         "    }",
         "    .card {",
-        "      border-radius: 18px;",
+        "      border-radius: 1px;",
         "      border: 1px solid rgba(255,255,255,0.12);",
         "      padding: 18px 18px 16px;",
         "      background: rgba(5,5,18,0.86);",
@@ -1070,16 +1072,12 @@
         onDividerPointerUp();
       });
 
-      // авто-рост textarea
-
       function autoResizeCode() {
         codeEl.style.height = "auto";
         const border = codeEl.offsetHeight - codeEl.clientHeight;
         const scroll = codeEl.scrollHeight;
         codeEl.style.height = (scroll + border) + "px";
       }
-
-      // line numbers
 
       function updateLineNumbers() {
         const value = codeEl.value || "";
@@ -1112,14 +1110,10 @@
         }
       }
 
-      codeScroll.addEventListener("scroll", function () {
-        // line numbers ездят вместе, отдельной синхры не нужно
-      });
+      codeScroll.addEventListener("scroll", function () {});
 
       codeEl.addEventListener("click", updateActiveLineHighlight);
       codeEl.addEventListener("keyup", updateActiveLineHighlight);
-
-      // file open
 
       function openFile() {
         fileInput.value = "";
@@ -1140,8 +1134,6 @@
         };
         reader.readAsText(file);
       });
-
-      // save file
 
       function saveCode() {
         const text = codeEl.value || "";
@@ -1167,8 +1159,6 @@
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
       }
-
-      // random demo from /demo
 
       function pickRandomDemoName() {
         const list = demoConfig.files || [];
@@ -1209,8 +1199,6 @@
           });
       }
 
-      // popout into new tab
-
       function openPreviewInNewTab() {
         const html = getCurrentDocumentHtml();
         if (!html) return;
@@ -1218,8 +1206,6 @@
         const url = URL.createObjectURL(blob);
         window.open(url, "_blank");
       }
-
-      // handlers
 
       btnRun.addEventListener("click", function () {
         runPreview();
