@@ -1,685 +1,119 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <title>PocketLab</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- Block 1: exclude this page from search -->
+<script>
+  const m = document.createElement('meta');
+  m.name = 'robots';
+  m.content = 'noindex, nofollow';
+  document.head.appendChild(m);
+</script>
 
-    <!-- Roboto -->
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap"
-      rel="stylesheet"
-    >
+<!-- Block 2: simple code viewer + search, no syntax highlight -->
+<style>
+  body {
+    background: #000;
+    color: #f5f5f5;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+                 "Inter", sans-serif;
+    margin: 0;
+    padding: 0;
+  }
 
-    <!-- normalize.css -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css"
-      integrity="sha512-NhSC1YmyruXifcj/KFRWoC561YpHpc5Jtzgvbuzx5VozKpWvQ+4nXhPdFgmx8xqexRcpAglTj9sIBWINXa8x5w=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    >
+  #code-page {
+    max-width: 1100px;
+    margin: 80px auto;
+    padding: 0 24px 80px;
+  }
 
-    <!-- CodeMirror -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css"
-      integrity="sha512-KK41eJ31r/nytiCaj7P7SjoO2UJ8oeD0MY5FSm5F3DQIa6gFX6w1PoN6bxwAkPorguz2XSh4UrkW39OZnY2+yA=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    >
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css"
-      integrity="sha512-XpsyCjqppz4KwFuc+33pWYInkboaL4rthVgfyohvwe1dU1ZvQokmaBRCDxPMzVUwH48hjOS+j6ZGEbAl91Ct5w=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    >
+  #code-search-input {
+    width: 100%;
+    padding: 8px 10px;
+    font-size: 14px;
+    border-radius: 4px;
+    border: 1px solid #444;
+    background: #111;
+    color: #f5f5f5;
+    box-sizing: border-box;
+    margin-bottom: 16px;
+  }
 
-    <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"
-      integrity="sha512-jSwLlN2uHUKm7X0XA6dqmlM9Bm2K/uZpIV85IbJCw5KPBpVq3gsdT5pS9bZ9mCY1g93f2bKfw3ts4lvkrpyoLg=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    ></script>
-    <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"
-      integrity="sha512-5r5gG72IATnz3/RbLzB7DQWQbZ6BYgUQAr1ajt+9SYV0XhHJXN24k+PqkLCsXsgVFvEIq5LHMFrPUFVyATQppQ=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    ></script>
-    <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"
-      integrity="sha512-yu3xMAdMw7K3uTpLJveWBpKQuPohz63j+wbKiga7VqaDJfL5Ir5RJQrQt7YFjZsjhB0uHcNpv51GKv3Kj2R1hg=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    ></script>
-    <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"
-      integrity="sha512-RU8J0KJoM9YoFsdj0WkhGpFfJAkEcuSDolcd6205TZVMoe/oZRBFPbQouRFPuZvVi8C2PKsKTZN/A2NpRU0b7Q=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    ></script>
-    <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"
-      integrity="sha512-xM5g8pFIsLW3PvsLAu/3Gz4P81AKcELwjG0LPtVgi4scVkh6a2V7Wcs2CNQf4zkwUzYHyK1KtZ6+Y0VLVWeDVg=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    ></script>
+  #code-view {
+    white-space: pre;
+    overflow-x: auto;
+    font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+                 "Courier New", monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    background: #050505;
+    padding: 16px;
+    border-radius: 4px;
+    border: 1px solid #222;
+  }
 
-    <style>
-      :root {
-        /* легко менять версию здесь */
-        --pocketlab-version: "v0.33";
-        --toolbar-height: 40px;
-        --bg-main: #000;
-        --bg-panel: #050505;
-        --fg-main: #eee;
-        --fg-muted: #888;
-        --accent: #444;
+  #code-view mark {
+    background: #444;
+    color: #fff;
+    padding: 0;
+  }
+</style>
+
+<div id="code-page">
+  <input
+    id="code-search-input"
+    type="text"
+    placeholder="Search in code…"
+    autocomplete="off"
+  />
+
+  <pre id="code-view">// paste or insert your code here
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+// ...
+  </pre>
+</div>
+
+<script>
+  const input = document.getElementById("code-search-input");
+  const pre = document.getElementById("code-view");
+
+  // сохраняем исходный текст, без разметки
+  const originalText = pre.textContent;
+
+  function escapeHtml(str) {
+    return str
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  input.addEventListener("input", () => {
+    const q = input.value;
+    if (!q) {
+      pre.textContent = originalText;
+      return;
+    }
+
+    const escapedQuery = q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const re = new RegExp(escapedQuery, "gi");
+    const text = originalText;
+    const matches = text.match(re);
+
+    if (!matches) {
+      pre.textContent = originalText;
+      return;
+    }
+
+    const parts = text.split(re);
+    let html = "";
+
+    for (let i = 0; i < parts.length; i++) {
+      html += escapeHtml(parts[i]);
+      if (i < matches.length) {
+        html += "<mark>" + escapeHtml(matches[i]) + "</mark>";
       }
-
-      * {
-        box-sizing: border-box;
-      }
-
-      html,
-      body {
-        margin: 0;
-        padding: 0;
-        height: 100%;
-        width: 100%;
-        overflow: hidden;
-        background: var(--bg-main);
-        color: var(--fg-main);
-        font-family: "Roboto", system-ui, -apple-system, BlinkMacSystemFont,
-          "Segoe UI", sans-serif;
-        -webkit-font-smoothing: antialiased;
-      }
-
-      body {
-        display: flex;
-        flex-direction: column;
-      }
-
-      .toolbar {
-        display: flex;
-        align-items: center;
-        height: var(--toolbar-height);
-        padding: 0 8px;
-        background: var(--bg-panel);
-        border-bottom: 1px solid #111;
-        gap: 4px;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        white-space: nowrap;
-      }
-
-      .toolbar-left {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        flex: 1 1 auto;
-      }
-
-      .toolbar-right {
-        flex: 0 0 auto;
-        margin-left: auto;
-        font-size: 11px;
-        color: var(--fg-muted);
-      }
-
-      .btn {
-        flex: 0 0 auto;
-        border: 1px solid #222;
-        background: #111;
-        color: var(--fg-main);
-        font-size: 12px;
-        padding: 4px 10px;
-        border-radius: 4px;
-        cursor: pointer;
-        outline: none;
-        user-select: none;
-      }
-
-      .btn:active {
-        background: #181818;
-      }
-
-      .btn:focus-visible {
-        outline: 1px solid #555;
-        outline-offset: 1px;
-      }
-
-      .btn-primary {
-        border-color: #555;
-        background: #1b1b1b;
-      }
-
-      .btn-danger {
-        border-color: #550000;
-        background: #220000;
-      }
-
-      #app {
-        flex: 1 1 auto;
-        display: flex;
-        flex-direction: column;
-        height: calc(100% - var(--toolbar-height));
-        width: 100%;
-        background: var(--bg-main);
-      }
-
-      .split-container {
-        position: relative;
-        display: flex;
-        height: 100%;
-        width: 100%;
-        background: var(--bg-main);
-        overflow: hidden;
-      }
-
-      /* по умолчанию десктоп: горизонтальный сплит */
-      .split-container.horizontal {
-        flex-direction: row;
-      }
-
-      .split-container.vertical {
-        flex-direction: column;
-      }
-
-      .pane {
-        position: relative;
-        overflow: hidden;
-        background: var(--bg-main);
-      }
-
-      #editor-pane {
-        flex: 0 0 50%;
-        min-width: 80px;
-        min-height: 80px;
-        display: flex;
-        flex-direction: column;
-      }
-
-      #preview-pane {
-        flex: 1 1 auto;
-        min-width: 80px;
-        min-height: 80px;
-        background: #000;
-        position: relative;
-      }
-
-      .divider {
-        flex: 0 0 auto;
-        background: #111;
-        position: relative;
-        z-index: 10;
-      }
-
-      .divider.horizontal {
-        width: 10px;
-        cursor: col-resize;
-      }
-
-      .divider.vertical {
-        height: 12px;
-        cursor: row-resize;
-      }
-
-      .divider::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: repeating-linear-gradient(
-          to var(--divider-direction, right),
-          #222,
-          #222 1px,
-          #111 1px,
-          #111 3px
-        );
-      }
-
-      .divider.vertical::before {
-        --divider-direction: bottom;
-      }
-
-      .divider.horizontal::before {
-        --divider-direction: right;
-      }
-
-      /* CodeMirror контейнер занимает все внутри editor-pane */
-      .editor-wrapper {
-        flex: 1 1 auto;
-        position: relative;
-        overflow: hidden;
-        background: var(--bg-main);
-      }
-
-      .CodeMirror {
-        height: 100%;
-        width: 100%;
-        background: #000;
-        color: var(--fg-main);
-        font-size: 13px;
-      }
-
-      .CodeMirror-gutters {
-        background: #000;
-        border-right: 1px solid #111;
-        color: #555;
-      }
-
-      .CodeMirror-scroll {
-        overflow: auto !important;
-      }
-
-      #preview-wrapper {
-        position: relative;
-        height: 100%;
-        width: 100%;
-        overflow: hidden;
-      }
-
-      #preview {
-        border: none;
-        width: 100%;
-        height: 100%;
-        background: #000;
-      }
-
-      .watermark {
-        position: absolute;
-        right: 6px;
-        bottom: 4px;
-        font-size: 10px;
-        color: rgba(255, 255, 255, 0.35);
-        pointer-events: none;
-      }
-
-      /* viewer mode: только превью на весь экран */
-      body.viewer-mode .split-container {
-        padding: 0;
-      }
-
-      body.viewer-mode #editor-pane,
-      body.viewer-mode .divider {
-        display: none;
-      }
-
-      body.viewer-mode #preview-pane {
-        flex: 1 1 auto;
-      }
-
-      /* мобильный вертикальный сплит */
-      @media (max-width: 768px), (max-height: 540px) {
-        .split-container {
-          flex-direction: column;
-        }
-
-        .split-container.horizontal {
-          flex-direction: column;
-        }
-
-        .split-container.vertical {
-          flex-direction: column;
-        }
-
-        .divider {
-          height: 12px;
-          width: 100%;
-        }
-
-        .divider.horizontal {
-          height: 12px;
-          width: 100%;
-          cursor: row-resize;
-        }
-
-        #editor-pane {
-          flex-basis: 55%;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <div class="toolbar" aria-label="PocketLab toolbar">
-      <div class="toolbar-left">
-        <button class="btn" id="btn-paste" type="button">paste</button>
-        <button class="btn" id="btn-copy" type="button">copy</button>
-        <button class="btn btn-danger" id="btn-clear" type="button">clear</button>
-        <button class="btn" id="btn-view" type="button" aria-pressed="false">
-          view
-        </button>
-        <button class="btn btn-primary" id="btn-run" type="button">run</button>
-        <button class="btn" id="btn-stop" type="button">stop</button>
-      </div>
-      <div class="toolbar-right" id="status-text">
-        PocketLab · loading
-      </div>
-    </div>
-
-    <div id="app">
-      <div class="split-container horizontal" id="split-container">
-        <section class="pane" id="editor-pane" aria-label="HTML editor">
-          <div class="editor-wrapper">
-            <textarea id="editor"></textarea>
-          </div>
-        </section>
-
-        <div class="divider horizontal" id="divider" aria-hidden="true"></div>
-
-        <section class="pane" id="preview-pane" aria-label="Preview">
-          <div id="preview-wrapper">
-            <iframe id="preview"></iframe>
-            <div class="watermark">&lt;3</div>
-          </div>
-        </section>
-      </div>
-    </div>
-
-    <script>
-      (function () {
-        const VERSION = "v0.13";
-        const STORAGE_KEY = "pocketlab-src-v1";
-
-        const statusText = document.getElementById("status-text");
-        statusText.textContent =
-          "PocketLab " + VERSION + " · paste HTML, press run";
-
-        const splitContainer = document.getElementById("split-container");
-        const editorPane = document.getElementById("editor-pane");
-        const previewFrame = document.getElementById("preview");
-        const divider = document.getElementById("divider");
-
-        const btnPaste = document.getElementById("btn-paste");
-        const btnCopy = document.getElementById("btn-copy");
-        const btnClear = document.getElementById("btn-clear");
-        const btnView = document.getElementById("btn-view");
-        const btnRun = document.getElementById("btn-run");
-        const btnStop = document.getElementById("btn-stop");
-
-        // CodeMirror init
-        const cm = CodeMirror.fromTextArea(
-          document.getElementById("editor"),
-          {
-            mode: "htmlmixed",
-            lineNumbers: true,
-            theme: "material-darker",
-            tabSize: 2,
-            indentUnit: 2,
-            indentWithTabs: false,
-            lineWrapping: false,
-          }
-        );
-
-        cm.setSize("100%", "100%");
-
-        function isVerticalMode() {
-          // Считаем "вертикальным" режимом мобильный или если высота заметно меньше ширины
-          const rect = splitContainer.getBoundingClientRect();
-          const verticalBySize = rect.height > rect.width;
-          const mobile = window.innerWidth <= 768 || window.innerHeight <= 540;
-          return mobile || verticalBySize;
-        }
-
-        function applyStoppedPreview() {
-          const stoppedHtml =
-            "<!doctype html>" +
-            "<html>" +
-            "<head><meta charset='utf-8'><title>stopped</title></head>" +
-            "<body style='margin:0;background:#000;'></body>" +
-            "</html>";
-          previewFrame.srcdoc = stoppedHtml;
-        }
-
-        function buildHtmlFromSource(src) {
-          const trimmed = src.trim();
-          if (!trimmed) {
-            // пустой ввод трактуем как фрагмент с пустым body
-            return (
-              "<!doctype html>" +
-              "<html>" +
-              "<head>" +
-              "<meta charset='utf-8'>" +
-              "<meta name='viewport' content='width=device-width,initial-scale=1'>" +
-              "<title>PocketLab sketch</title>" +
-              "</head>" +
-              "<body></body>" +
-              "</html>"
-            );
-          }
-
-          const fullDocPattern = /<!doctype|<html|<body/i;
-          if (fullDocPattern.test(trimmed)) {
-            return src;
-          }
-
-          return (
-            "<!doctype html>" +
-            "<html>" +
-            "<head>" +
-            "<meta charset='utf-8'>" +
-            "<meta name='viewport' content='width=device-width,initial-scale=1'>" +
-            "<title>PocketLab sketch</title>" +
-            "</head>" +
-            "<body>" +
-            trimmed +
-            "</body>" +
-            "</html>"
-          );
-        }
-
-        function runPreview() {
-          const src = cm.getValue();
-          const html = buildHtmlFromSource(src);
-          previewFrame.srcdoc = html;
-          try {
-            if (src.trim()) {
-              localStorage.setItem(STORAGE_KEY, src);
-            }
-          } catch (e) {
-            // игнорируем ошибки доступа к localStorage
-          }
-        }
-
-        function stopPreview() {
-          applyStoppedPreview();
-        }
-
-        function clearEditor() {
-          cm.setValue("");
-          try {
-            localStorage.removeItem(STORAGE_KEY);
-          } catch (e) {}
-        }
-
-        // Clipboard helpers
-        async function handlePaste() {
-          if (!navigator.clipboard || !navigator.clipboard.readText) {
-            alert("Clipboard API is not available in this browser.");
-            return;
-          }
-          try {
-            const text = await navigator.clipboard.readText();
-            if (text != null && text !== "") {
-              cm.setValue(text);
-            }
-          } catch (err) {
-            alert("Unable to read from clipboard.");
-          }
-        }
-
-        async function handleCopy() {
-          if (!navigator.clipboard || !navigator.clipboard.writeText) {
-            alert("Clipboard API is not available in this browser.");
-            return;
-          }
-          try {
-            const text = cm.getValue();
-            await navigator.clipboard.writeText(text);
-          } catch (err) {
-            alert("Unable to write to clipboard.");
-          }
-        }
-
-        // View mode toggle
-        let viewerMode = false;
-        function toggleViewMode() {
-          viewerMode = !viewerMode;
-          document.body.classList.toggle("viewer-mode", viewerMode);
-          btnView.setAttribute("aria-pressed", viewerMode ? "true" : "false");
-        }
-
-        // Divider drag
-        let isDragging = false;
-        let dragStartPos = 0;
-        let startEditorSize = 0;
-
-        function onDragStart(clientX, clientY) {
-          isDragging = true;
-          const vertical = isVerticalMode();
-          if (vertical) {
-            dragStartPos = clientY;
-            startEditorSize = editorPane.getBoundingClientRect().height;
-          } else {
-            dragStartPos = clientX;
-            startEditorSize = editorPane.getBoundingClientRect().width;
-          }
-          document.body.style.cursor = vertical ? "row-resize" : "col-resize";
-        }
-
-        function onDragMove(clientX, clientY) {
-          if (!isDragging) return;
-
-          const rect = splitContainer.getBoundingClientRect();
-          const vertical = isVerticalMode();
-
-          if (vertical) {
-            const delta = clientY - dragStartPos;
-            const newHeight = Math.max(
-              80,
-              Math.min(rect.height - 80, startEditorSize + delta)
-            );
-            const ratio = newHeight / rect.height;
-            editorPane.style.flexBasis = Math.round(ratio * 100) + "%";
-          } else {
-            const delta = clientX - dragStartPos;
-            const newWidth = Math.max(
-              80,
-              Math.min(rect.width - 80, startEditorSize + delta)
-            );
-            const ratio = newWidth / rect.width;
-            editorPane.style.flexBasis = Math.round(ratio * 100) + "%";
-          }
-        }
-
-        function onDragEnd() {
-          if (!isDragging) return;
-          isDragging = false;
-          document.body.style.cursor = "default";
-        }
-
-        divider.addEventListener("mousedown", function (e) {
-          e.preventDefault();
-          onDragStart(e.clientX, e.clientY);
-        });
-
-        window.addEventListener("mousemove", function (e) {
-          if (!isDragging) return;
-          e.preventDefault();
-          onDragMove(e.clientX, e.clientY);
-        });
-
-        window.addEventListener("mouseup", function () {
-          onDragEnd();
-        });
-
-        // touch support
-        divider.addEventListener(
-          "touchstart",
-          function (e) {
-            const t = e.touches[0];
-            onDragStart(t.clientX, t.clientY);
-          },
-          { passive: true }
-        );
-
-        window.addEventListener(
-          "touchmove",
-          function (e) {
-            if (!isDragging) return;
-            const t = e.touches[0];
-            onDragMove(t.clientX, t.clientY);
-          },
-          { passive: false }
-        );
-
-        window.addEventListener("touchend", function () {
-          onDragEnd();
-        });
-
-        // кнопки
-        btnPaste.addEventListener("click", handlePaste);
-        btnCopy.addEventListener("click", handleCopy);
-        btnClear.addEventListener("click", function () {
-          clearEditor();
-        });
-        btnRun.addEventListener("click", function () {
-          runPreview();
-        });
-        btnStop.addEventListener("click", function () {
-          stopPreview();
-        });
-        btnView.addEventListener("click", function () {
-          toggleViewMode();
-        });
-
-        // клавиатурное сокращение Ctrl+Enter или Cmd+Enter для run
-        window.addEventListener("keydown", function (e) {
-          if (
-            (e.ctrlKey || e.metaKey) &&
-            e.key === "Enter" &&
-            !e.defaultPrevented
-          ) {
-            e.preventDefault();
-            runPreview();
-          }
-        });
-
-        // восстановление кода из localStorage
-        (function restoreFromStorage() {
-          try {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            if (saved && typeof saved === "string") {
-              cm.setValue(saved);
-              runPreview();
-              return;
-            }
-          } catch (e) {}
-          // если сохраненного нет, просто показываем stopped
-          applyStoppedPreview();
-        })();
-
-        // при изменении размеров окна пересчитаем направление split
-        function updateSplitDirection() {
-          if (isVerticalMode()) {
-            splitContainer.classList.remove("horizontal");
-            splitContainer.classList.add("vertical");
-            divider.classList.remove("horizontal");
-            divider.classList.add("vertical");
-          } else {
-            splitContainer.classList.remove("vertical");
-            splitContainer.classList.add("horizontal");
-            divider.classList.remove("vertical");
-            divider.classList.add("horizontal");
-          }
-        }
-
-        window.addEventListener("resize", updateSplitDirection);
-        updateSplitDirection();
-      })();
-    </script>
-  </body>
-</html>
+    }
+
+    pre.innerHTML = html;
+  });
+</script>
