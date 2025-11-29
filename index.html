@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- PocketLab v0.12 · dev Grisha Tsvetkov -->
+<!-- PocketLab v0.13 · dev Grisha Tsvetkov -->
 <html lang="en">
   <head>
     <meta charset="utf-8">
@@ -31,7 +31,7 @@
         background: #050505;
         color: #f5f5f5;
         font-family: "Roboto", system-ui, -apple-system, sans-serif;
-        overflow: hidden; /* отдельный скролл только у кода */
+        overflow: hidden; /* скролл только у кода */
       }
       #app {
         height: 100vh;
@@ -185,7 +185,7 @@
         <button id="view-btn">view</button>
         <button id="run-btn">run</button>
         <button id="stop-btn">stop</button>
-        <span>PocketLab v0.12 · paste HTML or JS, run as-is</span>
+        <span>PocketLab v0.13 · paste HTML or JS, run as-is</span>
       </div>
 
       <div id="main">
@@ -198,19 +198,16 @@
         <div id="divider"></div>
 
         <div id="preview-wrap">
-          <iframe
-            id="preview-frame"
-            sandbox="allow-scripts"
-          ></iframe>
+          <iframe id="preview-frame"></iframe>
           <div id="hint">tap run to update preview</div>
-          <div id="watermark">PocketLab v0.12 · dev Grisha Tsvetkov</div>
+          <div id="watermark">PocketLab v0.13 · dev Grisha Tsvetkov</div>
         </div>
       </div>
     </div>
 
     <script>
       (function () {
-        const STORAGE_KEY = "pocketlab-html-code-v6";
+        const STORAGE_KEY = "pocketlab-html-code-v7";
 
         const appEl       = document.getElementById("app");
         const mainEl      = document.getElementById("main");
@@ -227,37 +224,6 @@
         const stopBtn     = document.getElementById("stop-btn");
 
         let viewMode = "mode-split";
-
-        // оболочка для JS (только canvas)
-        const JS_SHELL_HTML = `<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>PocketLab sketch</title>
-    <style>
-      html, body {
-        margin: 0;
-        padding: 0;
-        height: 100%;
-        background: #000;
-      }
-      body {
-        overflow: hidden;
-      }
-      canvas {
-        display: block;
-        width: 100vw;
-        height: 100vh;
-        background: #000;
-        touch-action: none;
-      }
-    </style>
-  </head>
-  <body>
-    <canvas id="canvas"></canvas>
-  </body>
-</html>`;
 
         // CodeMirror
         const editor = CodeMirror.fromTextArea(codeTextarea, {
@@ -296,9 +262,10 @@
             }
           } catch (e) {}
 
-          const def = `// PocketLab v0.12 · dev Grisha Tsvetkov
+          const def =
+`// PocketLab v0.13 · dev Grisha Tsvetkov
 // pure JS example
-// this will be executed inside iframe with a fullscreen canvas#canvas
+// this will be wrapped into full HTML with a fullscreen canvas#canvas
 
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
@@ -343,23 +310,54 @@ loop();`;
               || /<canvas[\s>]/i.test(src);
         }
 
+        function wrapJsAsHtml(js) {
+          const safeJs = js.replace(/<\/script/gi, "<\\/script");
+          const parts = [
+'<!doctype html>',
+'<html>',
+'  <head>',
+'    <meta charset="utf-8">',
+'    <meta name="viewport" content="width=device-width,initial-scale=1">',
+'    <title>PocketLab sketch</title>',
+'    <style>',
+'      html, body {',
+'        margin: 0;',
+'        padding: 0;',
+'        height: 100%;',
+'        background: #000;',
+'      }',
+'      body {',
+'        overflow: hidden;',
+'      }',
+'      canvas {',
+'        display: block;',
+'        width: 100vw;',
+'        height: 100vh;',
+'        background: #000;',
+'        touch-action: none;',
+'      }',
+'    </style>',
+'  </head>',
+'  <body>',
+'    <canvas id="canvas"></canvas>',
+'    <script>',
+safeJs,
+'    <\\/script>',
+'  </body>',
+'</html>'
+          ];
+          return parts.join('\n');
+        }
+
         function run() {
           const src = getCode() || "";
-
+          let html;
           if (isHtmlLike(src)) {
-            frame.onload = null;
-            frame.srcdoc = src;
+            html = src;
           } else {
-            // JS: сначала грузим оболочку, потом eval внутри iframe
-            frame.onload = function () {
-              try {
-                frame.contentWindow.eval(src);
-              } catch (e) {
-                console.error("PocketLab eval error:", e);
-              }
-            };
-            frame.srcdoc = JS_SHELL_HTML;
+            html = wrapJsAsHtml(src);
           }
+          frame.srcdoc = html;
 
           try {
             localStorage.setItem(STORAGE_KEY, src);
@@ -367,7 +365,6 @@ loop();`;
         }
 
         function stop() {
-          frame.onload = null;
           frame.srcdoc =
             "<!doctype html><html><head><meta charset='utf-8'><title>stopped</title></head>" +
             "<body style='margin:0;background:#000;'></body></html>";
@@ -384,7 +381,7 @@ loop();`;
           appEl.classList.remove("mode-split", "mode-viewer");
           appEl.classList.add(mode);
           viewMode = mode;
-          setTimeout(() => editor.refresh(), 50);
+          setTimeout(function () { editor.refresh(); }, 50);
         }
 
         // clipboard
@@ -417,7 +414,7 @@ loop();`;
         let isDragging = false;
         let dragPointerId = null;
 
-        dividerEl.addEventListener("pointerdown", (e) => {
+        dividerEl.addEventListener("pointerdown", function (e) {
           isDragging = true;
           dragPointerId = e.pointerId;
           dividerEl.setPointerCapture(dragPointerId);
@@ -455,19 +452,19 @@ loop();`;
         dividerEl.addEventListener("pointercancel", endDrag);
 
         // events
-        pasteBtn.addEventListener("click", () => pasteFromClipboard());
-        copyBtn.addEventListener("click", () => copyToClipboard());
-        clearBtn.addEventListener("click", () => clearCode());
+        pasteBtn.addEventListener("click", function () { pasteFromClipboard(); });
+        copyBtn.addEventListener("click",  function () { copyToClipboard();  });
+        clearBtn.addEventListener("click", function () { clearCode();        });
 
-        viewBtn.addEventListener("click", () => {
+        viewBtn.addEventListener("click", function () {
           if (viewMode === "mode-split") setMode("mode-viewer");
           else setMode("mode-split");
         });
 
-        runBtn.addEventListener("click", () => run());
-        stopBtn.addEventListener("click", () => stop());
+        runBtn.addEventListener("click",  function () { run();  });
+        stopBtn.addEventListener("click", function () { stop(); });
 
-        editor.on("change", () => {
+        editor.on("change", function () {
           detectModeByContent(getCode());
         });
 
