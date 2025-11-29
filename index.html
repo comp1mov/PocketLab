@@ -1,16 +1,10 @@
 <!doctype html>
-<!-- PocketLab v0.13 · dev Grisha Tsvetkov -->
+<!-- PocketLab v0.20 · dev Grisha Tsvetkov -->
 <html lang="en">
   <head>
     <meta charset="utf-8">
     <title>PocketLab HTML</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
-
-    <!-- normalize + Roboto -->
-    <link rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
-    <link rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap">
 
     <!-- CodeMirror -->
     <link rel="stylesheet"
@@ -30,17 +24,14 @@
         height: 100%;
         background: #050505;
         color: #f5f5f5;
-        font-family: "Roboto", system-ui, -apple-system, sans-serif;
-        overflow: hidden; /* скролл только у кода */
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        overflow: hidden; /* скролл только внутри редактора */
       }
       #app {
         height: 100vh;
         display: flex;
         flex-direction: column;
       }
-
-      /* toolbar */
-
       #toolbar {
         padding: 6px 10px;
         display: flex;
@@ -49,13 +40,7 @@
         border-bottom: 1px solid #333;
         background: #0a0a0a;
         font-size: 13px;
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        white-space: nowrap;
-      }
-      #toolbar button,
-      #toolbar span {
-        flex: 0 0 auto;
+        flex-wrap: wrap;
       }
       #toolbar button {
         padding: 4px 10px;
@@ -70,49 +55,53 @@
         opacity: 0.7;
         font-size: 11px;
       }
-
-      /* layout */
-
       #main {
         flex: 1;
         display: flex;
         min-height: 0;
-        overflow: hidden;
       }
-
       #editor-wrap {
         width: 45%;
-        min-width: 220px;
-        max-width: 60%;
+        min-width: 260px;
+        max-width: 520px;
         border-right: 1px solid #333;
         display: flex;
         flex-direction: column;
-        background: #000;
-        overflow: hidden;
+        background: #050505;
       }
       #editor {
         flex: 1;
         padding: 6px;
-        background: #000;
+      }
+      /* прячем нативный textarea, работаем через CodeMirror */
+      #editor textarea {
+        width: 100%;
+        height: 100%;
+        box-sizing: border-box;
+        resize: none;
+        border-radius: 4px;
+        border: 1px solid #444;
+        background: #111;
+        color: #eee;
+        font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace;
+        font-size: 11px;
+        line-height: 1.4;
+        padding: 6px;
+        white-space: pre;
       }
       .CodeMirror {
         height: 100%;
-        background: #000;
+        background: #111;
         color: #eee;
+        font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace;
         font-size: 11px;
-      }
-
-      #divider {
-        width: 12px;
-        background: #141414;
-        cursor: col-resize;
+        line-height: 1.4;
       }
 
       #preview-wrap {
         flex: 1;
         position: relative;
         background: #000;
-        overflow: hidden;
       }
       #preview-frame {
         width: 100%;
@@ -130,26 +119,30 @@
         border-radius: 4px;
         pointer-events: none;
       }
-      #watermark {
-        position: absolute;
-        right: 8px;
-        bottom: 6px;
-        padding: 2px 4px;
-        font-size: 9px;
-        opacity: 0.45;
-        color: #eee;
-        pointer-events: none;
+
+      /* режимы раскладки */
+      #app.mode-split #editor-wrap {
+        display: flex;
+      }
+      #app.mode-split #preview-wrap {
+        display: block;
       }
 
-      /* split / fullscreen preview */
+      #app.mode-editor #editor-wrap {
+        display: flex;
+        width: 100%;
+        max-width: none;
+      }
+      #app.mode-editor #preview-wrap {
+        display: none;
+      }
 
-      #app.mode-split #editor-wrap   { display: flex; }
-      #app.mode-split #divider       { display: block; }
-      #app.mode-split #preview-wrap  { display: block; }
-
-      #app.mode-viewer #editor-wrap  { display: none; }
-      #app.mode-viewer #divider      { display: none; }
-      #app.mode-viewer #preview-wrap { display: block; }
+      #app.mode-viewer #editor-wrap {
+        display: none;
+      }
+      #app.mode-viewer #preview-wrap {
+        display: block;
+      }
 
       @media (max-width: 800px) {
         #main {
@@ -162,13 +155,12 @@
           border-right: none;
           border-bottom: 1px solid #333;
         }
-        #divider {
-          width: 100%;
-          height: 8px;
-          cursor: row-resize;
-        }
         #preview-wrap {
           height: 60%;
+        }
+
+        #app.mode-editor #editor-wrap {
+          height: calc(100vh - 32px);
         }
         #app.mode-viewer #preview-wrap {
           height: calc(100vh - 32px);
@@ -182,51 +174,46 @@
         <button id="paste-btn">paste</button>
         <button id="copy-btn">copy</button>
         <button id="clear-btn">clear</button>
-        <button id="view-btn">view</button>
+        <button id="editor-btn">editor</button>
+        <button id="viewer-btn">viewer</button>
         <button id="run-btn">run</button>
         <button id="stop-btn">stop</button>
-        <span>PocketLab v0.13 · paste HTML or JS, run as-is</span>
+        <span>paste full HTML or pure JS, run as-is</span>
       </div>
-
       <div id="main">
         <div id="editor-wrap">
           <div id="editor">
             <textarea id="code"></textarea>
           </div>
         </div>
-
-        <div id="divider"></div>
-
         <div id="preview-wrap">
-          <iframe id="preview-frame"></iframe>
+          <iframe
+            id="preview-frame"
+            sandbox="allow-scripts"
+          ></iframe>
           <div id="hint">tap run to update preview</div>
-          <div id="watermark">PocketLab v0.13 · dev Grisha Tsvetkov</div>
         </div>
       </div>
     </div>
 
     <script>
       (function () {
-        const STORAGE_KEY = "pocketlab-html-code-v7";
+        const STORAGE_KEY = "pocketlab-html-code-v3";
 
-        const appEl       = document.getElementById("app");
-        const mainEl      = document.getElementById("main");
-        const codeTextarea= document.getElementById("code");
-        const frame       = document.getElementById("preview-frame");
-        const editorWrap  = document.getElementById("editor-wrap");
-        const dividerEl   = document.getElementById("divider");
+        const appEl   = document.getElementById("app");
+        const codeEl  = document.getElementById("code");
+        const frame   = document.getElementById("preview-frame");
 
-        const pasteBtn    = document.getElementById("paste-btn");
-        const copyBtn     = document.getElementById("copy-btn");
-        const clearBtn    = document.getElementById("clear-btn");
-        const viewBtn     = document.getElementById("view-btn");
-        const runBtn      = document.getElementById("run-btn");
-        const stopBtn     = document.getElementById("stop-btn");
+        const pasteBtn  = document.getElementById("paste-btn");
+        const copyBtn   = document.getElementById("copy-btn");
+        const clearBtn  = document.getElementById("clear-btn");
+        const editorBtn = document.getElementById("editor-btn");
+        const viewerBtn = document.getElementById("viewer-btn");
+        const runBtn    = document.getElementById("run-btn");
+        const stopBtn   = document.getElementById("stop-btn");
 
-        let viewMode = "mode-split";
-
-        // CodeMirror
-        const editor = CodeMirror.fromTextArea(codeTextarea, {
+        // CodeMirror поверх textarea
+        const editor = CodeMirror.fromTextArea(codeEl, {
           lineNumbers: true,
           theme: "material-darker",
           mode: "javascript",
@@ -262,9 +249,9 @@
             }
           } catch (e) {}
 
+          // дефолтный пример: чистый JS (как в старой рабочей версии)
           const def =
-`// PocketLab v0.13 · dev Grisha Tsvetkov
-// pure JS example
+`// pure JS example
 // this will be wrapped into full HTML with a fullscreen canvas#canvas
 
 const canvas = document.getElementById("canvas");
@@ -346,7 +333,7 @@ safeJs,
 '  </body>',
 '</html>'
           ];
-          return parts.join('\n');
+          return parts.join('\\n');
         }
 
         function run() {
@@ -358,7 +345,6 @@ safeJs,
             html = wrapJsAsHtml(src);
           }
           frame.srcdoc = html;
-
           try {
             localStorage.setItem(STORAGE_KEY, src);
           } catch (e) {}
@@ -378,13 +364,12 @@ safeJs,
         }
 
         function setMode(mode) {
-          appEl.classList.remove("mode-split", "mode-viewer");
+          appEl.classList.remove("mode-split", "mode-editor", "mode-viewer");
           appEl.classList.add(mode);
-          viewMode = mode;
-          setTimeout(function () { editor.refresh(); }, 50);
+          setTimeout(() => editor.refresh(), 30);
         }
 
-        // clipboard
+        // clipboard helpers
         async function pasteFromClipboard() {
           if (!navigator.clipboard || !navigator.clipboard.readText) {
             alert("clipboard not available");
@@ -392,7 +377,9 @@ safeJs,
           }
           try {
             const text = await navigator.clipboard.readText();
-            if (text) setCode(text);
+            if (text) {
+              setCode(text);
+            }
           } catch (e) {
             alert("cannot read from clipboard");
           }
@@ -410,67 +397,45 @@ safeJs,
           }
         }
 
-        // resizable divider
-        let isDragging = false;
-        let dragPointerId = null;
-
-        dividerEl.addEventListener("pointerdown", function (e) {
-          isDragging = true;
-          dragPointerId = e.pointerId;
-          dividerEl.setPointerCapture(dragPointerId);
-        });
-
-        function handleDrag(e) {
-          if (!isDragging) return;
-          const rect = mainEl.getBoundingClientRect();
-          const isMobile = window.matchMedia("(max-width: 800px)").matches;
-          if (isMobile) {
-            const offsetY = e.clientY - rect.top;
-            const ratio = Math.min(0.8, Math.max(0.2, offsetY / rect.height));
-            editorWrap.style.height = (ratio * 100) + "%";
-            editorWrap.style.width = "100%";
-          } else {
-            const offsetX = e.clientX - rect.left;
-            const ratio = Math.min(0.8, Math.max(0.2, offsetX / rect.width));
-            editorWrap.style.width = (ratio * 100) + "%";
-            editorWrap.style.height = "100%";
-          }
-          editor.refresh();
-        }
-
-        function endDrag() {
-          if (!isDragging) return;
-          isDragging = false;
-          if (dragPointerId != null) {
-            try { dividerEl.releasePointerCapture(dragPointerId); } catch (e) {}
-          }
-          dragPointerId = null;
-        }
-
-        dividerEl.addEventListener("pointermove", handleDrag);
-        dividerEl.addEventListener("pointerup", endDrag);
-        dividerEl.addEventListener("pointercancel", endDrag);
-
         // events
-        pasteBtn.addEventListener("click", function () { pasteFromClipboard(); });
-        copyBtn.addEventListener("click",  function () { copyToClipboard();  });
-        clearBtn.addEventListener("click", function () { clearCode();        });
-
-        viewBtn.addEventListener("click", function () {
-          if (viewMode === "mode-split") setMode("mode-viewer");
-          else setMode("mode-split");
+        pasteBtn.addEventListener("click", () => {
+          pasteFromClipboard();
         });
 
-        runBtn.addEventListener("click",  function () { run();  });
-        stopBtn.addEventListener("click", function () { stop(); });
+        copyBtn.addEventListener("click", () => {
+          copyToClipboard();
+        });
 
-        editor.on("change", function () {
+        clearBtn.addEventListener("click", () => {
+          clearCode();
+        });
+
+        editorBtn.addEventListener("click", () => {
+          const current = appEl.classList.contains("mode-editor");
+          setMode(current ? "mode-split" : "mode-editor");
+        });
+
+        viewerBtn.addEventListener("click", () => {
+          const current = appEl.classList.contains("mode-viewer");
+          setMode(current ? "mode-split" : "mode-viewer");
+        });
+
+        runBtn.addEventListener("click", () => {
+          run();
+        });
+
+        stopBtn.addEventListener("click", () => {
+          stop();
+        });
+
+        editor.on("change", () => {
           detectModeByContent(getCode());
         });
 
         // init
         loadStored();
-        setMode("mode-split");
+        // если хочешь, можно сразу запускать дефолтный пример:
+        // run();
       })();
     </script>
   </body>
