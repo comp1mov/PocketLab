@@ -7,7 +7,20 @@
 
     <!-- Roboto -->
     <link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+    <link rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap">
+
+    <!-- CodeMirror -->
+    <link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
 
     <style>
       html, body {
@@ -23,6 +36,9 @@
         display: flex;
         flex-direction: column;
       }
+
+      /* toolbar */
+
       #toolbar {
         padding: 6px 10px;
         display: flex;
@@ -53,6 +69,8 @@
         font-size: 11px;
       }
 
+      /* layout */
+
       #main {
         flex: 1;
         display: flex;
@@ -72,47 +90,16 @@
         flex: 1;
         padding: 6px;
       }
-      #code-container {
+      .CodeMirror {
         height: 100%;
-        display: flex;
-        font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace;
-        font-size: 11px;
-        line-height: 1.4;
-      }
-      #line-numbers {
-        width: 3.2em;
-        padding: 6px 4px;
-        box-sizing: border-box;
-        text-align: right;
-        background: #050505;
-        color: #555;
-        border: 1px solid #333;
-        border-right: none;
-        border-radius: 4px 0 0 4px;
-        overflow: hidden;
-      }
-      #line-numbers pre {
-        margin: 0;
-        font: inherit;
-      }
-      #editor textarea {
-        flex: 1;
-        box-sizing: border-box;
-        resize: none;
-        border-radius: 0 4px 4px 0;
-        border: 1px solid #444;
-        border-left: none;
         background: #000;
         color: #eee;
-        font: inherit;
-        padding: 6px;
-        white-space: pre;
-        outline: none;
+        font-size: 11px;
       }
 
       #divider {
-        width: 4px;
-        background: #181818;
+        width: 12px;
+        background: #141414;
         cursor: col-resize;
       }
 
@@ -139,38 +126,11 @@
         pointer-events: none;
       }
 
-      /* ripple */
-      .ripple {
-        position: absolute;
-        border-radius: 999px;
-        transform: translate(-50%, -50%);
-        pointer-events: none;
-        background: rgba(255,255,255,0.18);
-        width: 0;
-        height: 0;
-        opacity: 0.7;
-        animation: ripple 0.6s ease-out;
-      }
-      @keyframes ripple {
-        to {
-          width: 220px;
-          height: 220px;
-          opacity: 0;
-        }
-      }
+      /* режимы раскладки: split / viewer */
 
-      /* режимы раскладки */
       #app.mode-split #editor-wrap   { display: flex; }
       #app.mode-split #divider       { display: block; }
       #app.mode-split #preview-wrap  { display: block; }
-
-      #app.mode-editor #editor-wrap  {
-        display: flex;
-        width: 100%;
-        max-width: none;
-      }
-      #app.mode-editor #divider      { display: none; }
-      #app.mode-editor #preview-wrap { display: none; }
 
       #app.mode-viewer #editor-wrap  { display: none; }
       #app.mode-viewer #divider      { display: none; }
@@ -189,14 +149,11 @@
         }
         #divider {
           width: 100%;
-          height: 6px;
+          height: 8px;
           cursor: row-resize;
         }
         #preview-wrap {
           height: 60%;
-        }
-        #app.mode-editor #editor-wrap {
-          height: calc(100vh - 32px);
         }
         #app.mode-viewer #preview-wrap {
           height: calc(100vh - 32px);
@@ -215,15 +172,11 @@
         <button id="stop-btn">stop</button>
         <span>paste full HTML or pure JS, run as-is</span>
       </div>
+
       <div id="main">
         <div id="editor-wrap">
           <div id="editor">
-            <div id="code-container">
-              <div id="line-numbers">
-                <pre id="line-numbers-pre"></pre>
-              </div>
-              <textarea id="code"></textarea>
-            </div>
+            <textarea id="code"></textarea>
           </div>
         </div>
 
@@ -241,49 +194,64 @@
 
     <script>
       (function () {
-        const STORAGE_KEY = "pocketlab-html-code-v3";
+        const STORAGE_KEY = "pocketlab-html-code-v4";
 
-        const appEl      = document.getElementById("app");
-        const mainEl     = document.getElementById("main");
-        const codeEl     = document.getElementById("code");
-        const frame      = document.getElementById("preview-frame");
-        const editorWrap = document.getElementById("editor-wrap");
+        const appEl       = document.getElementById("app");
+        const mainEl      = document.getElementById("main");
+        const codeTextarea= document.getElementById("code");
+        const frame       = document.getElementById("preview-frame");
+        const editorWrap  = document.getElementById("editor-wrap");
         const previewWrap = document.getElementById("preview-wrap");
-        const dividerEl  = document.getElementById("divider");
-        const lineNumsEl = document.getElementById("line-numbers");
-        const lineNumsPre = document.getElementById("line-numbers-pre");
+        const dividerEl   = document.getElementById("divider");
 
-        const pasteBtn   = document.getElementById("paste-btn");
-        const copyBtn    = document.getElementById("copy-btn");
-        const clearBtn   = document.getElementById("clear-btn");
-        const viewBtn    = document.getElementById("view-btn");
-        const runBtn     = document.getElementById("run-btn");
-        const stopBtn    = document.getElementById("stop-btn");
+        const pasteBtn    = document.getElementById("paste-btn");
+        const copyBtn     = document.getElementById("copy-btn");
+        const clearBtn    = document.getElementById("clear-btn");
+        const viewBtn     = document.getElementById("view-btn");
+        const runBtn      = document.getElementById("run-btn");
+        const stopBtn     = document.getElementById("stop-btn");
 
-        const viewModes = ["mode-split", "mode-viewer", "mode-editor"];
-        let viewModeIndex = 0;
+        let viewMode = "mode-split"; // или "mode-viewer"
 
-        function updateLineNumbers() {
-          const value = codeEl.value || "";
-          const lines = value.split("\n").length || 1;
-          let out = "";
-          for (let i = 1; i <= lines; i++) {
-            out += i + "\n";
+        // CodeMirror init
+        const editor = CodeMirror.fromTextArea(codeTextarea, {
+          lineNumbers: true,
+          theme: "material-darker",
+          mode: "javascript",
+          tabSize: 2,
+          indentUnit: 2,
+          smartIndent: true
+        });
+
+        function detectModeByContent(text) {
+          if (/<!doctype/i.test(text) || /<html[\s>]/i.test(text) || /<body[\s>]/i.test(text)) {
+            editor.setOption("mode", "htmlmixed");
+          } else {
+            editor.setOption("mode", "javascript");
           }
-          lineNumsPre.textContent = out;
         }
 
+        function getCode() {
+          return editor.getValue();
+        }
+
+        function setCode(text) {
+          editor.setValue(text);
+          detectModeByContent(text);
+          editor.refresh();
+        }
+
+        // load from localStorage or default snippet
         function loadStored() {
           try {
             const saved = localStorage.getItem(STORAGE_KEY);
             if (saved && saved.trim().length > 0) {
-              codeEl.value = saved;
-              updateLineNumbers();
+              setCode(saved);
               return;
             }
           } catch (e) {}
-          // дефолтный пример: чистый JS
-          codeEl.value =
+
+          const def =
 `// pure JS example
 // this will be wrapped into full HTML with a fullscreen canvas#canvas
 
@@ -319,15 +287,15 @@ function loop() {
   requestAnimationFrame(loop);
 }
 loop();`;
-          updateLineNumbers();
+          setCode(def);
         }
 
         function isHtmlLike(src) {
           return /<!doctype/i.test(src)
-              || /<html[\\s>]/i.test(src)
-              || /<body[\\s>]/i.test(src)
-              || /<head[\\s>]/i.test(src)
-              || /<canvas[\\s>]/i.test(src);
+              || /<html[\s>]/i.test(src)
+              || /<body[\s>]/i.test(src)
+              || /<head[\s>]/i.test(src)
+              || /<canvas[\s>]/i.test(src);
         }
 
         function wrapJsAsHtml(js) {
@@ -366,11 +334,11 @@ safeJs,
 '  </body>',
 '</html>'
           ];
-          return parts.join("\\n");
+          return parts.join('\n');
         }
 
         function run() {
-          const src = codeEl.value || "";
+          const src = getCode() || "";
           let html;
           if (isHtmlLike(src)) {
             html = src;
@@ -390,18 +358,17 @@ safeJs,
         }
 
         function clearCode() {
-          codeEl.value = "";
-          updateLineNumbers();
+          setCode("");
           try {
             localStorage.removeItem(STORAGE_KEY);
           } catch (e) {}
         }
 
         function setMode(mode) {
-          appEl.classList.remove("mode-split", "mode-editor", "mode-viewer");
+          appEl.classList.remove("mode-split", "mode-viewer");
           appEl.classList.add(mode);
-          const idx = viewModes.indexOf(mode);
-          viewModeIndex = idx >= 0 ? idx : 0;
+          viewMode = mode;
+          setTimeout(() => editor.refresh(), 50);
         }
 
         // clipboard helpers
@@ -413,8 +380,7 @@ safeJs,
           try {
             const text = await navigator.clipboard.readText();
             if (text) {
-              codeEl.value = text;
-              updateLineNumbers();
+              setCode(text);
             }
           } catch (e) {
             alert("cannot read from clipboard");
@@ -427,13 +393,13 @@ safeJs,
             return;
           }
           try {
-            await navigator.clipboard.writeText(codeEl.value || "");
+            await navigator.clipboard.writeText(getCode() || "");
           } catch (e) {
             alert("cannot write to clipboard");
           }
         }
 
-        // resize divider
+        // resizable divider
         let isDragging = false;
         let dragPointerId = null;
 
@@ -458,6 +424,7 @@ safeJs,
             editorWrap.style.width = (ratio * 100) + "%";
             editorWrap.style.height = "100%";
           }
+          editor.refresh();
         }
 
         function endDrag() {
@@ -473,57 +440,26 @@ safeJs,
         dividerEl.addEventListener("pointerup", endDrag);
         dividerEl.addEventListener("pointercancel", endDrag);
 
-        // scroll sync line numbers
-        codeEl.addEventListener("scroll", () => {
-          lineNumsEl.scrollTop = codeEl.scrollTop;
-        });
-
-        // ripple on preview
-        previewWrap.addEventListener("pointerdown", (e) => {
-          const rect = previewWrap.getBoundingClientRect();
-          const x = e.clientX - rect.left;
-          const y = e.clientY - rect.top;
-          const ripple = document.createElement("span");
-          ripple.className = "ripple";
-          ripple.style.left = x + "px";
-          ripple.style.top = y + "px";
-          previewWrap.appendChild(ripple);
-          setTimeout(() => ripple.remove(), 650);
-        });
-
         // events
-        pasteBtn.addEventListener("click", () => {
-          pasteFromClipboard();
-        });
-
-        copyBtn.addEventListener("click", () => {
-          copyToClipboard();
-        });
-
-        clearBtn.addEventListener("click", () => {
-          clearCode();
-        });
+        pasteBtn.addEventListener("click", () => pasteFromClipboard());
+        copyBtn.addEventListener("click", () => copyToClipboard());
+        clearBtn.addEventListener("click", () => clearCode());
 
         viewBtn.addEventListener("click", () => {
-          const nextIndex = (viewModeIndex + 1) % viewModes.length;
-          setMode(viewModes[nextIndex]);
+          if (viewMode === "mode-split") setMode("mode-viewer");
+          else setMode("mode-split");
         });
 
-        runBtn.addEventListener("click", () => {
-          run();
-        });
+        runBtn.addEventListener("click", () => run());
+        stopBtn.addEventListener("click", () => stop());
 
-        stopBtn.addEventListener("click", () => {
-          stop();
+        editor.on("change", () => {
+          detectModeByContent(getCode());
         });
-
-        codeEl.addEventListener("input", updateLineNumbers);
 
         // init
         loadStored();
         setMode("mode-split");
-        // можно авто-ран включить, если нужно:
-        // run();
       })();
     </script>
   </body>
