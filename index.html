@@ -55,31 +55,35 @@
     .top-bar {
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 10px;
       padding: 4px 2px;
       user-select: none;
       flex-wrap: wrap;
     }
 
-    .title {
+    .title-block {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .title-main {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
       font-size: 14px;
       letter-spacing: 0.05em;
       text-transform: uppercase;
       color: var(--text-muted);
-      display: flex;
-      align-items: baseline;
-      gap: 6px;
     }
 
-    .title span.version {
-      font-size: 11px;
-      padding: 1px 6px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.06);
-      background: rgba(0,0,0,0.35);
+    .title-main .title-name {
+      color: var(--text);
     }
 
-    .title span.dot {
+    .title-main .dot {
       width: 4px;
       height: 4px;
       border-radius: 50%;
@@ -87,34 +91,63 @@
       box-shadow: 0 0 0 4px rgba(77,163,255,0.28);
     }
 
-    .toolbar-left {
+    .title-main .version {
+      font-size: 11px;
+      padding: 1px 6px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(0,0,0,0.35);
+    }
+
+    .title-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      display: flex;
+      gap: 4px;
+      align-items: baseline;
+    }
+
+    .title-author {
+      color: rgba(245,245,247,0.88);
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .toolbar-group {
       display: flex;
       flex-wrap: wrap;
       gap: 4px;
-      margin-left: 10px;
+    }
+
+    .toolbar-group + .toolbar-group {
+      margin-left: 8px;
     }
 
     .btn {
       border: 1px solid var(--btn-border);
       background: var(--btn-bg);
       color: var(--text);
-      font-size: 12px;
+      font-size: 11px;
       padding: 6px 10px;
       border-radius: 999px;
       display: inline-flex;
       align-items: center;
       gap: 6px;
       cursor: pointer;
-      min-height: 28px;
+      min-height: 26px;
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
       outline: none;
       white-space: nowrap;
-    }
-
-    .btn span.icon {
-      font-size: 11px;
-      opacity: 0.9;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
     }
 
     .btn:hover {
@@ -143,7 +176,7 @@
     }
 
     .btn-pill {
-      padding-inline: 8px;
+      padding-inline: 10px;
     }
 
     .layout {
@@ -183,11 +216,19 @@
       color: var(--text-muted);
       display: flex;
       align-items: center;
-      justify-content: flex-start;
+      justify-content: space-between;
       border-bottom: 1px solid rgba(255,255,255,0.03);
       background: linear-gradient(to right, rgba(255,255,255,0.02), transparent);
       user-select: none;
       gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .panel-header-left,
+    .panel-header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
       flex-wrap: wrap;
     }
 
@@ -232,7 +273,7 @@
       padding: 4px 8px;
       font-size: 11px;
       color: var(--text);
-      width: 120px;
+      width: 140px;
     }
 
     .search-input::placeholder {
@@ -321,8 +362,8 @@
       -webkit-text-size-adjust: 100%;
       touch-action: manipulation;
       -webkit-user-select: text;
-      height: auto;        /* авто-растяжение */
-      overflow: hidden;    /* убираем внутренний скролл */
+      height: auto;
+      overflow: hidden;
       box-sizing: border-box;
     }
 
@@ -472,11 +513,11 @@
 
     @media (max-width: 480px) {
       .btn {
-        font-size: 11px;
+        font-size: 10px;
         padding-inline: 8px;
       }
       .search-input {
-        width: 96px;
+        width: 110px;
       }
     }
 
@@ -492,39 +533,30 @@
 <body>
   <div class="app">
     <div class="top-bar">
-      <div class="title">
-        <span class="dot"></span>
-        <span>PocketLab</span>
-        <span class="version">v0.38</span>
+      <div class="title-block">
+        <div class="title-main">
+          <span class="dot"></span>
+          <span class="title-name">PocketLab</span>
+          <span class="version">v0.39</span>
+        </div>
+        <div class="title-meta">
+          <span>dev by</span><span class="title-author">Grisha Tsvetkov</span>
+        </div>
       </div>
-      <div class="toolbar-left">
-        <button class="btn btn-pill" id="btnOpen" type="button">
-          <span class="icon">📂</span><span>open</span>
-        </button>
-        <button class="btn btn-pill" id="btnSave" type="button">
-          <span class="icon">💾</span><span>save</span>
-        </button>
-        <button class="btn btn-pill" id="btnPaste" type="button">
-          <span class="icon">📥</span><span>paste</span>
-        </button>
-        <button class="btn btn-pill" id="btnCopy" type="button">
-          <span class="icon">📋</span><span>copy</span>
-        </button>
-        <button class="btn btn-pill" id="btnClear" type="button">
-          <span class="icon">✕</span><span>clear</span>
-        </button>
-        <button class="btn btn-pill" id="btnDemo" type="button">
-          <span class="icon">✨</span><span>demo</span>
-        </button>
-        <button class="btn btn-pill" id="btnView" type="button">
-          <span class="icon">▢</span><span>full</span>
-        </button>
-        <button class="btn btn-danger btn-pill" id="btnStop" type="button">
-          <span class="icon">■</span><span>stop</span>
-        </button>
-        <button class="btn btn-primary btn-pill" id="btnRun" type="button">
-          <span class="icon">▶</span><span>run</span>
-        </button>
+      <div class="toolbar">
+        <div class="toolbar-group">
+          <button class="btn btn-pill" id="btnOpen" type="button">OPEN</button>
+          <button class="btn btn-pill" id="btnSave" type="button">SAVE</button>
+          <button class="btn btn-pill" id="btnPaste" type="button">PASTE</button>
+          <button class="btn btn-pill" id="btnCopy" type="button">COPY</button>
+          <button class="btn btn-pill" id="btnClear" type="button">CLEAR</button>
+          <button class="btn btn-pill" id="btnDemo" type="button">DEMO</button>
+        </div>
+        <div class="toolbar-group">
+          <button class="btn btn-pill" id="btnView" type="button">FULL</button>
+          <button class="btn btn-danger btn-pill" id="btnStop" type="button">STOP</button>
+          <button class="btn btn-primary btn-pill" id="btnRun" type="button">RUN</button>
+        </div>
       </div>
     </div>
 
@@ -532,22 +564,24 @@
       <div class="split" id="split">
         <section class="panel panel-editor" id="editorPanel">
           <header class="panel-header">
-            <div class="panel-header-label">
-              <span>input</span>
-              <span class="pill">html fragment or full page</span>
+            <div class="panel-header-left">
+              <div class="search-box">
+                <input
+                  id="searchInput"
+                  class="search-input"
+                  type="search"
+                  placeholder="find in code"
+                  autocomplete="off"
+                >
+                <button class="btn btn-pill" id="btnFind" type="button">FIND</button>
+                <div class="search-hit" id="searchHit"></div>
+              </div>
             </div>
-            <div class="search-box">
-              <input
-                id="searchInput"
-                class="search-input"
-                type="search"
-                placeholder="find in code"
-                autocomplete="off"
-              >
-              <button class="btn btn-pill" id="btnFind" type="button">
-                <span class="icon">🔍</span><span>find</span>
-              </button>
-              <div class="search-hit" id="searchHit"></div>
+            <div class="panel-header-right">
+              <div class="panel-header-label">
+                <span>INPUT</span>
+                <span class="pill">HTML FRAGMENT OR FULL PAGE</span>
+              </div>
             </div>
           </header>
           <div class="code-area">
@@ -570,13 +604,15 @@
 
         <section class="panel panel-preview" id="previewPanel">
           <header class="panel-header panel-header-preview">
-            <div class="panel-header-label">
-              <span>preview</span>
-              <span class="pill pill-status-live" id="previewStatus">live</span>
+            <div class="panel-header-left">
+              <div class="panel-header-label">
+                <span>PREVIEW</span>
+                <span class="pill pill-status-live" id="previewStatus">LIVE</span>
+              </div>
             </div>
-            <button class="btn btn-pill" id="btnPopout" type="button">
-              <span class="icon">🡥</span><span>open page</span>
-            </button>
+            <div class="panel-header-right">
+              <button class="btn btn-pill" id="btnPopout" type="button">OPEN PAGE</button>
+            </div>
           </header>
           <div class="preview-wrapper">
             <div class="preview-inner">
@@ -773,11 +809,11 @@
       function updatePreviewStatus() {
         if (!previewStatus) return;
         if (isPreviewLive) {
-          previewStatus.textContent = "live";
+          previewStatus.textContent = "LIVE";
           previewStatus.classList.remove("pill-status-stopped");
           previewStatus.classList.add("pill-status-live");
         } else {
-          previewStatus.textContent = "stopped";
+          previewStatus.textContent = "STOPPED";
           previewStatus.classList.remove("pill-status-live");
           previewStatus.classList.add("pill-status-stopped");
         }
@@ -955,7 +991,7 @@
 
         const before = code.slice(0, start);
         const lineBefore = before.split("\n").length;
-        searchHit.textContent = (lineBefore > 0 ? "line " + lineBefore + " · " : "") +
+        searchHit.textContent = (lineBefore > 0 ? "LINE " + lineBefore + " · " : "") +
           (Math.min(count, Math.floor((start / Math.max(code.length, 1)) * count) + 1)) +
           " / " + count;
 
