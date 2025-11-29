@@ -2,8 +2,19 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>PocketLab HTML</title>
+    <title>PocketLab HTML Viewer</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+
     <style>
       html, body {
         margin: 0;
@@ -12,6 +23,7 @@
         background: #050505;
         color: #f5f5f5;
         font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        overflow: hidden;
       }
       #app {
         height: 100vh;
@@ -59,20 +71,13 @@
         flex: 1;
         padding: 6px;
       }
-      #editor textarea {
-        width: 100%;
+      .CodeMirror {
         height: 100%;
-        box-sizing: border-box;
-        resize: none;
-        border-radius: 4px;
-        border: 1px solid #444;
         background: #111;
         color: #eee;
         font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace;
         font-size: 11px;
         line-height: 1.4;
-        padding: 6px;
-        white-space: pre;
       }
       #preview-wrap {
         flex: 1;
@@ -95,15 +100,12 @@
         border-radius: 4px;
         pointer-events: none;
       }
-
-      /* режимы раскладки */
       #app.mode-split #editor-wrap {
         display: flex;
       }
       #app.mode-split #preview-wrap {
         display: block;
       }
-
       #app.mode-editor #editor-wrap {
         display: flex;
         width: 100%;
@@ -112,14 +114,12 @@
       #app.mode-editor #preview-wrap {
         display: none;
       }
-
       #app.mode-viewer #editor-wrap {
         display: none;
       }
       #app.mode-viewer #preview-wrap {
         display: block;
       }
-
       @media (max-width: 800px) {
         #main {
           flex-direction: column;
@@ -134,7 +134,6 @@
         #preview-wrap {
           height: 60%;
         }
-
         #app.mode-editor #editor-wrap {
           height: calc(100vh - 32px);
         }
@@ -154,7 +153,7 @@
         <button id="viewer-btn">viewer</button>
         <button id="run-btn">run</button>
         <button id="stop-btn">stop</button>
-        <span>paste full HTML or pure JS, run as-is</span>
+        <span>paste full HTML page, then run</span>
       </div>
       <div id="main">
         <div id="editor-wrap">
@@ -165,7 +164,7 @@
         <div id="preview-wrap">
           <iframe
             id="preview-frame"
-            sandbox="allow-scripts"
+            allow="fullscreen; microphone; camera; geolocation; clipboard-read; clipboard-write"
           ></iframe>
           <div id="hint">tap run to update preview</div>
         </div>
@@ -174,134 +173,210 @@
 
     <script>
       (function () {
-        const STORAGE_KEY = "pocketlab-html-code-v2";
+        var STORAGE_KEY = "pocketlab-html-viewer-v2";
 
-        const appEl      = document.getElementById("app");
-        const codeEl     = document.getElementById("code");
-        const frame      = document.getElementById("preview-frame");
+        var appEl   = document.getElementById("app");
+        var codeEl  = document.getElementById("code");
+        var frame   = document.getElementById("preview-frame");
 
-        const pasteBtn   = document.getElementById("paste-btn");
-        const copyBtn    = document.getElementById("copy-btn");
-        const clearBtn   = document.getElementById("clear-btn");
-        const editorBtn  = document.getElementById("editor-btn");
-        const viewerBtn  = document.getElementById("viewer-btn");
-        const runBtn     = document.getElementById("run-btn");
-        const stopBtn    = document.getElementById("stop-btn");
+        var pasteBtn  = document.getElementById("paste-btn");
+        var copyBtn   = document.getElementById("copy-btn");
+        var clearBtn  = document.getElementById("clear-btn");
+        var editorBtn = document.getElementById("editor-btn");
+        var viewerBtn = document.getElementById("viewer-btn");
+        var runBtn    = document.getElementById("run-btn");
+        var stopBtn   = document.getElementById("stop-btn");
+
+        var editor = CodeMirror.fromTextArea(codeEl, {
+          lineNumbers: true,
+          theme: "material-darker",
+          mode: "htmlmixed",
+          tabSize: 2,
+          indentUnit: 2,
+          smartIndent: true
+        });
+
+        function getCode() {
+          return editor.getValue();
+        }
+
+        function setCode(text) {
+          editor.setValue(text);
+          editor.refresh();
+        }
 
         function loadStored() {
           try {
-            const saved = localStorage.getItem(STORAGE_KEY);
+            var saved = localStorage.getItem(STORAGE_KEY);
             if (saved && saved.trim().length > 0) {
-              codeEl.value = saved;
+              setCode(saved);
               return;
             }
           } catch (e) {}
-          // дефолтный пример: чистый JS
-          codeEl.value =
-`// pure JS example
-// this will be wrapped into full HTML with a fullscreen canvas#canvas
 
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
-
-let w = 0, h = 0;
-function resize() {
-  w = window.innerWidth;
-  h = window.innerHeight;
-  canvas.width = w;
-  canvas.height = h;
-}
-window.addEventListener("resize", resize);
-resize();
-
-let t = 0;
-function loop() {
-  t += 0.01;
-  ctx.fillStyle = "rgba(0,0,0,0.25)";
-  ctx.fillRect(0, 0, w, h);
-
-  const cx = w * 0.5;
-  const cy = h * 0.5;
-  const r = 40 + Math.sin(t * 2.0) * 20;
-
-  ctx.strokeStyle = "#ffffff";
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.arc(cx, cy, r, 0, Math.PI * 2);
-  ctx.stroke();
-
-  requestAnimationFrame(loop);
-}
-loop();`;
-        }
-
-        function isHtmlLike(src) {
-          return /<!doctype/i.test(src)
-              || /<html[\s>]/i.test(src)
-              || /<body[\s>]/i.test(src)
-              || /<head[\s>]/i.test(src)
-              || /<canvas[\s>]/i.test(src);
-        }
-
-        function wrapJsAsHtml(js) {
-          const safeJs = js.replace(/<\/script/gi, "<\\/script");
-          const parts = [
-'<!doctype html>',
-'<html>',
-'  <head>',
-'    <meta charset="utf-8">',
-'    <meta name="viewport" content="width=device-width,initial-scale=1">',
-'    <title>PocketLab sketch</title>',
-'    <style>',
-'      html, body {',
-'        margin: 0;',
-'        padding: 0;',
-'        height: 100%;',
-'        background: #000;',
-'      }',
-'      body {',
-'        overflow: hidden;',
-'      }',
-'      canvas {',
-'        display: block;',
-'        width: 100vw;',
-'        height: 100vh;',
-'        background: #000;',
-'        touch-action: none;',
-'      }',
-'    </style>',
-'  </head>',
-'  <body>',
-'    <canvas id="canvas"></canvas>',
-'    <script>',
-safeJs,
-'    <\/script>',
-'  </body>',
-'</html>'
+          // дефолтная сцена, похожая на твои
+          var defLines = [
+            "<!doctype html>",
+            "<html lang=\\\"en\\\">",
+            "  <head>",
+            "    <meta charset=\\\"utf-8\\\">",
+            "    <title>PocketLab test scene</title>",
+            "    <meta name=\\\"viewport\\\" content=\\\"width=device-width,initial-scale=1.0\\\">",
+            "    <style>",
+            "      * { margin:0; padding:0; box-sizing:border-box; }",
+            "      body {",
+            "        overflow:hidden;",
+            "        background:#020617;",
+            "        font-family:-apple-system, BlinkMacSystemFont, \\\"Segoe UI\\\", sans-serif;",
+            "      }",
+            "      canvas {",
+            "        display:block;",
+            "        width:100vw;",
+            "        height:100vh;",
+            "        background:#000;",
+            "      }",
+            "      #panel {",
+            "        position:fixed;",
+            "        top:16px;",
+            "        left:50%;",
+            "        transform:translateX(-50%);",
+            "        background:rgba(0,0,0,0.9);",
+            "        border:1px solid #ff006e;",
+            "        border-radius:10px;",
+            "        padding:8px 14px;",
+            "        color:#fff;",
+            "        font-size:11px;",
+            "        display:flex;",
+            "        align-items:center;",
+            "        gap:10px;",
+            "        z-index:10;",
+            "      }",
+            "      #panel span.label {",
+            "        color:#9ca3af;",
+            "        text-transform:uppercase;",
+            "        letter-spacing:.08em;",
+            "        font-size:9px;",
+            "      }",
+            "      #panel input[type=\\\"range\\\"] {",
+            "        width:120px;",
+            "      }",
+            "      #panel button {",
+            "        background:#fff;",
+            "        color:#000;",
+            "        border:none;",
+            "        border-radius:4px;",
+            "        padding:4px 8px;",
+            "        font-size:10px;",
+            "        cursor:pointer;",
+            "      }",
+            "    </style>",
+            "  </head>",
+            "  <body>",
+            "    <canvas id=\\\"canvas\\\"></canvas>",
+            "    <div id=\\\"panel\\\">",
+            "      <span class=\\\"label\\\">density</span>",
+            "      <input id=\\\"density\\\" type=\\\"range\\\" min=\\\"10\\\" max=\\\"200\\\" value=\\\"80\\\">",
+            "      <button id=\\\"shuffle\\\">shuffle</button>",
+            "    </div>",
+            "    <script>",
+            "      (function () {",
+            "        var canvas = document.getElementById('canvas');",
+            "        var ctx = canvas.getContext('2d');",
+            "        var densitySlider = document.getElementById('density');",
+            "        var shuffleBtn = document.getElementById('shuffle');",
+            "",
+            "        var W = 0, H = 0;",
+            "        var seed = 1;",
+            "",
+            "        function resize() {",
+            "          W = window.innerWidth;",
+            "          H = window.innerHeight;",
+            "          canvas.width = W;",
+            "          canvas.height = H;",
+            "          draw();",
+            "        }",
+            "",
+            "        function rnd() {",
+            "          var x = Math.sin(seed++) * 10000;",
+            "          return x - Math.floor(x);",
+            "        }",
+            "",
+            "        function draw() {",
+            "          var d = parseInt(densitySlider.value, 10);",
+            "          ctx.clearRect(0, 0, W, H);",
+            "          var bgGrad = ctx.createLinearGradient(0, 0, W, H);",
+            "          bgGrad.addColorStop(0, '#020617');",
+            "          bgGrad.addColorStop(1, '#1e293b');",
+            "          ctx.fillStyle = bgGrad;",
+            "          ctx.fillRect(0, 0, W, H);",
+            "",
+            "          var cols = Math.max(1, Math.round(Math.sqrt(d * W / H)));",
+            "          var rows = Math.max(1, Math.round(d / cols));",
+            "          var cellW = W / cols;",
+            "          var cellH = H / rows;",
+            "",
+            "          for (var y = 0; y < rows; y++) {",
+            "            for (var x = 0; x < cols; x++) {",
+            "              var cx = (x + 0.5) * cellW;",
+            "              var cy = (y + 0.5) * cellH;",
+            "              var t = rnd();",
+            "              var w = cellW * (0.2 + t * 0.8);",
+            "              var h = cellH * (0.2 + (1 - t) * 0.7);",
+            "",
+            "              ctx.save();",
+            "              ctx.translate(cx, cy);",
+            "              ctx.rotate((t - 0.5) * 0.8);",
+            "              var c = 0.3 + t * 0.7;",
+            "              ctx.fillStyle = 'rgba(' + Math.floor(255*c) + ', ' + Math.floor(80 + 120*(1-c)) + ', 255, 0.9)';",
+            "              ctx.fillRect(-w/2, -h/2, w, h);",
+            "              ctx.restore();",
+            "            }",
+            "          }",
+            "        }",
+            "",
+            "        densitySlider.addEventListener('input', draw);",
+            "        shuffleBtn.addEventListener('click', function () {",
+            "          seed = Date.now() % 100000;",
+            "          draw();",
+            "        });",
+            "",
+            "        window.addEventListener('resize', resize);",
+            "        resize();",
+            "      })();",
+            "    <\\/script>",
+            "  </body>",
+            "</html>"
           ];
-          return parts.join('\n');
+          setCode(defLines.join("\\n"));
+        }
+
+        function setFrameHtml(html) {
+          if ("srcdoc" in frame) {
+            frame.srcdoc = html;
+          } else {
+            var doc = frame.contentWindow.document;
+            doc.open();
+            doc.write(html);
+            doc.close();
+          }
         }
 
         function run() {
-          const src = codeEl.value || "";
-          let html;
-          if (isHtmlLike(src)) {
-            html = src;
-          } else {
-            html = wrapJsAsHtml(src);
-          }
-          frame.srcdoc = html;
+          var src = getCode() || "";
+          setFrameHtml(src);
           try {
             localStorage.setItem(STORAGE_KEY, src);
           } catch (e) {}
         }
 
         function stop() {
-          frame.srcdoc = "<!doctype html><html><head><meta charset='utf-8'><title>stopped</title></head><body style='margin:0;background:#000;'></body></html>";
+          var html = "<!doctype html><html><head><meta charset='utf-8'><title>stopped</title></head>" +
+            "<body style='margin:0;background:#000;'></body></html>";
+          setFrameHtml(html);
         }
 
         function clearCode() {
-          codeEl.value = "";
+          setCode("");
           try {
             localStorage.removeItem(STORAGE_KEY);
           } catch (e) {}
@@ -310,71 +385,51 @@ safeJs,
         function setMode(mode) {
           appEl.classList.remove("mode-split", "mode-editor", "mode-viewer");
           appEl.classList.add(mode);
+          setTimeout(function () { editor.refresh(); }, 30);
         }
 
-        // clipboard helpers
-        async function pasteFromClipboard() {
+        function pasteFromClipboard() {
           if (!navigator.clipboard || !navigator.clipboard.readText) {
             alert("clipboard not available");
             return;
           }
-          try {
-            const text = await navigator.clipboard.readText();
+          navigator.clipboard.readText().then(function (text) {
             if (text) {
-              codeEl.value = text;
+              setCode(text);
             }
-          } catch (e) {
+          }).catch(function () {
             alert("cannot read from clipboard");
-          }
+          });
         }
 
-        async function copyToClipboard() {
+        function copyToClipboard() {
           if (!navigator.clipboard || !navigator.clipboard.writeText) {
             alert("clipboard not available");
             return;
           }
-          try {
-            await navigator.clipboard.writeText(codeEl.value || "");
-          } catch (e) {
+          navigator.clipboard.writeText(getCode() || "").catch(function () {
             alert("cannot write to clipboard");
-          }
+          });
         }
 
-        // events
-        pasteBtn.addEventListener("click", () => {
-          pasteFromClipboard();
-        });
+        pasteBtn.addEventListener("click", pasteFromClipboard);
+        copyBtn.addEventListener("click", copyToClipboard);
+        clearBtn.addEventListener("click", clearCode);
 
-        copyBtn.addEventListener("click", () => {
-          copyToClipboard();
-        });
-
-        clearBtn.addEventListener("click", () => {
-          clearCode();
-        });
-
-        editorBtn.addEventListener("click", () => {
-          const current = appEl.classList.contains("mode-editor");
+        editorBtn.addEventListener("click", function () {
+          var current = appEl.classList.contains("mode-editor");
           setMode(current ? "mode-split" : "mode-editor");
         });
 
-        viewerBtn.addEventListener("click", () => {
-          const current = appEl.classList.contains("mode-viewer");
+        viewerBtn.addEventListener("click", function () {
+          var current = appEl.classList.contains("mode-viewer");
           setMode(current ? "mode-split" : "mode-viewer");
         });
 
-        runBtn.addEventListener("click", () => {
-          run();
-        });
+        runBtn.addEventListener("click", run);
+        stopBtn.addEventListener("click", stop);
 
-        stopBtn.addEventListener("click", () => {
-          stop();
-        });
-
-        // init
         loadStored();
-        // при желании можно сразу запускать дефолтный пример:
-        // run();
       })();
     </script>
   </body>
