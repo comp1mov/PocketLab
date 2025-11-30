@@ -8,18 +8,19 @@
     :root {
       color-scheme: dark;
 
-      /* PALETTE */
-      --c-bg: #050509;
-      --c-surface: #0b0c12;
-      --c-surface-soft: #111321;
-      --c-border: #2a2d3b;
-      --c-border-soft: #202330;
-      --c-text: #f5f5f7;
-      --c-muted: #9a9fb3;
-      --c-accent: #4da3ff;
-      --c-accent-soft: rgba(77, 163, 255, 0.16);
-      --c-danger: #ff4f6a;
-      --c-danger-soft: rgba(255, 79, 106, 0.16);
+      /* PALETTE: правь эти значения для разных тем */
+      --c-bg:            #04040a;
+      --c-surface-top:   #090a12;
+      --c-surface:       #05060c;
+      --c-surface-soft:  #080a14;
+      --c-border:        #2a3040;
+      --c-border-soft:   #1d2232;
+      --c-text:          #f5f5f7;
+      --c-muted:         #9a9fb3;
+      --c-accent:        #35f2a3;
+      --c-accent-soft:   rgba(53, 242, 163, 0.20);
+      --c-danger:        #ff4f6a;
+      --c-danger-soft:   rgba(255, 79, 106, 0.18);
 
       --radius: 1px;
     }
@@ -51,6 +52,11 @@
       padding: 8px 8px 12px;
       gap: 6px;
       min-height: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 16px 16px;
+      background-position: -1px -1px;
     }
 
     .top-bar {
@@ -58,9 +64,12 @@
       align-items: center;
       justify-content: space-between;
       gap: 8px;
-      padding: 2px 0;
+      padding: 4px 6px;
       user-select: none;
       flex-wrap: wrap;
+      border-radius: var(--radius);
+      background: var(--c-surface-top);
+      border: 1px solid var(--c-border);
     }
 
     .title-line {
@@ -77,9 +86,9 @@
     .title-dot {
       width: 4px;
       height: 4px;
-      border-radius: 50%;
+      border-radius: 0;
       background: var(--c-accent);
-      box-shadow: 0 0 0 3px rgba(77,163,255,0.3);
+      box-shadow: 0 0 0 2px rgba(53,242,163,0.4);
       flex-shrink: 0;
     }
 
@@ -88,9 +97,9 @@
     .title-version {
       font-size: 11px;
       padding: 1px 6px;
-      border-radius: var(--radius);
-      border: 1px solid rgba(255,255,255,0.08);
-      background: rgba(0,0,0,0.4);
+      border-radius: 0;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: #05060c;
     }
 
     .title-dev {
@@ -122,7 +131,7 @@
       color: var(--c-text);
       font-size: 10px;
       padding: 4px 8px;
-      border-radius: var(--radius);
+      border-radius: 0;
       display: inline-flex;
       align-items: center;
       gap: 4px;
@@ -136,8 +145,13 @@
       letter-spacing: 0.09em;
     }
 
-    .btn:hover { background: #171a25; }
-    .btn:active { transform: translateY(1px); }
+    .btn:hover {
+      background: #0c0f1b;
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+    }
 
     .btn-primary {
       border-color: var(--c-accent);
@@ -146,12 +160,22 @@
       font-weight: 500;
     }
 
-    .btn-primary:hover { background: #5bb0ff; }
+    .btn-primary:hover {
+      background: #4df7b5;
+    }
 
     .btn-danger {
       border-color: var(--c-danger);
       background: var(--c-danger-soft);
       color: #ffdce1;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border-color: var(--c-border-soft);
+      color: var(--c-muted);
+      font-weight: 500;
+      padding-inline: 6px;
     }
 
     .btn-pill { padding-inline: 8px; }
@@ -194,8 +218,8 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 1px solid rgba(255,255,255,0.04);
-      background: #090a10;
+      border-bottom: 1px solid var(--c-border);
+      background: #05060c;
       user-select: none;
       gap: 8px;
       flex-wrap: wrap;
@@ -217,9 +241,9 @@
     }
 
     .search-input {
-      background: #05060b;
-      border-radius: var(--radius);
-      border: 1px solid rgba(255,255,255,0.08);
+      background: #02030a;
+      border-radius: 0;
+      border: 1px solid var(--c-border-soft);
       padding: 3px 7px;
       font-size: 10px;
       color: var(--c-text);
@@ -246,7 +270,7 @@
     .code-area {
       flex: 1;
       padding: 6px 6px 6px;
-      background: #05060b;
+      background: #03040b;
       display: flex;
       min-height: 0;
     }
@@ -255,9 +279,9 @@
       flex: 1;
       display: flex;
       position: relative;
-      border-radius: var(--radius);
-      border: 1px solid rgba(255,255,255,0.08);
-      background: #05060b;
+      border-radius: 0;
+      border: 1px solid var(--c-border-soft);
+      background: #02030a;
       overflow: hidden;
       min-height: 0;
     }
@@ -274,13 +298,13 @@
     .line-numbers {
       width: 40px;
       padding: 7px 3px 7px 6px;
-      border-right: 1px solid rgba(255,255,255,0.06);
+      border-right: 1px solid var(--c-border-soft);
       font-family: "SF Mono", ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-size: 11px;
       line-height: 1.4;
       text-align: right;
       color: rgba(160,160,178,0.7);
-      background: #05060b;
+      background: #02030a;
       flex: 0 0 auto;
       pointer-events: none;
     }
@@ -288,12 +312,12 @@
     .line-number {
       padding-right: 3px;
       padding-left: 1px;
-      border-radius: var(--radius);
+      border-radius: 0;
     }
 
     .line-number.active {
       color: var(--c-accent);
-      background: rgba(77,163,255,0.12);
+      background: rgba(53,242,163,0.16);
     }
 
     textarea#code {
@@ -317,16 +341,14 @@
       box-sizing: border-box;
     }
 
-    /* DIVIDER – сделан толще и с большим хитом */
-
     .divider {
       height: 24px;
-      background: #070812;
+      background: #05060d;
       position: relative;
       cursor: ns-resize;
       touch-action: none;
-      border-top: 1px solid rgba(255,255,255,0.05);
-      border-bottom: 1px solid rgba(0,0,0,0.7);
+      border-top: 1px solid var(--c-border);
+      border-bottom: 1px solid var(--c-border);
       z-index: 5;
     }
 
@@ -337,9 +359,9 @@
       transform: translate(-50%, -50%);
       width: 90px;
       height: 18px;
-      border-radius: var(--radius);
-      background: #05060b;
-      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 0;
+      background: #02030a;
+      border: 1px solid var(--c-border-soft);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -349,7 +371,7 @@
     .divider-dot {
       width: 3px;
       height: 3px;
-      border-radius: var(--radius);
+      border-radius: 0;
       background: rgba(180,182,198,0.9);
     }
 
@@ -365,6 +387,7 @@
       display: flex;
       flex-direction: column;
       min-height: 0;
+      border-top: 1px solid var(--c-border-soft);
     }
 
     .preview-inner {
@@ -401,7 +424,7 @@
       right: 8px;
       width: 22px;
       height: 22px;
-      border-radius: var(--radius);
+      border-radius: 0;
       border: 1px solid rgba(255,255,255,0.6);
       background: rgba(0,0,0,0.65);
       display: none;
@@ -415,14 +438,81 @@
     .fullscreen-exit-icon {
       width: 12px;
       height: 12px;
-      border-radius: var(--radius);
+      border-radius: 0;
       border: 1px solid #ffffff;
       box-sizing: border-box;
     }
 
+    /* help overlay */
+
+    .help-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.78);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+    }
+
+    .help-card {
+      width: min(520px, 92vw);
+      max-height: 80vh;
+      background: #05060d;
+      border: 1px solid var(--c-border);
+      padding: 14px 14px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .help-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--c-muted);
+    }
+
+    .help-body {
+      font-size: 12px;
+      color: var(--c-text);
+      overflow: auto;
+    }
+
+    .help-body p {
+      margin: 0 0 6px;
+    }
+
+    .help-body code {
+      font-family: "SF Mono", ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 11px;
+      background: #02030a;
+      padding: 2px 4px;
+      border-radius: 0;
+      border: 1px solid var(--c-border-soft);
+    }
+
+    .help-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .help-overlay.visible {
+      display: flex;
+    }
+
     body.full-preview .top-bar,
     body.full-preview #editorPanel,
-    body.full-preview #divider { display: none; }
+    body.full-preview #divider {
+      display: none;
+    }
 
     body.full-preview #previewPanel {
       position: fixed;
@@ -438,7 +528,9 @@
       border-radius: 0;
     }
 
-    body.full-preview .fullscreen-exit { display: flex; }
+    body.full-preview .fullscreen-exit {
+      display: flex;
+    }
 
     @media (max-width: 768px) {
       .title-line { font-size: 12px; }
@@ -469,7 +561,7 @@
       <div class="title-line">
         <span class="title-dot"></span>
         <span class="title-name">POCKETLAB</span>
-        <span class="title-version">v0.45</span>
+        <span class="title-version">v0.46</span>
         <span class="title-dev">dev by Grisha Tsvetkov</span>
       </div>
       <div class="toolbar">
@@ -485,6 +577,7 @@
           <button class="btn btn-primary btn-pill" id="btnRunToggle" type="button">RUN</button>
           <button class="btn btn-pill" id="btnFull" type="button">FULL</button>
           <button class="btn btn-pill" id="btnPopout" type="button">OPEN PAGE</button>
+          <button class="btn btn-ghost" id="btnHelp" type="button">?</button>
         </div>
       </div>
     </div>
@@ -544,6 +637,36 @@
     </div>
   </div>
 
+  <!-- HELP OVERLAY -->
+  <div class="help-overlay" id="helpOverlay">
+    <div class="help-card">
+      <div class="help-header">
+        <span>POCKETLAB · QUICK GUIDE</span>
+        <button class="btn btn-ghost" id="btnHelpClose" type="button">CLOSE</button>
+      </div>
+      <div class="help-body">
+        <p><strong>Что это.</strong> Мини-лаборатория для HTML/JS-скетчей. Вставляешь код сверху, нажимаешь <code>RUN</code>, смотришь результат снизу.</p>
+        <p><strong>Базовый сценарий.</strong></p>
+        <ul>
+          <li><code>OPEN</code> — загрузить .html / .txt файл с устройства</li>
+          <li><code>SAVE</code> — сохранить текущий код в .html (имя можно задать)</li>
+          <li><code>PASTE / COPY / CLEAR</code> — работа с буфером и очистка</li>
+          <li><code>DEMO</code> — случайная демо-страница из папки <code>/demo</code></li>
+          <li><code>RUN</code> — запускает / перезапускает превью</li>
+          <li><code>FULL</code> — полноэкранное превью, выход по квадратику в углу</li>
+          <li><code>OPEN PAGE</code> — открыть результат в новой вкладке</li>
+        </ul>
+        <p><strong>Поиск.</strong> Вводишь строку в поле <code>search in code</code>, жмешь <code>SEARCH</code> или Enter: курсор прыгает по вхождениям.</p>
+        <p><strong>Структура HTML.</strong> Если вставляешь полный документ с <code>&lt;html&gt;</code>, он запускается как есть. Если вставлен только фрагмент, PocketLab оборачивает его в минимальный HTML-каркас.</p>
+      </div>
+      <div class="help-footer">
+        <span style="font-size:10px;color:var(--c-muted);letter-spacing:0.12em;text-transform:uppercase;">
+          v0.46 · pocketlab
+        </span>
+      </div>
+    </div>
+  </div>
+
   <input type="file" id="fileInput"
          accept=".html,.htm,.txt,.svg,.xml,.json,text/html,text/plain"
          style="display:none">
@@ -564,6 +687,9 @@
       const btnFind = document.getElementById("btnFind");
       const btnPopout = document.getElementById("btnPopout");
       const btnExitFull = document.getElementById("btnExitFull");
+      const btnHelp = document.getElementById("btnHelp");
+      const btnHelpClose = document.getElementById("btnHelpClose");
+      const helpOverlay = document.getElementById("helpOverlay");
 
       const divider = document.getElementById("divider");
       const editorPanel = document.getElementById("editorPanel");
@@ -822,7 +948,8 @@
       function manualPastePrompt() {
         const existing = codeEl.value;
         const hint = existing ? "\n\n(current content will be replaced)" : "";
-        const pasted = window.prompt("Paste your HTML here:" + hint, "");
+        thePasted = window.prompt("Paste your HTML here:" + hint, "");
+        const pasted = thePasted; // слегка обходим линтеры
         if (pasted != null) {
           codeEl.value = pasted;
           resetSearchState();
@@ -837,6 +964,14 @@
 
       function exitFullPreview() {
         document.body.classList.remove("full-preview");
+      }
+
+      function openHelp() {
+        helpOverlay.classList.add("visible");
+      }
+
+      function closeHelp() {
+        helpOverlay.classList.remove("visible");
       }
 
       function resetSearchState() {
@@ -1132,6 +1267,11 @@
       btnDemo.addEventListener("click", loadRandomDemo);
       btnPopout.addEventListener("click", openPreviewInNewTab);
       btnExitFull.addEventListener("click", exitFullPreview);
+      btnHelp.addEventListener("click", openHelp);
+      btnHelpClose.addEventListener("click", closeHelp);
+      helpOverlay.addEventListener("click", function (event) {
+        if (event.target === helpOverlay) closeHelp();
+      });
 
       searchInput.addEventListener("keydown", function (event) {
         if (event.key === "Enter") {
@@ -1155,7 +1295,11 @@
           return;
         }
         if (event.key === "Escape") {
-          stopPreview();
+          if (helpOverlay.classList.contains("visible")) {
+            closeHelp();
+          } else {
+            stopPreview();
+          }
         }
       });
 
