@@ -1,0 +1,20 @@
+{
+  "name": "PocketLab",
+  "short_name": "PocketLab",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#04040a",
+  "theme_color": "#04040a",
+  "icons": [
+    {
+      "src": "icons/pocketlab-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/pocketlab-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
