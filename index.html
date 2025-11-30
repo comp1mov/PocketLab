@@ -8,7 +8,7 @@
     :root {
       color-scheme: dark;
 
-      /* PALETTE: все, что отвечает за цветовую схему */
+      /* PALETTE */
       --c-bg: #050509;
       --c-surface: #0b0c12;
       --c-surface-soft: #111321;
@@ -24,9 +24,7 @@
       --radius: 1px;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     html, body {
       margin: 0;
@@ -85,9 +83,7 @@
       flex-shrink: 0;
     }
 
-    .title-name {
-      color: var(--c-text);
-    }
+    .title-name { color: var(--c-text); }
 
     .title-version {
       font-size: 11px;
@@ -140,13 +136,8 @@
       letter-spacing: 0.09em;
     }
 
-    .btn:hover {
-      background: #171a25;
-    }
-
-    .btn:active {
-      transform: translateY(1px);
-    }
+    .btn:hover { background: #171a25; }
+    .btn:active { transform: translateY(1px); }
 
     .btn-primary {
       border-color: var(--c-accent);
@@ -155,9 +146,7 @@
       font-weight: 500;
     }
 
-    .btn-primary:hover {
-      background: #5bb0ff;
-    }
+    .btn-primary:hover { background: #5bb0ff; }
 
     .btn-danger {
       border-color: var(--c-danger);
@@ -165,9 +154,7 @@
       color: #ffdce1;
     }
 
-    .btn-pill {
-      padding-inline: 8px;
-    }
+    .btn-pill { padding-inline: 8px; }
 
     .layout {
       flex: 1;
@@ -330,13 +317,13 @@
       box-sizing: border-box;
     }
 
-    /* divider: сделал выше и дал явный z-index */
+    /* DIVIDER – сделан толще и с большим хитом */
 
     .divider {
-      height: 12px;
+      height: 24px;
       background: #070812;
       position: relative;
-      cursor: row-resize;
+      cursor: ns-resize;
       touch-action: none;
       border-top: 1px solid rgba(255,255,255,0.05);
       border-bottom: 1px solid rgba(0,0,0,0.7);
@@ -348,8 +335,8 @@
       left: 50%;
       top: 50%;
       transform: translate(-50%, -50%);
-      width: 72px;
-      height: 20px;
+      width: 90px;
+      height: 18px;
       border-radius: var(--radius);
       background: #05060b;
       border: 1px solid rgba(255,255,255,0.12);
@@ -435,9 +422,7 @@
 
     body.full-preview .top-bar,
     body.full-preview #editorPanel,
-    body.full-preview #divider {
-      display: none;
-    }
+    body.full-preview #divider { display: none; }
 
     body.full-preview #previewPanel {
       position: fixed;
@@ -448,22 +433,16 @@
     }
 
     body.full-preview .preview-wrapper,
-      body.full-preview .preview-inner,
-      body.full-preview #preview {
+    body.full-preview .preview-inner,
+    body.full-preview #preview {
       border-radius: 0;
     }
 
-    body.full-preview .fullscreen-exit {
-      display: flex;
-    }
+    body.full-preview .fullscreen-exit { display: flex; }
 
     @media (max-width: 768px) {
-      .title-line {
-        font-size: 12px;
-      }
-      .toolbar {
-        justify-content: flex-start;
-      }
+      .title-line { font-size: 12px; }
+      .toolbar { justify-content: flex-start; }
     }
 
     @media (max-width: 480px) {
@@ -471,12 +450,8 @@
         font-size: 9px;
         padding-inline: 6px;
       }
-      .search-input {
-        width: 118px;
-      }
-      .title-line {
-        font-size: 11px;
-      }
+      .search-input { width: 118px; }
+      .title-line { font-size: 11px; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -494,7 +469,7 @@
       <div class="title-line">
         <span class="title-dot"></span>
         <span class="title-name">POCKETLAB</span>
-        <span class="title-version">v0.44</span>
+        <span class="title-version">v0.45</span>
         <span class="title-dev">dev by Grisha Tsvetkov</span>
       </div>
       <div class="toolbar">
@@ -822,9 +797,7 @@
         temp.setAttribute("readonly", "readonly");
         document.body.appendChild(temp);
         temp.select();
-        try {
-          document.execCommand("copy");
-        } catch (e) {}
+        try { document.execCommand("copy"); } catch (e) {}
         document.body.removeChild(temp);
       }
 
@@ -1041,7 +1014,6 @@
       }
 
       codeScroll.addEventListener("scroll", function () {});
-
       codeEl.addEventListener("click", updateActiveLineHighlight);
       codeEl.addEventListener("keyup", updateActiveLineHighlight);
 
