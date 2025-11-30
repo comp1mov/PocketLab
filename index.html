@@ -554,6 +554,16 @@
       }
     }
   </style>
+    <!-- PWA meta -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#04040a">
+
+  <!-- iOS иконка и режим web-app -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="icons/pocketlab-192.png">
+</head>
+
 </head>
 <body>
   <div class="app">
@@ -1319,5 +1329,14 @@
       }
     })();
   </script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("./sw.js").catch(function (err) {
+          console.error("Service worker registration failed", err);
+        });
+      });
+    }
+  </script>  
 </body>
 </html>
