@@ -4,10 +4,6 @@
   <meta charset="utf-8">
   <title>PocketLab</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="theme-color" content="#04040a">
-  <link rel="manifest" href="manifest.json">
   <style>
     :root {
       color-scheme: dark;
@@ -35,11 +31,13 @@
       margin: 0;
       padding: 0;
       height: 100%;
+      width: 100%;
       background: var(--c-bg);
       color: var(--c-text);
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", sans-serif;
-      text-rendering: geometricPrecision;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+                   "Segoe UI", sans-serif;
       -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
     }
 
     body {
@@ -47,1805 +45,925 @@
       flex-direction: column;
     }
 
-    button, input, textarea {
-      font-family: inherit;
-    }
-
-    ::selection {
-      background: rgba(53, 242, 163, 0.35);
-      color: var(--c-text);
-    }
-
-    .app-shell {
+    .app {
+      flex: 1;
       display: flex;
       flex-direction: column;
-      height: 100%;
-      max-width: 1440px;
-      margin: 0 auto;
-      padding: 10px 10px 8px 10px;
-      gap: 8px;
+      padding: 8px 8px 12px;
+      gap: 6px;
+      min-height: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 16px 16px;
+      background-position: -1px -1px;
     }
 
-    .app-header {
+    .top-bar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      padding: 6px 8px;
-      background: linear-gradient(180deg, #10121f 0%, #080910 100%);
-      border-radius: 8px;
-      border: 1px solid rgba(102, 115, 163, 0.6);
-      box-shadow:
-        0 0 0 1px rgba(0, 0, 0, 0.9),
-        0 10px 30px rgba(0, 0, 0, 0.8);
-    }
-
-    .app-header-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      min-width: 0;
-    }
-
-    .app-title {
-      font-size: 13px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: #e4e7ff;
-      white-space: nowrap;
-    }
-
-    .app-subtitle {
-      font-size: 11px;
-      color: rgba(190, 197, 255, 0.85);
-      white-space: nowrap;
-    }
-
-    .app-header-center {
-      display: flex;
-      align-items: center;
       gap: 8px;
-      min-width: 0;
-      flex: 1;
-      justify-content: center;
+      padding: 4px 6px;
+      user-select: none;
+      flex-wrap: wrap;
+      border-radius: var(--radius);
+      background: var(--c-surface-top);
+      border: 1px solid var(--c-border);
     }
 
-    .badge-pill {
-      font-size: 11px;
-      padding: 3px 8px;
-      border-radius: 999px;
-      border: 1px solid rgba(97, 104, 150, 0.9);
-      background: radial-gradient(circle at 0 0, rgba(79, 232, 170, 0.22), transparent 55%), #060712;
-      color: #cfd5ff;
-      white-space: nowrap;
-    }
-
-    .app-header-right {
+    .title-line {
       display: flex;
-      align-items: center;
+      align-items: baseline;
       gap: 6px;
-      justify-content: flex-end;
-      min-width: 0;
-    }
-
-    .view-mode-toggle {
-      display: inline-flex;
-      align-items: center;
-      gap: 2px;
-      padding: 3px;
-      border-radius: 999px;
-      border: 1px solid rgba(92, 104, 160, 0.8);
-      background: #050713;
-      position: relative;
-    }
-
-    .view-mode-pill {
-      position: absolute;
-      top: 3px;
-      bottom: 3px;
-      width: calc(50% - 3px);
-      border-radius: 999px;
-      background: linear-gradient(135deg, rgba(63, 246, 171, 0.2), rgba(63, 246, 171, 0.02));
-      border: 1px solid rgba(63, 246, 171, 0.8);
-      box-shadow: 0 0 0 1px rgba(5, 9, 20, 0.9);
-      transition: transform 160ms ease-out;
-      transform: translateX(0);
-      pointer-events: none;
-    }
-
-    .view-mode-toggle[data-mode="iframe"] .view-mode-pill {
-      transform: translateX(0);
-    }
-
-    .view-mode-toggle[data-mode="window"] .view-mode-pill {
-      transform: translateX(100%);
-    }
-
-    .view-mode-button {
-      position: relative;
-      z-index: 1;
-      border: none;
-      background: none;
-      padding: 4px 10px;
-      font-size: 10px;
-      letter-spacing: 0.16em;
+      font-size: 13px;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
-      color: #9da4c8;
-      cursor: pointer;
-      border-radius: 999px;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      white-space: nowrap;
-      transition: color 120ms ease-out;
-    }
-
-    .view-mode-toggle[data-mode="iframe"] .view-mode-button[data-mode="iframe"],
-    .view-mode-toggle[data-mode="window"] .view-mode-button[data-mode="window"] {
-      color: #ecf5ff;
-    }
-
-    .view-mode-shortcut {
-      font-size: 9px;
-      opacity: 0.7;
-    }
-
-    .header-separator {
-      width: 1px;
-      height: 18px;
-      background: linear-gradient(
-        to bottom,
-        rgba(120, 130, 190, 0),
-        rgba(120, 130, 190, 0.85),
-        rgba(120, 130, 190, 0)
-      );
-    }
-
-    .header-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 3px 8px;
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      border-radius: 999px;
-      border: 1px solid rgba(96, 105, 158, 0.9);
-      background: radial-gradient(circle at 0 0, rgba(79, 232, 170, 0.18), transparent 55%), #050714;
-      color: #d6ddff;
+      color: var(--c-muted);
       white-space: nowrap;
     }
 
-    .header-pill span.kbd {
-      font-size: 9px;
-      padding: 1px 4px;
-      border-radius: 4px;
-      border: 1px solid rgba(118, 128, 188, 0.9);
-      background: rgba(8, 10, 24, 0.9);
-      color: #f5f7ff;
-    }
-
-    .header-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: radial-gradient(circle at 30% 30%, #f5fafe, #8ee8ff);
-      box-shadow: 0 0 8px rgba(142, 232, 255, 0.9);
-    }
-
-    .run-stop-button {
-      border-radius: 999px;
-      border: 1px solid rgba(116, 128, 188, 0.9);
-      background: radial-gradient(circle at 0 0, rgba(53, 242, 163, 0.18), transparent 55%), #060814;
-      color: #e5ecff;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-      padding: 6px 14px 6px 12px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-      box-shadow:
-        0 0 0 1px rgba(0, 0, 0, 0.95),
-        0 8px 22px rgba(0, 0, 0, 0.85);
-      position: relative;
-      overflow: hidden;
-      min-width: 96px;
-      justify-content: center;
-    }
-
-    .run-stop-button::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.14), transparent 60%);
-      opacity: 0.5;
-      pointer-events: none;
-    }
-
-    .run-stop-button .indicator {
-      width: 10px;
-      height: 10px;
-      border-radius: 999px;
-      background: radial-gradient(circle at 30% 30%, #3afaa4, #0c8c5b);
-      box-shadow:
-        0 0 0 1px rgba(5, 10, 16, 0.85),
-        0 0 14px rgba(58, 250, 164, 0.95);
+    .title-dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 0;
+      background: var(--c-accent);
+      box-shadow: 0 0 0 2px rgba(53,242,163,0.4);
       flex-shrink: 0;
     }
 
-    .run-stop-button .label {
-      position: relative;
-      z-index: 1;
-    }
+    .title-name { color: var(--c-text); }
 
-    .run-stop-button[data-state="stopped"] {
-      border-color: rgba(180, 60, 90, 0.9);
-      background: radial-gradient(circle at 0 0, rgba(180, 60, 90, 0.24), transparent 60%), #090611;
-    }
-
-    .run-stop-button[data-state="stopped"] .indicator {
-      background: radial-gradient(circle at 30% 30%, #ff4f6a, #a1182f);
-      box-shadow:
-        0 0 0 1px rgba(10, 4, 10, 0.9),
-        0 0 12px rgba(255, 79, 106, 0.9);
-    }
-
-    .app-main {
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-      gap: 8px;
-      min-height: 0;
-    }
-
-    .top-row {
-      display: flex;
-      gap: 8px;
-      align-items: stretch;
-      min-height: 0;
-      flex: 1;
-    }
-
-    .editor-panel {
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-      min-width: 0;
-      min-height: 0;
-      background: radial-gradient(circle at 0 0, rgba(79, 232, 170, 0.14), transparent 60%), #04050d;
-      border-radius: 8px;
-      border: 1px solid rgba(75, 88, 136, 0.95);
-      box-shadow:
-        0 0 0 1px rgba(2, 3, 10, 0.98),
-        0 12px 32px rgba(0, 0, 0, 0.92);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .editor-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 6px 8px;
-      border-bottom: 1px solid rgba(70, 80, 124, 0.9);
-      background: radial-gradient(circle at 0 0, rgba(62, 242, 171, 0.05), transparent 55%), #070917;
-    }
-
-    .editor-header-left {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      min-width: 0;
-    }
-
-    .editor-title {
+    .title-version {
       font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.16em;
-      color: #d3dbff;
-      white-space: nowrap;
+      padding: 1px 6px;
+      border-radius: 0;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: #05060c;
     }
 
-    .editor-subtitle {
-      font-size: 10px;
-      color: rgba(173, 184, 238, 0.9);
-      white-space: nowrap;
-    }
-
-    .editor-header-right {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .badge-small {
+    .title-dev {
       font-size: 9px;
-      text-transform: uppercase;
-      letter-spacing: 0.16em;
-      padding: 3px 8px;
-      border-radius: 999px;
-      border: 1px solid rgba(90, 100, 150, 0.9);
-      background: rgba(7, 9, 22, 0.95);
-      color: #c8d1ff;
-      white-space: nowrap;
-    }
-
-    .badge-small span {
-      opacity: 0.7;
+      color: var(--c-muted);
+      opacity: 0.9;
     }
 
     .toolbar {
       display: flex;
-      align-items: center;
+      flex-wrap: wrap;
       gap: 6px;
-      padding: 5px 8px;
-      border-bottom: 1px solid rgba(60, 70, 112, 0.9);
-      background: radial-gradient(circle at 0 0, rgba(90, 240, 185, 0.06), transparent 65%), #050612;
+      justify-content: flex-end;
     }
 
     .toolbar-group {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 2px;
-      border-radius: 999px;
-      background: rgba(7, 8, 17, 0.96);
-      border: 1px solid rgba(65, 76, 118, 0.9);
-      box-shadow: 0 0 0 1px rgba(3, 4, 12, 0.96);
-    }
-
-    .toolbar-label {
-      font-size: 9px;
-      text-transform: uppercase;
-      letter-spacing: 0.16em;
-      color: #a9b3e8;
-      padding: 0 6px 0 5px;
-      border-right: 1px solid rgba(70, 81, 132, 0.9);
       display: flex;
-      align-items: center;
+      flex-wrap: wrap;
       gap: 4px;
     }
 
-    .toolbar-label-dot {
-      width: 5px;
-      height: 5px;
-      border-radius: 999px;
-      background: radial-gradient(circle at 30% 30%, #3afaa4, #0b7a52);
-      box-shadow: 0 0 8px rgba(58, 250, 164, 0.9);
+    .toolbar-group + .toolbar-group {
+      margin-left: 4px;
     }
 
-    .mini-button {
-      border: none;
-      background: transparent;
-      color: #c8d0ff;
-      font-size: 9px;
-      text-transform: uppercase;
-      letter-spacing: 0.16em;
+    .btn {
+      border: 1px solid var(--c-border-soft);
+      background: var(--c-surface-soft);
+      color: var(--c-text);
+      font-size: 10px;
       padding: 4px 8px;
-      border-radius: 999px;
-      cursor: pointer;
+      border-radius: 0;
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      position: relative;
-      overflow: hidden;
+      cursor: pointer;
+      min-height: 22px;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      outline: none;
       white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
     }
 
-    .mini-button::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.06), transparent 60%);
-      opacity: 0.8;
-      pointer-events: none;
+    .btn:hover {
+      background: #0c0f1b;
     }
 
-    .mini-button:hover {
-      background: rgba(100, 112, 170, 0.28);
+    .btn:active {
+      transform: translateY(1px);
     }
 
-    .mini-button-danger {
-      color: #ff8fa0;
+    .btn-primary {
+      border-color: var(--c-accent);
+      background: var(--c-accent);
+      color: #02030b;
+      font-weight: 500;
     }
 
-    .mini-button-primary {
-      color: #e5fffb;
+    .btn-primary:hover {
+      background: #4df7b5;
     }
 
-    .mini-button-ghost {
-      color: #b4bce8;
+    .btn-danger {
+      border-color: var(--c-danger);
+      background: var(--c-danger-soft);
+      color: #ffdce1;
     }
 
-    .mini-button span.kbd {
-      font-size: 8px;
-      opacity: 0.75;
+    .btn-ghost {
+      background: transparent;
+      border-color: var(--c-border-soft);
+      color: var(--c-muted);
+      font-weight: 500;
+      padding-inline: 6px;
     }
 
-    .search-block {
+    .btn-pill { padding-inline: 8px; }
+
+    .layout {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-height: 0;
+    }
+
+    .split {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--c-border);
+      background: var(--c-surface);
+      min-height: 0;
+    }
+
+    .panel {
+      flex: 1;
+      position: relative;
+      min-height: 40px;
+      display: flex;
+      flex-direction: column;
+      background: var(--c-surface);
+      min-height: 0;
+    }
+
+    .panel-header {
+      padding: 5px 8px;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--c-muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--c-border);
+      background: #05060c;
+      user-select: none;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .panel-header-left,
+    .panel-header-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .search-box {
       display: flex;
       align-items: center;
       gap: 4px;
-      padding: 3px 8px;
-      border-radius: 999px;
-      border: 1px solid rgba(76, 88, 138, 0.9);
-      background: radial-gradient(circle at 0 0, rgba(62, 242, 171, 0.06), transparent 60%), #050612;
-      min-width: 0;
-      flex: 1;
-      max-width: 420px;
+      flex-wrap: nowrap;
     }
 
     .search-input {
-      border: none;
-      background: transparent;
-      color: #f5f7ff;
-      font-size: 11px;
-      outline: none;
-      flex: 1;
-      min-width: 0;
+      background: #02030a;
+      border-radius: 0;
+      border: 1px solid var(--c-border-soft);
+      padding: 3px 7px;
+      font-size: 10px;
+      color: var(--c-text);
+      width: 140px;
     }
 
     .search-input::placeholder {
-      color: rgba(152, 162, 210, 0.8);
+      color: rgba(154,159,179,0.8);
     }
 
-    .search-status {
-      font-size: 10px;
-      color: rgba(162, 174, 220, 0.9);
-      white-space: nowrap;
+    .search-input:focus {
+      outline: none;
+      border-color: var(--c-accent);
+      box-shadow: 0 0 0 1px var(--c-accent-soft);
     }
 
-    .search-nav {
-      display: inline-flex;
-      align-items: center;
-      gap: 2px;
-    }
-
-    .search-nav-button {
-      border: none;
-      background: rgba(6, 8, 18, 0.98);
-      color: #cdd6ff;
+    .search-hit {
       font-size: 9px;
-      padding: 2px 5px;
-      border-radius: 999px;
-      cursor: pointer;
-      border: 1px solid rgba(82, 92, 142, 0.9);
+      color: var(--c-muted);
+      min-width: 52px;
+      text-align: right;
     }
 
-    .search-nav-button:disabled {
-      opacity: 0.35;
-      cursor: default;
-    }
-
-    .toolbar-help-button {
-      border-radius: 999px;
-      border: 1px solid rgba(96, 112, 167, 0.95);
-      background: radial-gradient(circle at 0 0, rgba(94, 112, 200, 0.2), transparent 65%), #070813;
-      color: #dde4ff;
-      font-size: 10px;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      padding: 5px 10px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-      box-shadow:
-        0 0 0 1px rgba(5, 7, 14, 0.98),
-        0 8px 22px rgba(0, 0, 0, 0.9);
-      white-space: nowrap;
-    }
-
-    .toolbar-help-button span.kbd {
-      font-size: 9px;
-      padding: 1px 4px;
-      border-radius: 4px;
-      border: 1px solid rgba(124, 134, 194, 0.95);
-      background: rgba(7, 9, 18, 0.96);
-      color: #f4f7ff;
-    }
-
-    .editor-body {
-      display: flex;
+    .code-area {
       flex: 1;
+      padding: 6px 6px 6px;
+      background: #03040b;
+      display: flex;
       min-height: 0;
+    }
+
+    .code-shell {
+      flex: 1;
+      display: flex;
       position: relative;
-      padding: 6px 0 6px 0;
+      border-radius: 0;
+      border: 1px solid var(--c-border-soft);
+      background: #02030a;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    .code-scroll {
+      flex: 1;
+      display: flex;
+      overflow: auto;
+      min-height: 0;
+      max-height: 100%;
+      -webkit-overflow-scrolling: touch;
     }
 
     .line-numbers {
-      width: 48px;
-      flex-shrink: 0;
-      padding: 8px 4px 8px 8px;
-      font-size: 10px;
-      color: rgba(146, 156, 214, 0.9);
+      width: 40px;
+      padding: 7px 3px 7px 6px;
+      border-right: 1px solid var(--c-border-soft);
+      font-family: "SF Mono", ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 11px;
+      line-height: 1.4;
       text-align: right;
-      border-right: 1px solid rgba(52, 62, 104, 0.9);
-      user-select: none;
-      background: radial-gradient(circle at 0 0, rgba(57, 230, 172, 0.08), transparent 60%), #040510;
-      overflow: hidden;
-      line-height: 1.4;
-      position: relative;
-    }
-
-    .line-numbers-inner {
-      position: absolute;
-      inset: 8px 4px 8px 8px;
-      overflow: hidden;
-      white-space: pre;
-    }
-
-    .line-highlight {
-      position: absolute;
-      left: 0;
-      right: 0;
-      height: 14px;
-      border-radius: 4px;
-      background: linear-gradient(90deg, rgba(104, 190, 255, 0.16), rgba(104, 190, 255, 0));
-      opacity: 0;
+      color: rgba(160,160,178,0.7);
+      background: #02030a;
+      flex: 0 0 auto;
       pointer-events: none;
-      transition: opacity 140ms ease-out;
     }
 
-    .line-highlight.visible {
-      opacity: 1;
+    .line-number {
+      padding-right: 3px;
+      padding-left: 1px;
+      border-radius: 0;
     }
 
-    .editor-scroll-wrapper {
+    .line-number.active {
+      color: var(--c-accent);
+      background: rgba(53,242,163,0.16);
+    }
+
+    textarea#code {
       flex: 1;
-      min-width: 0;
-      min-height: 0;
-      padding: 0 8px 0 0;
-      position: relative;
-    }
-
-    .editor-textarea {
-      width: 100%;
-      height: 100%;
-      min-height: 0;
-      resize: none;
       border: none;
-      outline: none;
-      background: radial-gradient(circle at 0 0, rgba(80, 236, 176, 0.06), transparent 60%), #050713;
-      color: #f7f8ff;
-      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      font-size: 12px;
+      border-radius: 0;
+      background: transparent;
+      color: var(--c-text);
+      font-family: "SF Mono", ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 11px;
       line-height: 1.4;
-      padding: 8px 10px 8px 10px;
-      border-radius: 6px;
-      box-shadow: inset 0 0 0 1px rgba(57, 72, 126, 0.95);
+      padding: 7px 8px;
+      outline: none;
+      resize: none;
       tab-size: 2;
-      white-space: pre;
-      overflow: auto;
+      -webkit-text-size-adjust: 100%;
+      touch-action: manipulation;
+      -webkit-user-select: text;
+      height: auto;
+      overflow: hidden;
+      box-sizing: border-box;
     }
 
-    .editor-textarea::placeholder {
-      color: rgba(146, 156, 214, 0.8);
-    }
-
-    .splitter {
-      width: 7px;
-      cursor: col-resize;
+    .divider {
+      height: 24px;
+      background: #05060d;
       position: relative;
+      cursor: ns-resize;
+      touch-action: none;
+      border-top: 1px solid var(--c-border);
+      border-bottom: 1px solid var(--c-border);
+      z-index: 5;
+    }
+
+    .divider-hit {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 90px;
+      height: 18px;
+      border-radius: 0;
+      background: #02030a;
+      border: 1px solid var(--c-border-soft);
       display: flex;
       align-items: center;
       justify-content: center;
-      background: radial-gradient(circle at 50% 0, rgba(72, 234, 170, 0.16), transparent 60%), #050611;
-      border-radius: 8px;
-      border: 1px solid rgba(68, 78, 128, 0.95);
-      box-shadow:
-        0 0 0 1px rgba(0, 0, 0, 0.96),
-        0 10px 26px rgba(0, 0, 0, 0.95);
-      margin: 0 3px;
+      gap: 2px;
     }
 
-    .splitter-handle {
+    .divider-dot {
       width: 3px;
-      height: 34px;
-      border-radius: 999px;
-      background: linear-gradient(180deg, rgba(130, 144, 220, 0.1), rgba(130, 144, 220, 0.9), rgba(130, 144, 220, 0.1));
-      box-shadow:
-        0 0 0 1px rgba(8, 10, 20, 0.98),
-        0 0 10px rgba(122, 150, 240, 0.8);
+      height: 3px;
+      border-radius: 0;
+      background: rgba(180,182,198,0.9);
     }
 
-    .preview-panel {
+    .divider.dragging .divider-hit {
+      border-color: var(--c-accent);
+      box-shadow: 0 0 0 1px var(--c-accent-soft);
+    }
+
+    .preview-wrapper {
       flex: 1;
-      min-width: 0;
-      min-height: 0;
-      background: radial-gradient(circle at 100% 0, rgba(104, 195, 255, 0.16), transparent 60%), #03040c;
-      border-radius: 8px;
-      border: 1px solid rgba(72, 84, 138, 0.95);
-      box-shadow:
-        0 0 0 1px rgba(2, 3, 10, 0.98),
-        0 12px 32px rgba(0, 0, 0, 0.94);
+      position: relative;
+      background: #000;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
+      min-height: 0;
+      border-top: 1px solid var(--c-border-soft);
+    }
+
+    .preview-inner {
+      flex: 1;
       position: relative;
-    }
-
-    .preview-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 6px 8px;
-      border-bottom: 1px solid rgba(60, 70, 118, 0.95);
-      background: radial-gradient(circle at 100% 0, rgba(90, 200, 255, 0.14), transparent 60%), #050714;
-    }
-
-    .preview-header-left {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .preview-title {
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.16em;
-      color: #d6defc;
-      white-space: nowrap;
-    }
-
-    .preview-subtitle {
-      font-size: 10px;
-      color: rgba(171, 184, 240, 0.9);
-      white-space: nowrap;
-    }
-
-    .preview-header-right {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .preview-status {
-      font-size: 10px;
-      color: rgba(176, 188, 244, 0.96);
-      white-space: nowrap;
-    }
-
-    .preview-status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: radial-gradient(circle at 30% 30%, #33f3a8, #117654);
-      box-shadow: 0 0 10px rgba(51, 243, 168, 0.95);
-    }
-
-    .preview-status-dot.stopped {
-      background: radial-gradient(circle at 30% 30%, #ff4f6a, #a1182f);
-      box-shadow: 0 0 10px rgba(255, 79, 106, 0.9);
-    }
-
-    .preview-toolbar {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 5px 8px;
-      border-bottom: 1px solid rgba(58, 68, 112, 0.9);
-      background: radial-gradient(circle at 100% 0, rgba(80, 202, 250, 0.12), transparent 60%), #030513;
-    }
-
-    .preview-toolbar-group {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 2px;
-      border-radius: 999px;
-      border: 1px solid rgba(64, 74, 124, 0.9);
-      background: rgba(5, 6, 16, 0.98);
-      box-shadow: 0 0 0 1px rgba(5, 6, 14, 0.96);
-    }
-
-    .preview-toolbar-label {
-      font-size: 9px;
-      text-transform: uppercase;
-      letter-spacing: 0.16em;
-      color: #aeb8eb;
-      padding: 0 6px 0 5px;
-      border-right: 1px solid rgba(70, 80, 128, 0.9);
-      white-space: nowrap;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .preview-toolbar-label-dot {
-      width: 5px;
-      height: 5px;
-      border-radius: 999px;
-      background: radial-gradient(circle at 30% 30%, #3afaa4, #0b7a52);
-      box-shadow: 0 0 8px rgba(58, 250, 164, 0.9);
-    }
-
-    .preview-window-note {
-      font-size: 9px;
-      color: rgba(172, 182, 234, 0.9);
-      white-space: nowrap;
-    }
-
-    .preview-body {
-      flex: 1;
+      background: #000;
       min-height: 0;
-      position: relative;
-      background: radial-gradient(circle at 50% 0, rgba(92, 184, 255, 0.18), transparent 60%), radial-gradient(circle at 50% 100%, rgba(52, 245, 172, 0.12), transparent 60%), #02040b;
-      display: flex;
-      align-items: stretch;
-      justify-content: stretch;
-      overflow: hidden;
     }
 
-    .preview-frame-wrapper {
-      flex: 1;
-      min-width: 0;
-      min-height: 0;
-      padding: 6px;
-      display: flex;
-      align-items: stretch;
-      justify-content: stretch;
-    }
-
-    .preview-frame {
-      flex: 1;
-      min-width: 0;
-      min-height: 0;
-      border-radius: 6px;
-      border: 1px solid rgba(88, 102, 154, 0.95);
-      box-shadow:
-        0 0 0 1px rgba(0, 0, 0, 0.96),
-        inset 0 0 0 1px rgba(4, 8, 18, 0.96),
-        0 10px 30px rgba(0, 0, 0, 0.96);
-      background: #020309;
-      overflow: hidden;
-    }
-
-    .preview-frame iframe {
+    iframe#preview {
+      border: none;
       width: 100%;
       height: 100%;
-      border: none;
+      display: block;
       background: #000;
     }
 
-    .preview-placeholder {
-      flex: 1;
-      min-width: 0;
-      min-height: 0;
-      display: flex;
-      flex-direction: column;
+    .preview-watermark {
+      position: absolute;
+      right: 8px;
+      bottom: 5px;
+      font-size: 10px;
+      color: rgba(255,255,255,0.45);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      z-index: 3;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .fullscreen-exit {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 22px;
+      height: 22px;
+      border-radius: 0;
+      border: 1px solid rgba(255,255,255,0.6);
+      background: rgba(0,0,0,0.65);
+      display: none;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      color: rgba(200, 210, 250, 0.9);
-      padding: 12px;
-      text-align: center;
-      font-size: 11px;
+      cursor: pointer;
+      z-index: 5;
+      padding: 0;
     }
 
-    .preview-placeholder-title {
-      font-size: 11px;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      color: #e1ebff;
+    .fullscreen-exit-icon {
+      width: 12px;
+      height: 12px;
+      border-radius: 0;
+      border: 1px solid #ffffff;
+      box-sizing: border-box;
     }
 
-    .preview-placeholder-subtitle {
-      font-size: 10px;
-      color: rgba(182, 192, 236, 0.9);
-      max-width: 320px;
-    }
-
-    .preview-placeholder-kbd {
-      font-size: 10px;
-      padding: 2px 6px;
-      border-radius: 999px;
-      border: 1px solid rgba(118, 130, 194, 0.95);
-      background: rgba(6, 8, 18, 0.96);
-      color: #f6f7ff;
-    }
-
-    .bottom-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      font-size: 10px;
-      color: rgba(164, 176, 220, 0.9);
-      padding: 3px 4px 2px 4px;
-      border-radius: 7px;
-      border: 1px solid rgba(70, 80, 132, 0.9);
-      background: radial-gradient(circle at 0 0, rgba(79, 232, 170, 0.18), transparent 65%), #050615;
-      box-shadow:
-        0 0 0 1px rgba(0, 0, 0, 0.96),
-        0 8px 22px rgba(0, 0, 0, 0.92);
-    }
-
-    .bottom-left {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      min-width: 0;
-    }
-
-    .bottom-right {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      min-width: 0;
-    }
-
-    .bottom-pill {
-      font-size: 9px;
-      padding: 2px 8px;
-      border-radius: 999px;
-      border: 1px solid rgba(90, 100, 152, 0.9);
-      background: rgba(6, 8, 16, 0.96);
-      white-space: nowrap;
-    }
-
-    .bottom-kbd {
-      font-size: 9px;
-      padding: 1px 5px;
-      border-radius: 999px;
-      border: 1px solid rgba(114, 124, 184, 0.9);
-      background: rgba(5, 7, 14, 0.96);
-      color: #f4f6ff;
-      white-space: nowrap;
-    }
-
-    .bottom-note {
-      font-size: 9px;
-      color: rgba(168, 180, 228, 0.9);
-      white-space: nowrap;
-    }
-
-    .bottom-logo {
-      font-size: 9px;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: rgba(186, 196, 244, 0.96);
-      white-space: nowrap;
-    }
-
-    .bottom-logo-strong {
-      color: #f4f8ff;
-    }
-
-    .bottom-key-hint {
-      font-size: 9px;
-      color: rgba(182, 192, 236, 0.9);
-      white-space: nowrap;
-    }
+    /* help overlay */
 
     .help-overlay {
       position: fixed;
       inset: 0;
-      background: radial-gradient(circle at 50% 0, rgba(82, 180, 255, 0.3), transparent 65%), radial-gradient(circle at 50% 100%, rgba(60, 238, 178, 0.26), transparent 65%), rgba(1, 3, 10, 0.92);
-      display: flex;
+      background: rgba(0,0,0,0.78);
+      display: none;
       align-items: center;
       justify-content: center;
-      z-index: 50;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 140ms ease-out;
-    }
-
-    .help-overlay.visible {
-      opacity: 1;
-      pointer-events: auto;
+      z-index: 20;
     }
 
     .help-card {
-      width: min(720px, 100% - 32px);
-      max-height: calc(100% - 32px);
-      border-radius: 10px;
-      border: 1px solid rgba(126, 142, 212, 0.95);
-      background:
-        radial-gradient(circle at 0 0, rgba(65, 240, 165, 0.18), transparent 60%),
-        radial-gradient(circle at 100% 0, rgba(92, 180, 255, 0.18), transparent 60%),
-        radial-gradient(circle at 0 100%, rgba(90, 210, 255, 0.12), transparent 60%),
-        #050616;
-      box-shadow:
-        0 0 0 1px rgba(0, 0, 0, 1),
-        0 20px 60px rgba(0, 0, 0, 0.96);
-      padding: 14px 14px 12px 14px;
+      width: min(520px, 92vw);
+      max-height: 80vh;
+      background: #05060d;
+      border: 1px solid var(--c-border);
+      padding: 14px 14px 12px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
+      font-size: 12px;
+      line-height: 1.5;
     }
 
     .help-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      padding-bottom: 6px;
-      border-bottom: 1px solid rgba(92, 108, 180, 0.9);
-    }
-
-    .help-title-block {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .help-title {
-      font-size: 13px;
+      font-size: 11px;
       text-transform: uppercase;
-      letter-spacing: 0.18em;
-      color: #f3f7ff;
-    }
-
-    .help-subtitle {
-      font-size: 10px;
-      color: rgba(196, 204, 248, 0.96);
-    }
-
-    .help-close-button {
-      border-radius: 999px;
-      border: 1px solid rgba(114, 130, 196, 0.95);
-      background: rgba(6, 8, 20, 0.96);
-      color: #f2f5ff;
-      font-size: 10px;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      padding: 5px 10px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-
-    .help-close-button span.kbd {
-      font-size: 9px;
-      padding: 1px 4px;
-      border-radius: 4px;
-      border: 1px solid rgba(134, 148, 208, 0.96);
-      background: rgba(7, 9, 18, 0.96);
-      color: #f4f7ff;
+      letter-spacing: 0.12em;
+      color: var(--c-muted);
     }
 
     .help-body {
-      display: flex;
-      flex-direction: row;
-      gap: 14px;
-      font-size: 11px;
-      color: rgba(212, 220, 252, 0.96);
+      font-size: 12px;
+      color: var(--c-text);
       overflow: auto;
-      padding-right: 4px;
     }
 
-    .help-column {
-      flex: 1;
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+    .help-body p {
+      margin: 0 0 6px;
     }
 
-    .help-section-title {
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.16em;
-      color: #e7ecff;
-      margin-bottom: 2px;
-    }
-
-    .help-list {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .help-list li {
-      display: flex;
-      justify-content: space-between;
-      gap: 8px;
-    }
-
-    .help-label {
-      color: rgba(206, 214, 252, 0.96);
-    }
-
-    .help-kbd {
-      font-size: 10px;
-      padding: 1px 5px;
-      border-radius: 999px;
-      border: 1px solid rgba(130, 142, 212, 0.96);
-      background: rgba(5, 7, 18, 0.98);
-      color: #f3f5ff;
-      white-space: nowrap;
-      margin-left: 8px;
+    .help-body code {
+      font-family: "SF Mono", ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 11px;
+      background: #02030a;
+      padding: 2px 4px;
+      border-radius: 0;
+      border: 1px solid var(--c-border-soft);
     }
 
     .help-footer {
-      font-size: 10px;
-      color: rgba(190, 198, 238, 0.95);
       display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      padding-top: 6px;
-      border-top: 1px solid rgba(80, 90, 146, 0.9);
+      justify-content: flex-end;
+      gap: 6px;
+      margin-top: 4px;
     }
 
-    .help-footer span.kbd {
-      font-size: 9px;
-      padding: 1px 5px;
-      border-radius: 999px;
-      border: 1px solid rgba(132, 144, 210, 0.96);
-      background: rgba(6, 8, 18, 0.96);
-      color: #f4f6ff;
+    .help-overlay.visible {
+      display: flex;
     }
 
-    .mobile-warning {
+    body.full-preview .top-bar,
+    body.full-preview #editorPanel,
+    body.full-preview #divider {
       display: none;
-      padding: 6px 10px;
-      font-size: 11px;
-      background: rgba(20, 22, 40, 0.96);
-      border-radius: 6px;
-      border: 1px solid rgba(80, 90, 146, 0.95);
-      color: rgba(214, 220, 252, 0.96);
-      margin-bottom: 4px;
     }
 
-    @media (max-width: 900px) {
-      .app-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 6px;
+    body.full-preview #previewPanel {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      border-radius: 0;
+      border: none;
+    }
+
+    body.full-preview .preview-wrapper,
+    body.full-preview .preview-inner,
+    body.full-preview #preview {
+      border-radius: 0;
+    }
+
+    body.full-preview .fullscreen-exit {
+      display: flex;
+    }
+
+    @media (max-width: 768px) {
+      .title-line { font-size: 12px; }
+      .toolbar { justify-content: flex-start; }
+    }
+
+    @media (max-width: 480px) {
+      .btn {
+        font-size: 9px;
+        padding-inline: 6px;
       }
-      .app-header-center {
-        justify-content: flex-start;
-      }
-      .app-header-right {
-        align-self: stretch;
-        justify-content: space-between;
-      }
-      .top-row {
-        flex-direction: column;
-      }
-      .splitter {
-        height: 7px;
-        width: auto;
-        margin: 3px 0;
-        cursor: row-resize;
-      }
-      .splitter-handle {
-        width: 36px;
-        height: 3px;
-      }
-      .editor-panel,
-      .preview-panel {
-        min-height: 180px;
-      }
-      .help-body {
-        flex-direction: column;
-      }
-      .app-shell {
-        padding: 8px 6px 6px 6px;
-      }
-      .toolbar {
-        flex-wrap: wrap;
-      }
-      .toolbar-help-button {
-        margin-left: auto;
-      }
-      .preview-toolbar {
-        flex-wrap: wrap;
+      .search-input { width: 118px; }
+      .title-line { font-size: 11px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
       }
     }
   </style>
 </head>
 <body>
-  <div class="app-shell">
-    <div class="mobile-warning" id="mobileWarning">
-      PocketLab лучше чувствует себя в горизонтальной ориентации. Поверни устройство, если хочешь больше пространства для кода и превью.
+  <div class="app">
+    <div class="top-bar">
+      <div class="title-line">
+        <span class="title-dot"></span>
+        <span class="title-name">POCKETLAB</span>
+        <span class="title-version">v0.46</span>
+        <span class="title-dev">dev by Grisha Tsvetkov</span>
+      </div>
+      <div class="toolbar">
+        <div class="toolbar-group">
+          <button class="btn btn-pill" id="btnOpen" type="button">OPEN</button>
+          <button class="btn btn-pill" id="btnSave" type="button">SAVE</button>
+          <button class="btn btn-pill" id="btnPaste" type="button">PASTE</button>
+          <button class="btn btn-pill" id="btnCopy" type="button">COPY</button>
+          <button class="btn btn-pill" id="btnClear" type="button">CLEAR</button>
+          <button class="btn btn-pill" id="btnDemo" type="button">DEMO</button>
+        </div>
+        <div class="toolbar-group">
+          <button class="btn btn-primary btn-pill" id="btnRunToggle" type="button">RUN</button>
+          <button class="btn btn-pill" id="btnFull" type="button">FULL</button>
+          <button class="btn btn-pill" id="btnPopout" type="button">OPEN PAGE</button>
+          <button class="btn btn-ghost" id="btnHelp" type="button">?</button>
+        </div>
+      </div>
     </div>
-    <header class="app-header">
-      <div class="app-header-left">
-        <div class="header-dot"></div>
-        <div>
-          <div class="app-title">PocketLab</div>
-          <div class="app-subtitle">Single file HTML lab for tiny prototypes</div>
-        </div>
-      </div>
-      <div class="app-header-center">
-        <div class="badge-pill">Code on the left · Live view on the right</div>
-      </div>
-      <div class="app-header-right">
-        <div class="view-mode-toggle" id="viewModeToggle" data-mode="iframe">
-          <div class="view-mode-pill"></div>
-          <button class="view-mode-button" type="button" data-mode="iframe">
-            IFRAME
-            <span class="view-mode-shortcut">default</span>
-          </button>
-          <button class="view-mode-button" type="button" data-mode="window">
-            WINDOW
-            <span class="view-mode-shortcut">popout</span>
-          </button>
-        </div>
-        <div class="header-separator"></div>
-        <button class="run-stop-button" id="runStopButton" type="button" data-state="stopped">
-          <span class="indicator"></span>
-          <span class="label">Run</span>
-        </button>
-      </div>
-    </header>
 
-    <main class="app-main">
-      <div class="top-row" id="topRow">
-        <section class="editor-panel">
-          <div class="editor-header">
-            <div class="editor-header-left">
-              <div>
-                <div class="editor-title">Editor</div>
-                <div class="editor-subtitle">Write HTML snippets or full pages</div>
+    <div class="layout">
+      <div class="split" id="split">
+        <section class="panel" id="editorPanel">
+          <header class="panel-header">
+            <div class="panel-header-left">
+              <div class="search-box">
+                <input
+                  id="searchInput"
+                  class="search-input"
+                  type="search"
+                  placeholder="search in code"
+                  autocomplete="off">
+                <button class="btn btn-pill" id="btnFind" type="button">SEARCH</button>
+                <div class="search-hit" id="searchHit"></div>
               </div>
             </div>
-            <div class="editor-header-right">
-              <div class="badge-small"><span>Cmd/Ctrl</span> + <span>Enter</span> to run</div>
-            </div>
-          </div>
-          <div class="toolbar">
-            <div class="toolbar-group">
-              <div class="toolbar-label">
-                <span class="toolbar-label-dot"></span>
-                CODE
+            <div class="panel-header-right"></div>
+          </header>
+          <div class="code-area">
+            <div class="code-shell">
+              <div class="code-scroll" id="codeScroll">
+                <div class="line-numbers" id="lineNumbers"></div>
+                <textarea id="code" spellcheck="false"></textarea>
               </div>
-              <button class="mini-button mini-button-primary" type="button" id="btnClear">
-                CLEAR
-              </button>
-              <button class="mini-button" type="button" id="btnCopy">
-                COPY
-                <span class="kbd">Cmd/Ctrl + C</span>
-              </button>
-              <button class="mini-button" type="button" id="btnPaste">
-                PASTE
-                <span class="kbd">Cmd/Ctrl + V</span>
-              </button>
-              <button class="mini-button" type="button" id="btnOpenFile">
-                OPEN FILE
-              </button>
-              <button class="mini-button" type="button" id="btnSaveFile">
-                SAVE FILE
-              </button>
-            </div>
-            <div class="toolbar-group">
-              <div class="toolbar-label">
-                SEARCH
-              </div>
-              <div class="search-block">
-                <input type="text" id="searchInput" class="search-input" placeholder="Search in code" autocomplete="off">
-                <div class="search-status" id="searchStatus">0 / 0</div>
-                <div class="search-nav">
-                  <button class="search-nav-button" type="button" id="searchPrev">&uarr;</button>
-                  <button class="search-nav-button" type="button" id="searchNext">&darr;</button>
-                </div>
-              </div>
-            </div>
-            <button class="toolbar-help-button" type="button" id="btnHelp">
-              HELP
-              <span class="kbd">Cmd/Ctrl + /</span>
-            </button>
-          </div>
-          <div class="editor-body">
-            <div class="line-numbers">
-              <div class="line-highlight" id="lineHighlight"></div>
-              <div class="line-numbers-inner" id="lineNumbers"></div>
-            </div>
-            <div class="editor-scroll-wrapper">
-              <textarea id="codeInput" class="editor-textarea" spellcheck="false" placeholder="Write or paste HTML here. Press Cmd/Ctrl + Enter to run."></textarea>
             </div>
           </div>
         </section>
 
-        <div class="splitter" id="splitter">
-          <div class="splitter-handle"></div>
+        <div class="divider" id="divider">
+          <div class="divider-hit">
+            <div class="divider-dot"></div>
+            <div class="divider-dot"></div>
+            <div class="divider-dot"></div>
+          </div>
         </div>
 
-        <section class="preview-panel">
-          <div class="preview-header">
-            <div class="preview-header-left">
-              <div>
-                <div class="preview-title">Preview</div>
-                <div class="preview-subtitle" id="previewSubtitle">Ready for the first run</div>
-              </div>
-            </div>
-            <div class="preview-header-right">
-              <div class="preview-status">
-                <span id="previewStatusLabel">Stopped</span>
-              </div>
-              <div class="preview-status-dot stopped" id="previewStatusDot"></div>
-            </div>
-          </div>
-          <div class="preview-toolbar">
-            <div class="preview-toolbar-group">
-              <div class="preview-toolbar-label">
-                <span class="preview-toolbar-label-dot"></span>
-                VIEW
-              </div>
-              <button class="mini-button mini-button-ghost" type="button" id="btnDemo">
-                LOAD DEMO
+        <section class="panel" id="previewPanel">
+          <div class="preview-wrapper">
+            <div class="preview-inner">
+              <iframe
+                id="preview"
+                title="PocketLab preview"
+                sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-downloads allow-modals allow-popups"
+                allow="camera; microphone; autoplay; fullscreen"></iframe>
+              <div class="preview-watermark">&lt;3</div>
+              <button class="fullscreen-exit" id="btnExitFull" type="button">
+                <div class="fullscreen-exit-icon"></div>
               </button>
-              <button class="mini-button mini-button-ghost" type="button" id="btnPopout">
-                OPEN IN WINDOW
-              </button>
-              <button class="mini-button mini-button-ghost" type="button" id="btnFullPreview">
-                FULL PREVIEW
-              </button>
-            </div>
-            <div class="preview-window-note">
-              Iframe mode is default. Popout opens a separate window.
-            </div>
-          </div>
-          <div class="preview-body">
-            <div class="preview-frame-wrapper">
-              <div class="preview-frame">
-                <iframe id="previewFrame" sandbox="allow-scripts allow-same-origin" srcdoc=""></iframe>
-              </div>
             </div>
           </div>
         </section>
       </div>
-
-      <footer class="bottom-row">
-        <div class="bottom-left">
-          <div class="bottom-pill">
-            <span>Run mode</span> · <span id="runModeLabel">Stopped</span>
-          </div>
-          <div class="bottom-note">
-            Use Cmd/Ctrl + Enter to run code. Esc stops preview.
-          </div>
-        </div>
-        <div class="bottom-right">
-          <div class="bottom-key-hint">
-            Cmd/Ctrl + / opens help overlay
-          </div>
-          <div class="bottom-logo">
-            <span class="bottom-logo-strong">POCKET</span> LAB
-          </div>
-        </div>
-      </footer>
-    </main>
+    </div>
   </div>
 
+  <!-- HELP OVERLAY -->
   <div class="help-overlay" id="helpOverlay">
     <div class="help-card">
       <div class="help-header">
-        <div class="help-title-block">
-          <div class="help-title">PocketLab help</div>
-          <div class="help-subtitle">Single file HTML sandbox for tiny experiments</div>
-        </div>
-        <button class="help-close-button" type="button" id="helpClose">
-          CLOSE
-          <span class="kbd">Esc</span>
-        </button>
+        <span>POCKETLAB · QUICK GUIDE</span>
+        <button class="btn btn-ghost" id="btnHelpClose" type="button">CLOSE</button>
       </div>
       <div class="help-body">
-        <div class="help-column">
-          <div class="help-section-title">Keyboard</div>
-          <ul class="help-list">
-            <li>
-              <span class="help-label">Run code</span>
-              <span class="help-kbd">Cmd/Ctrl + Enter</span>
-            </li>
-            <li>
-              <span class="help-label">Open help</span>
-              <span class="help-kbd">Cmd/Ctrl + /</span>
-            </li>
-            <li>
-              <span class="help-label">Stop preview</span>
-              <span class="help-kbd">Esc</span>
-            </li>
-          </ul>
-          <div class="help-section-title">Editor</div>
-          <ul class="help-list">
-            <li>
-              <span class="help-label">Clear code</span>
-              <span class="help-kbd">CLEAR button</span>
-            </li>
-            <li>
-              <span class="help-label">Copy / Paste</span>
-              <span class="help-kbd">COPY / PASTE buttons</span>
-            </li>
-            <li>
-              <span class="help-label">Load / Save file</span>
-              <span class="help-kbd">OPEN FILE / SAVE FILE</span>
-            </li>
-          </ul>
-        </div>
-        <div class="help-column">
-          <div class="help-section-title">Search</div>
-          <ul class="help-list">
-            <li>
-              <span class="help-label">Search in code</span>
-              <span class="help-kbd">Search field · Up / Down buttons</span>
-            </li>
-          </ul>
-          <div class="help-section-title">Preview</div>
-          <ul class="help-list">
-            <li>
-              <span class="help-label">Run / Stop</span>
-              <span class="help-kbd">RUN / STOP button</span>
-            </li>
-            <li>
-              <span class="help-label">Load demo</span>
-              <span class="help-kbd">LOAD DEMO</span>
-            </li>
-            <li>
-              <span class="help-label">Open in new window</span>
-              <span class="help-kbd">OPEN IN WINDOW</span>
-            </li>
-            <li>
-              <span class="help-label">Fullscreen preview</span>
-              <span class="help-kbd">FULL PREVIEW</span>
-            </li>
-          </ul>
-        </div>
+        <p><strong>Что это.</strong> Мини-лаборатория для HTML/JS-скетчей. Вставляешь код сверху, нажимаешь <code>RUN</code>, смотришь результат снизу.</p>
+        <p><strong>Базовый сценарий.</strong></p>
+        <ul>
+          <li><code>OPEN</code> — загрузить .html / .txt файл с устройства</li>
+          <li><code>SAVE</code> — сохранить текущий код в .html (имя можно задать)</li>
+          <li><code>PASTE / COPY / CLEAR</code> — работа с буфером и очистка</li>
+          <li><code>DEMO</code> — случайная демо-страница из папки <code>/demo</code></li>
+          <li><code>RUN</code> — запускает / перезапускает превью</li>
+          <li><code>FULL</code> — полноэкранное превью, выход по квадратику в углу</li>
+          <li><code>OPEN PAGE</code> — открыть результат в новой вкладке</li>
+        </ul>
+        <p><strong>Поиск.</strong> Вводишь строку в поле <code>search in code</code>, жмешь <code>SEARCH</code> или Enter: курсор прыгает по вхождениям.</p>
+        <p><strong>Структура HTML.</strong> Если вставляешь полный документ с <code>&lt;html&gt;</code>, он запускается как есть. Если вставлен только фрагмент, PocketLab оборачивает его в минимальный HTML-каркас.</p>
       </div>
       <div class="help-footer">
-        <div>
-          PocketLab is a single file HTML lab. Keep it simple, keep it local.
-        </div>
-        <div>
-          <span class="kbd">Tip</span> Use it to quickly prototype tiny viewers and utilities.
-        </div>
+        <span style="font-size:10px;color:var(--c-muted);letter-spacing:0.12em;text-transform:uppercase;">
+          v0.46 · pocketlab
+        </span>
       </div>
     </div>
   </div>
 
+  <input type="file" id="fileInput"
+         accept=".html,.htm,.txt,.svg,.xml,.json,text/html,text/plain"
+         style="display:none">
+
   <script>
     (function () {
-      const runStopButton = document.getElementById("runStopButton");
-      const previewFrame = document.getElementById("previewFrame");
-      const codeInput = document.getElementById("codeInput");
-      const previewStatusLabel = document.getElementById("previewStatusLabel");
-      const previewStatusDot = document.getElementById("previewStatusDot");
-      const previewSubtitle = document.getElementById("previewSubtitle");
-      const runModeLabel = document.getElementById("runModeLabel");
-      const lineNumbers = document.getElementById("lineNumbers");
-      const lineHighlight = document.getElementById("lineHighlight");
-      const splitter = document.getElementById("splitter");
-      const topRow = document.getElementById("topRow");
-      const searchInput = document.getElementById("searchInput");
-      const searchStatus = document.getElementById("searchStatus");
-      const searchPrev = document.getElementById("searchPrev");
-      const searchNext = document.getElementById("searchNext");
+      const codeEl = document.getElementById("code");
+      const previewEl = document.getElementById("preview");
+
+      const btnRunToggle = document.getElementById("btnRunToggle");
+      const btnFull = document.getElementById("btnFull");
       const btnClear = document.getElementById("btnClear");
       const btnCopy = document.getElementById("btnCopy");
       const btnPaste = document.getElementById("btnPaste");
-      const btnOpenFile = document.getElementById("btnOpenFile");
-      const btnSaveFile = document.getElementById("btnSaveFile");
       const btnDemo = document.getElementById("btnDemo");
+      const btnOpen = document.getElementById("btnOpen");
+      const btnSave = document.getElementById("btnSave");
+      const btnFind = document.getElementById("btnFind");
       const btnPopout = document.getElementById("btnPopout");
-      const btnFullPreview = document.getElementById("btnFullPreview");
+      const btnExitFull = document.getElementById("btnExitFull");
       const btnHelp = document.getElementById("btnHelp");
+      const btnHelpClose = document.getElementById("btnHelpClose");
       const helpOverlay = document.getElementById("helpOverlay");
-      const helpClose = document.getElementById("helpClose");
-      const mobileWarning = document.getElementById("mobileWarning");
-      const viewModeToggle = document.getElementById("viewModeToggle");
-      const viewModeButtons = viewModeToggle.querySelectorAll(".view-mode-button");
 
-      let isRunning = false;
-      let currentPopoutWindow = null;
-      let isDraggingSplitter = false;
-      let dragStartX = 0;
-      let dragStartLeftWidth = 0;
-      let searchMatches = [];
-      let searchIndex = -1;
+      const divider = document.getElementById("divider");
+      const editorPanel = document.getElementById("editorPanel");
+      const previewPanel = document.getElementById("previewPanel");
+      const searchInput = document.getElementById("searchInput");
+      const searchHit = document.getElementById("searchHit");
+      const split = document.getElementById("split");
+      const lineNumbersEl = document.getElementById("lineNumbers");
+      const fileInput = document.getElementById("fileInput");
+      const codeScroll = document.getElementById("codeScroll");
+
+      let isDragging = false;
+      let dragStartY = 0;
+      let editorStartHeight = 0;
+
+      let lastSearchTerm = "";
+      let lastSearchIndex = -1;
+      let lastSearchCount = 0;
+      let isPreviewLive = true;
+
+      const demoConfig = {
+        basePath: "./demo/",
+        files: [
+          "demo1.html",
+          "demo2.html"
+        ]
+      };
+
+      const defaultExample = [
+        "<!doctype html>",
+        "<html>",
+        "<head>",
+        '  <meta charset=\"utf-8\">',
+        '  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">',
+        "  <title>PocketLab example</title>",
+        "  <style>",
+        "    * { box-sizing: border-box; }",
+        "    html, body {",
+        "      margin: 0;",
+        "      padding: 0;",
+        "      height: 100%;",
+        "      width: 100%;",
+        "      background: #020204;",
+        "      color: #f5f5f7;",
+        "      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;",
+        "    }",
+        "    body {",
+        "      display: flex;",
+        "      align-items: center;",
+        "      justify-content: center;",
+        "    }",
+        "    .card {",
+        "      border-radius: 1px;",
+        "      border: 1px solid rgba(255,255,255,0.12);",
+        "      padding: 18px 18px 16px;",
+        "      background: rgba(5,5,18,0.86);",
+        "      box-shadow: 0 18px 45px rgba(0,0,0,0.7);",
+        "      text-align: center;",
+        "      min-width: 240px;",
+        "      max-width: 320px;",
+        "      cursor: pointer;",
+        "      -webkit-tap-highlight-color: transparent;",
+        "      transition: transform 160ms ease-out, box-shadow 160ms ease-out, border-color 160ms ease-out;",
+        "    }",
+        "    .card.active {",
+        "      transform: translateY(-4px) scale(1.02);",
+        "      box-shadow: 0 30px 80px rgba(0,0,0,0.9);",
+        "      border-color: #4da3ff;",
+        "    }",
+        "    .label {",
+        "      font-size: 11px;",
+        "      text-transform: uppercase;",
+        "      letter-spacing: 0.16em;",
+        "      color: rgba(245,245,247,0.55);",
+        "      margin-bottom: 4px;",
+        "    }",
+        "    .value {",
+        "      font-size: 32px;",
+        "      font-variant-numeric: tabular-nums;",
+        "      margin-bottom: 6px;",
+        "    }",
+        "    .hint {",
+        "      font-size: 12px;",
+        "      color: rgba(245,245,247,0.7);",
+        "    }",
+        "    .hint span {",
+        "      opacity: 0.85;",
+        "    }",
+        "  </style>",
+        "</head>",
+        "<body>",
+        "  <div class=\"card\" id=\"card\">",
+        "    <div class=\"label\">tap or click</div>",
+        "    <div class=\"value\" id=\"count\">0</div>",
+        "    <div class=\"hint\"><span>works with mouse and touch</span></div>",
+        "  </div>",
+        "  <script>",
+        "    (function () {",
+        "      var count = 0;",
+        "      var card = document.getElementById('card');",
+        "      var countEl = document.getElementById('count');",
+        "      function increment() {",
+        "        count += 1;",
+        "        countEl.textContent = count;",
+        "        card.classList.add('active');",
+        "        clearTimeout(card._t);",
+        "        card._t = setTimeout(function () {",
+        "          card.classList.remove('active');",
+        "        }, 130);",
+        "      }",
+        "      card.addEventListener('click', function (event) {",
+        "        event.preventDefault();",
+        "        increment();",
+        "      });",
+        "      card.addEventListener('touchend', function (event) {",
+        "        event.preventDefault();",
+        "        increment();",
+        "      }, { passive: false });",
+        "    })();",
+        "  <\/script>",
+        "</body>",
+        "</html>"
+      ].join("\n");
+
+      function looksLikeFullDocument(html) {
+        const lower = html.toLowerCase();
+        if (lower.includes("<!doctype html")) return true;
+        if (lower.includes("<html")) return true;
+        if (lower.includes("<head")) return true;
+        if (lower.includes("<body")) return true;
+        return false;
+      }
+
+      function wrapFragment(html) {
+        return [
+          "<!doctype html>",
+          "<html>",
+          "<head>",
+          '  <meta charset=\"utf-8\">',
+          '  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">',
+          "  <title>PocketLab fragment</title>",
+          "</head>",
+          "<body>",
+          html,
+          "</body>",
+          "</html>"
+        ].join("\n");
+      }
 
       function updateRunButtonState() {
-        if (isRunning) {
-          runStopButton.dataset.state = "running";
-          runStopButton.querySelector(".label").textContent = "Stop";
-          previewStatusLabel.textContent = "Running";
-          previewStatusDot.classList.remove("stopped");
-          runModeLabel.textContent = "Running";
+        if (!btnRunToggle) return;
+        if (isPreviewLive) {
+          btnRunToggle.textContent = "STOP";
+          btnRunToggle.classList.remove("btn-primary");
+          btnRunToggle.classList.add("btn-danger");
         } else {
-          runStopButton.dataset.state = "stopped";
-          runStopButton.querySelector(".label").textContent = "Run";
-          previewStatusLabel.textContent = "Stopped";
-          previewStatusDot.classList.add("stopped");
-          runModeLabel.textContent = "Stopped";
-        }
-      }
-
-      function generateHtmlWrapper(content) {
-        if (/<!doctype html>/i.test(content) || /<html[\s>]/i.test(content)) {
-          return content;
-        }
-        return `<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>PocketLab snippet</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      background: #050505;
-      color: #f5f5f5;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", sans-serif;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .container {
-      padding: 16px;
-      max-width: min(640px, 100% - 32px);
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-${content}
-  </div>
-</body>
-</html>`;
-      }
-
-      function runPreview() {
-        const code = codeInput.value;
-        if (!code.trim()) {
-          previewSubtitle.textContent = "Nothing to run yet. Add some HTML or load a demo.";
-          return;
-        }
-
-        const wrapped = generateHtmlWrapper(code);
-        previewFrame.srcdoc = wrapped;
-        isRunning = true;
-        previewSubtitle.textContent = "Preview is running in iframe mode.";
-        updateRunButtonState();
-
-        if (currentPopoutWindow && !currentPopoutWindow.closed) {
-          try {
-            currentPopoutWindow.document.open();
-            currentPopoutWindow.document.write(wrapped);
-            currentPopoutWindow.document.close();
-          } catch (e) {
-            console.error("Could not update popout window:", e);
-          }
+          btnRunToggle.textContent = "RUN";
+          btnRunToggle.classList.remove("btn-danger");
+          btnRunToggle.classList.add("btn-primary");
         }
       }
 
       function stopPreview() {
-        previewFrame.srcdoc = "";
-        isRunning = false;
-        previewSubtitle.textContent = "Preview stopped. Press Run to start again.";
+        const blank = [
+          "<!doctype html>",
+          "<html>",
+          "<head>",
+          '  <meta charset=\"utf-8\">',
+          "  <title>PocketLab stopped</title>",
+          "  <style>",
+          "    html, body {",
+          "      margin: 0;",
+          "      padding: 0;",
+          "      height: 100%;",
+          "      width: 100%;",
+          "      background: #000;",
+          "    }",
+          "  </style>",
+          "</head>",
+          "<body></body>",
+          "</html>"
+        ].join("\n");
+        previewEl.srcdoc = blank;
+        isPreviewLive = false;
         updateRunButtonState();
       }
 
-      function toggleRunStop() {
-        if (isRunning) {
+      function getCurrentDocumentHtml() {
+        const raw = codeEl.value || "";
+        const trimmed = raw.trim();
+        if (!trimmed) return "";
+        return looksLikeFullDocument(trimmed) ? raw : wrapFragment(trimmed);
+      }
+
+      function runPreview() {
+        const html = getCurrentDocumentHtml();
+        if (!html) {
           stopPreview();
-        } else {
-          runPreview();
-        }
-      }
-
-      function syncLineNumbers() {
-        const value = codeInput.value;
-        const lineCount = value.split("\n").length || 1;
-        let lines = "";
-        for (let i = 1; i <= lineCount; i++) {
-          lines += i + "\n";
-        }
-        lineNumbers.textContent = lines;
-      }
-
-      function updateLineHighlight() {
-        const selectionStart = codeInput.selectionStart;
-        const value = codeInput.value;
-        const untilSelection = value.slice(0, selectionStart);
-        const lineIndex = untilSelection.split("\n").length - 1;
-
-        const lineHeight = 1.4 * 12;
-        const top = lineIndex * lineHeight;
-
-        lineHighlight.style.top = top + "px";
-        lineHighlight.classList.add("visible");
-      }
-
-      function hideLineHighlight() {
-        lineHighlight.classList.remove("visible");
-      }
-
-      function autoResizeCode() {
-        const textarea = codeInput;
-        textarea.style.height = "auto";
-        const parent = textarea.parentElement;
-        const maxHeight = Math.max(parent.clientHeight, 120);
-        textarea.style.height = maxHeight + "px";
-      }
-
-      function onSplitterMouseDown(event) {
-        isDraggingSplitter = true;
-        dragStartX = event.clientX;
-        const editorPanel = document.querySelector(".editor-panel");
-        dragStartLeftWidth = editorPanel.getBoundingClientRect().width;
-        document.body.style.cursor = "col-resize";
-        event.preventDefault();
-      }
-
-      function onMouseMove(event) {
-        if (!isDraggingSplitter) return;
-
-        const dx = event.clientX - dragStartX;
-        const editorPanel = document.querySelector(".editor-panel");
-        const previewPanel = document.querySelector(".preview-panel");
-        const totalWidth = topRow.getBoundingClientRect().width;
-
-        let newLeftWidth = dragStartLeftWidth + dx;
-        const minWidth = totalWidth * 0.2;
-        const maxWidth = totalWidth * 0.8;
-
-        if (newLeftWidth < minWidth) newLeftWidth = minWidth;
-        if (newLeftWidth > maxWidth) newLeftWidth = maxWidth;
-
-        const leftPercent = (newLeftWidth / totalWidth) * 100;
-        const rightPercent = 100 - leftPercent - ((splitter.getBoundingClientRect().width / totalWidth) * 100);
-
-        editorPanel.style.flex = "0 0 " + leftPercent + "%";
-        previewPanel.style.flex = "0 0 " + rightPercent + "%";
-      }
-
-      function onMouseUp() {
-        if (isDraggingSplitter) {
-          isDraggingSplitter = false;
-          document.body.style.cursor = "";
-        }
-      }
-
-      function performSearch(query) {
-        const text = codeInput.value;
-        searchMatches = [];
-        searchIndex = -1;
-
-        if (!query) {
-          searchStatus.textContent = "0 / 0";
           return;
         }
-
-        const lower = text.toLowerCase();
-        const needle = query.toLowerCase();
-        let index = lower.indexOf(needle);
-        while (index !== -1) {
-          searchMatches.push(index);
-          index = lower.indexOf(needle, index + needle.length);
-        }
-
-        if (!searchMatches.length) {
-          searchStatus.textContent = "0 / 0";
-          return;
-        }
-
-        searchIndex = 0;
-        focusSearchMatch();
-        updateSearchStatus();
-      }
-
-      function focusSearchMatch() {
-        if (searchIndex < 0 || searchIndex >= searchMatches.length) return;
-        const start = searchMatches[searchIndex];
-        const end = start + searchInput.value.length;
-
-        codeInput.focus();
-        codeInput.setSelectionRange(start, end);
-
-        const textarea = codeInput;
-        const lineHeight = 1.4 * 12;
-        const before = textarea.value.slice(0, start);
-        const lineIndex = before.split("\n").length - 1;
-        textarea.scrollTop = lineIndex * lineHeight - textarea.clientHeight * 0.3;
-
-        updateLineHighlight();
-      }
-
-      function updateSearchStatus() {
-        const total = searchMatches.length;
-        const current = total ? searchIndex + 1 : 0;
-        searchStatus.textContent = current + " / " + total;
-      }
-
-      function goToNextSearchMatch() {
-        if (!searchMatches.length) return;
-        searchIndex = (searchIndex + 1) % searchMatches.length;
-        focusSearchMatch();
-        updateSearchStatus();
-      }
-
-      function goToPrevSearchMatch() {
-        if (!searchMatches.length) return;
-        searchIndex = (searchIndex - 1 + searchMatches.length) % searchMatches.length;
-        focusSearchMatch();
-        updateSearchStatus();
+        previewEl.srcdoc = html;
+        isPreviewLive = true;
+        updateRunButtonState();
       }
 
       function clearCode() {
-        codeInput.value = "";
-        syncLineNumbers();
+        codeEl.value = "";
+        resetSearchState();
         autoResizeCode();
-        stopPreview();
-        performSearch("");
+        updateLineNumbers();
       }
 
       function copyCode() {
-        const value = codeInput.value;
-        if (!value) return;
-        navigator.clipboard.writeText(value).catch(err => {
-          console.error("Clipboard copy failed:", err);
-        });
+        const text = codeEl.value;
+        if (!text) return;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).catch(function () {
+            fallbackCopy(text);
+          });
+        } else {
+          fallbackCopy(text);
+        }
       }
 
-      async function pasteCode() {
-        try {
-          const text = await navigator.clipboard.readText();
-          if (!text) return;
-          const start = codeInput.selectionStart;
-          const end = codeInput.selectionEnd;
-          const before = codeInput.value.slice(0, start);
-          const after = codeInput.value.slice(end);
-          codeInput.value = before + text + after;
-          const newPos = start + text.length;
-          codeInput.setSelectionRange(newPos, newPos);
-          syncLineNumbers();
+      function fallbackCopy(text) {
+        const temp = document.createElement("textarea");
+        temp.value = text;
+        temp.style.position = "fixed";
+        temp.style.left = "-9999px";
+        temp.style.top = "0";
+        temp.setAttribute("readonly", "readonly");
+        document.body.appendChild(temp);
+        temp.select();
+        try { document.execCommand("copy"); } catch (e) {}
+        document.body.removeChild(temp);
+      }
+
+      function pasteCode() {
+        if (navigator.clipboard && navigator.clipboard.readText) {
+          navigator.clipboard.readText()
+            .then(function (text) {
+              if (!text) return;
+              codeEl.value = text;
+              resetSearchState();
+              autoResizeCode();
+              updateLineNumbers();
+            })
+            .catch(function () {
+              manualPastePrompt();
+            });
+        } else {
+          manualPastePrompt();
+        }
+      }
+
+      function manualPastePrompt() {
+        const existing = codeEl.value;
+        const hint = existing ? "\n\n(current content will be replaced)" : "";
+        thePasted = window.prompt("Paste your HTML here:" + hint, "");
+        const pasted = thePasted; // слегка обходим линтеры
+        if (pasted != null) {
+          codeEl.value = pasted;
+          resetSearchState();
           autoResizeCode();
-        } catch (err) {
-          console.error("Clipboard paste failed:", err);
+          updateLineNumbers();
         }
       }
 
-      function openFile() {
-        const input = document.createElement("input");
-        input.type = "file";
-        input.accept = ".html,.htm,.txt,.js,.css,*/*";
-        input.addEventListener("change", () => {
-          const file = input.files && input.files[0];
-          if (!file) return;
-          const reader = new FileReader();
-          reader.onload = () => {
-            codeInput.value = reader.result || "";
-            syncLineNumbers();
-            autoResizeCode();
-          };
-          reader.readAsText(file);
-        });
-        input.click();
+      function toggleFullPreview() {
+        document.body.classList.toggle("full-preview");
       }
 
-      function saveFile() {
-        const blob = new Blob([codeInput.value || ""], { type: "text/html;charset=utf-8" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "pocketlab-snippet.html";
-        a.click();
-        URL.revokeObjectURL(url);
-      }
-
-      function loadRandomDemo() {
-        const demo = `<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>Tiny tap demo</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      background: radial-gradient(circle at 50% 0, #151a2a, #05060a);
-      color: #f5f5f7;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", sans-serif;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .card {
-      padding: 16px 20px;
-      border-radius: 12px;
-      border: 1px solid rgba(120, 130, 200, 0.8);
-      background: radial-gradient(circle at 0 0, rgba(92, 230, 180, 0.18), transparent 60%), #050713;
-      box-shadow:
-        0 0 0 1px rgba(0, 0, 0, 1),
-        0 16px 40px rgba(0, 0, 0, 0.96);
-      text-align: center;
-      min-width: 220px;
-    }
-    .label {
-      font-size: 11px;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: #cfd6ff;
-    }
-    .value {
-      font-size: 32px;
-      margin: 8px 0 4px 0;
-      letter-spacing: 0.08em;
-    }
-    .hint {
-      font-size: 10px;
-      color: #a5afd8;
-    }
-  </style>
-</head>
-<body>
-  <div class="card" id="card">
-    <div class="label">Tap count</div>
-    <div class="value" id="value">0</div>
-    <div class="hint">Tap anywhere</div>
-  </div>
-  <script>
-    (function () {
-      var count = 0;
-      var valueEl = document.getElementById("value");
-      function update() {
-        valueEl.textContent = String(count);
-      }
-      function bump() {
-        count += 1;
-        update();
-      }
-      document.body.addEventListener("click", bump);
-      document.body.addEventListener("touchstart", function (e) {
-        e.preventDefault();
-        bump();
-      }, { passive: false });
-      update();
-    })();
-  </script>
-</body>
-</html>`;
-
-        codeInput.value = demo;
-        syncLineNumbers();
-        autoResizeCode();
-        previewSubtitle.textContent = "Demo loaded. Press Run to see it in the preview.";
-      }
-
-      function openPopout() {
-        const code = codeInput.value;
-        if (!code.trim()) return;
-        const wrapped = generateHtmlWrapper(code);
-        if (currentPopoutWindow && !currentPopoutWindow.closed) {
-          try {
-            currentPopoutWindow.focus();
-            currentPopoutWindow.document.open();
-            currentPopoutWindow.document.write(wrapped);
-            currentPopoutWindow.document.close();
-            return;
-          } catch (e) {
-            console.error("Could not reuse popout window:", e);
-          }
-        }
-
-        const w = window.screen ? Math.min(900, window.screen.width - 80) : 900;
-        const h = window.screen ? Math.min(700, window.screen.height - 80) : 700;
-        currentPopoutWindow = window.open("", "_blank", `width=${w},height=${h},resizable=yes,scrollbars=yes`);
-        if (!currentPopoutWindow) return;
-        currentPopoutWindow.document.open();
-        currentPopoutWindow.document.write(wrapped);
-        currentPopoutWindow.document.close();
-        previewSubtitle.textContent = "Preview is running in a separate window.";
-      }
-
-      function openFullPreview() {
-        const code = codeInput.value;
-        if (!code.trim()) return;
-        const wrapped = generateHtmlWrapper(code);
-        const blob = new Blob([wrapped], { type: "text/html;charset=utf-8" });
-        const url = URL.createObjectURL(blob);
-        window.open(url, "_blank");
+      function exitFullPreview() {
+        document.body.classList.remove("full-preview");
       }
 
       function openHelp() {
@@ -1856,68 +974,320 @@ ${content}
         helpOverlay.classList.remove("visible");
       }
 
-      function updateMobileWarning() {
-        const isMobile = window.innerWidth < 900;
-        mobileWarning.style.display = isMobile ? "block" : "none";
+      function resetSearchState() {
+        lastSearchTerm = "";
+        lastSearchIndex = -1;
+        lastSearchCount = 0;
+        searchHit.textContent = "";
       }
 
-      function setViewMode(mode) {
-        const current = viewModeToggle.getAttribute("data-mode");
-        if (current === mode) return;
-        viewModeToggle.setAttribute("data-mode", mode);
+      function performSearch() {
+        const term = (searchInput.value || "").toString();
+        const code = codeEl.value || "";
+
+        if (!term) {
+          resetSearchState();
+          return;
+        }
+
+        if (term !== lastSearchTerm) {
+          lastSearchTerm = term;
+          lastSearchIndex = -1;
+          lastSearchCount = 0;
+        }
+
+        const fromIndex = lastSearchIndex >= 0
+          ? lastSearchIndex + term.length
+          : 0;
+
+        let index = code.indexOf(term, fromIndex);
+        if (index === -1 && lastSearchIndex !== -1) {
+          index = code.indexOf(term, 0);
+        }
+
+        if (index === -1) {
+          searchHit.textContent = "0 / 0";
+          lastSearchIndex = -1;
+          lastSearchCount = 0;
+          return;
+        }
+
+        let count = 0;
+        let pos = code.indexOf(term, 0);
+        while (pos !== -1) {
+          count += 1;
+          pos = code.indexOf(term, pos + term.length);
+        }
+
+        lastSearchIndex = index;
+        lastSearchCount = count;
+
+        const start = index;
+        const end = index + term.length;
+        codeEl.focus();
+        codeEl.setSelectionRange(start, end);
+
+        const before = code.slice(0, start);
+        const lineBefore = before.split("\n").length;
+        searchHit.textContent =
+          (lineBefore > 0 ? "LINE " + lineBefore + " · " : "") +
+          (Math.min(count, Math.floor((start / Math.max(code.length, 1)) * count) + 1)) +
+          " / " + count;
+
+        try {
+          const charCountBefore = before.length;
+          const fraction = Math.min(1, Math.max(0, charCountBefore / Math.max(code.length, 1)));
+          codeScroll.scrollTop =
+            (codeScroll.scrollHeight - codeScroll.clientHeight) * fraction;
+        } catch (e) {}
+        updateActiveLineHighlight();
       }
 
-      viewModeButtons.forEach(btn => {
-        btn.addEventListener("click", () => {
-          const mode = btn.getAttribute("data-mode");
-          setViewMode(mode);
-        });
+      function setInitialSplitHeight() {
+        const rect = split.getBoundingClientRect();
+        const initialEditorRatio = 0.55;
+        const editorHeight = rect.height * initialEditorRatio;
+        editorPanel.style.flex = "0 0 " + editorHeight + "px";
+        previewPanel.style.flex = "1 1 auto";
+      }
+
+      function onDividerPointerDown(clientY) {
+        isDragging = true;
+        divider.classList.add("dragging");
+        dragStartY = clientY;
+        const panelRect = editorPanel.getBoundingClientRect();
+        editorStartHeight = panelRect.height;
+      }
+
+      function onDividerPointerMove(clientY) {
+        if (!isDragging) return;
+        const delta = clientY - dragStartY;
+        const newHeight = Math.max(80, editorStartHeight + delta);
+        const splitRect = split.getBoundingClientRect();
+        const maxHeight = splitRect.height - 80;
+        const clamped = Math.min(maxHeight, newHeight);
+        editorPanel.style.flex = "0 0 " + clamped + "px";
+        previewPanel.style.flex = "1 1 auto";
+      }
+
+      function onDividerPointerUp() {
+        if (!isDragging) return;
+        isDragging = false;
+        divider.classList.remove("dragging");
+      }
+
+      divider.addEventListener("mousedown", function (event) {
+        event.preventDefault();
+        onDividerPointerDown(event.clientY);
       });
 
-      runStopButton.addEventListener("click", toggleRunStop);
-      codeInput.addEventListener("input", () => {
-        syncLineNumbers();
-        autoResizeCode();
+      window.addEventListener("mousemove", function (event) {
+        if (!isDragging) return;
+        event.preventDefault();
+        onDividerPointerMove(event.clientY);
       });
-      codeInput.addEventListener("scroll", () => {
-        lineNumbers.parentElement.scrollTop = codeInput.scrollTop;
-      });
-      codeInput.addEventListener("click", updateLineHighlight);
-      codeInput.addEventListener("keyup", updateLineHighlight);
-      codeInput.addEventListener("blur", hideLineHighlight);
 
-      splitter.addEventListener("mousedown", onSplitterMouseDown);
-      document.addEventListener("mousemove", onMouseMove);
-      document.addEventListener("mouseup", onMouseUp);
-
-      searchInput.addEventListener("input", () => {
-        performSearch(searchInput.value);
+      window.addEventListener("mouseup", function () {
+        onDividerPointerUp();
       });
-      searchPrev.addEventListener("click", goToPrevSearchMatch);
-      searchNext.addEventListener("click", goToNextSearchMatch);
+
+      divider.addEventListener("touchstart", function (event) {
+        const touch = event.touches[0];
+        if (!touch) return;
+        event.preventDefault();
+        onDividerPointerDown(touch.clientY);
+      }, { passive: false });
+
+      window.addEventListener("touchmove", function (event) {
+        if (!isDragging) return;
+        const touch = event.touches[0];
+        if (!touch) return;
+        event.preventDefault();
+        onDividerPointerMove(touch.clientY);
+      }, { passive: false });
+
+      window.addEventListener("touchend", function () {
+        onDividerPointerUp();
+      });
+
+      function autoResizeCode() {
+        codeEl.style.height = "auto";
+        const border = codeEl.offsetHeight - codeEl.clientHeight;
+        const scroll = codeEl.scrollHeight;
+        codeEl.style.height = (scroll + border) + "px";
+      }
+
+      function updateLineNumbers() {
+        const value = codeEl.value || "";
+        const lines = value.split("\n").length || 1;
+        let html = "";
+        for (let i = 1; i <= lines; i += 1) {
+          html += '<div class="line-number" data-line="' + i + '">' + i + "</div>";
+        }
+        lineNumbersEl.innerHTML = html;
+        updateActiveLineHighlight();
+      }
+
+      function getCurrentLineIndex() {
+        const pos = codeEl.selectionStart || 0;
+        const textBefore = (codeEl.value || "").slice(0, pos);
+        return textBefore.split("\n").length;
+      }
+
+      function updateActiveLineHighlight() {
+        const currentLine = getCurrentLineIndex();
+        const nodes = lineNumbersEl.children;
+        for (let i = 0; i < nodes.length; i += 1) {
+          const el = nodes[i];
+          const line = i + 1;
+          if (line === currentLine) {
+            el.classList.add("active");
+          } else {
+            el.classList.remove("active");
+          }
+        }
+      }
+
+      codeScroll.addEventListener("scroll", function () {});
+      codeEl.addEventListener("click", updateActiveLineHighlight);
+      codeEl.addEventListener("keyup", updateActiveLineHighlight);
+
+      function openFile() {
+        fileInput.value = "";
+        fileInput.click();
+      }
+
+      fileInput.addEventListener("change", function () {
+        const file = fileInput.files && fileInput.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const text = String(e.target.result || "");
+          codeEl.value = text;
+          resetSearchState();
+          autoResizeCode();
+          updateLineNumbers();
+          runPreview();
+        };
+        reader.readAsText(file);
+      });
+
+      function saveCode() {
+        const text = codeEl.value || "";
+        if (!text) return;
+
+        const now = new Date();
+        const pad = n => n.toString().padStart(2, "0");
+        const defaultName = "p.lab_sketch_" +
+          pad(now.getDate()) +
+          pad(now.getMonth() + 1) +
+          String(now.getFullYear()).slice(-2) +
+          "_" +
+          pad(now.getHours()) +
+          pad(now.getMinutes()) +
+          ".html";
+
+        const inputName = window.prompt("File name:", defaultName);
+        if (inputName === null) return;
+        const finalName = inputName.trim() || defaultName;
+
+        const blob = new Blob([text], { type: "text/html" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = finalName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
+      function pickRandomDemoName() {
+        const list = demoConfig.files || [];
+        if (!list.length) return null;
+        const index = Math.floor(Math.random() * list.length);
+        return list[index];
+      }
+
+      function loadRandomDemo() {
+        const name = pickRandomDemoName();
+        if (!name) {
+          codeEl.value = defaultExample;
+          autoResizeCode();
+          updateLineNumbers();
+          runPreview();
+          return;
+        }
+        const url = demoConfig.basePath + name;
+        fetch(url)
+          .then(function (res) {
+            if (!res.ok) {
+              throw new Error("demo not found");
+            }
+            return res.text();
+          })
+          .then(function (text) {
+            codeEl.value = text;
+            resetSearchState();
+            autoResizeCode();
+            updateLineNumbers();
+            runPreview();
+          })
+          .catch(function () {
+            codeEl.value = defaultExample;
+            autoResizeCode();
+            updateLineNumbers();
+            runPreview();
+          });
+      }
+
+      function openPreviewInNewTab() {
+        const html = getCurrentDocumentHtml();
+        if (!html) return;
+        const blob = new Blob([html], { type: "text/html" });
+        const url = URL.createObjectURL(blob);
+        window.open(url, "_blank");
+      }
+
+      btnRunToggle.addEventListener("click", function () {
+        if (isPreviewLive) {
+          stopPreview();
+        } else {
+          runPreview();
+        }
+      });
 
       btnClear.addEventListener("click", clearCode);
       btnCopy.addEventListener("click", copyCode);
       btnPaste.addEventListener("click", pasteCode);
-      btnOpenFile.addEventListener("click", openFile);
-      btnSaveFile.addEventListener("click", saveFile);
-
+      btnFull.addEventListener("click", toggleFullPreview);
+      btnFind.addEventListener("click", performSearch);
+      btnOpen.addEventListener("click", openFile);
+      btnSave.addEventListener("click", saveCode);
       btnDemo.addEventListener("click", loadRandomDemo);
-      btnPopout.addEventListener("click", openPopout);
-      btnFullPreview.addEventListener("click", openFullPreview);
-
+      btnPopout.addEventListener("click", openPreviewInNewTab);
+      btnExitFull.addEventListener("click", exitFullPreview);
       btnHelp.addEventListener("click", openHelp);
-      helpClose.addEventListener("click", closeHelp);
-      helpOverlay.addEventListener("click", (event) => {
-        if (event.target === helpOverlay) {
-          closeHelp();
+      btnHelpClose.addEventListener("click", closeHelp);
+      helpOverlay.addEventListener("click", function (event) {
+        if (event.target === helpOverlay) closeHelp();
+      });
+
+      searchInput.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          performSearch();
         }
       });
 
-      updateMobileWarning();
+      codeEl.addEventListener("input", function () {
+        resetSearchState();
+        autoResizeCode();
+        updateLineNumbers();
+      });
 
-      document.addEventListener("keydown", (event) => {
-        if (event.target === searchInput) {
+      document.addEventListener("keydown", function (event) {
+        if (event.target === codeEl || event.target === searchInput) {
           if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "enter") {
             event.preventDefault();
             runPreview();
@@ -1942,29 +1312,12 @@ ${content}
         updateRunButtonState();
       }
 
-      function setInitialSplitHeight() {
-        const editorPanel = document.querySelector(".editor-panel");
-        const previewPanel = document.querySelector(".preview-panel");
-        editorPanel.style.flex = "0 0 50%";
-        previewPanel.style.flex = "0 0 50%";
-      }
-
       if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", init);
       } else {
         init();
       }
     })();
-  </script>
-
-  <script>
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", function () {
-        navigator.serviceWorker.register("./sw.js").catch(function (err) {
-          console.log("Service worker registration failed:", err);
-        });
-      });
-    }
   </script>
 </body>
 </html>
