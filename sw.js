@@ -20,7 +20,7 @@ self.addEventListener("activate", event => {
   );
 });
 
-// network first для навигаций, cache fallback при офлайне
+// навигация - сначала сеть, при ошибке - кеш
 self.addEventListener("fetch", event => {
   if (event.request.mode === "navigate") {
     event.respondWith(
@@ -37,16 +37,11 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-  // для остальных запросов можно просто пропустить или сделать cache first
+  // для статики можно использовать cache first
   event.respondWith(
     caches.match(event.request).then(cached => {
-      return (
-        cached ||
-        fetch(event.request).catch(() => {
-          // если очень нужно, можно сюда добавить резерв для статики
-          return cached;
-        })
-      );
+      if (cached) return cached;
+      return fetch(event.request).catch(() => cached);
     })
   );
 });
