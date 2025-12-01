@@ -515,12 +515,15 @@
     }
 
     body.full-preview #previewPanel {
-      position: fixed;
-      inset: 0;
-      z-index: 10;
-      border-radius: 0;
-      border: none;
-    }
+    position: fixed;
+    inset: 0;
+    padding-top: calc(6px + env(safe-area-inset-top));
+    padding-bottom: calc(8px + env(safe-area-inset-bottom));
+    z-index: 10;
+    border-radius: 0;
+    border: none;
+  }
+
 
     body.full-preview .preview-wrapper,
     body.full-preview .preview-inner,
