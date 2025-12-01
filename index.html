@@ -8,7 +8,7 @@
     :root {
       color-scheme: dark;
 
-      /* PALETTE: правь эти значения для разных тем */
+      /* PALETTE */
       --c-bg:            #04040a;
       --c-surface-top:   #090a12;
       --c-surface:       #05060c;
@@ -49,7 +49,7 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      padding: calc(8px + env(safe-area-inset-top)) 8px 12px;
+      padding: 8px 8px 12px;
       gap: 6px;
       min-height: 0;
       background-image:
@@ -106,6 +106,40 @@
       font-size: 9px;
       color: var(--c-muted);
       opacity: 0.9;
+    }
+
+    .preset-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .preset-btn {
+      border: 1px solid var(--c-border-soft);
+      background: #03050f;
+      color: var(--c-muted);
+      font-size: 9px;
+      padding: 3px 7px;
+      border-radius: 0;
+      cursor: pointer;
+      text-transform: none;
+      letter-spacing: 0.06em;
+      min-width: 20px;
+      height: 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .preset-btn:hover {
+      background: #080b18;
+    }
+
+    .preset-btn.preset-active {
+      border-color: var(--c-accent);
+      color: var(--c-accent);
+      background: rgba(53,242,163,0.14);
     }
 
     .toolbar {
@@ -214,7 +248,7 @@
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--c-muted);
+     color: var(--c-muted);
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -420,8 +454,8 @@
 
     .fullscreen-exit {
       position: absolute;
-      top: 8px;
-      right: 8px;
+      top: calc(12px + env(safe-area-inset-top));
+      right: 14px;
       width: 22px;
       height: 22px;
       border-radius: 0;
@@ -442,8 +476,6 @@
       border: 1px solid #ffffff;
       box-sizing: border-box;
     }
-
-    /* help overlay */
 
     .help-overlay {
       position: fixed;
@@ -516,9 +548,7 @@
 
     body.full-preview #previewPanel {
       position: fixed;
-      inset: 0;
-      padding-top: calc(6px + env(safe-area-inset-top));
-      padding-bottom: calc(8px + env(safe-area-inset-bottom));
+      inset: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
       z-index: 10;
       border-radius: 0;
       border: none;
@@ -561,7 +591,7 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#04040a">
 
-  <!-- iOS иконка и режим web-app -->
+  <!-- iOS web-app -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="apple-touch-icon" href="icons/pocketlab-192.png">
@@ -572,9 +602,16 @@
       <div class="title-line">
         <span class="title-dot"></span>
         <span class="title-name">POCKETLAB</span>
-        <span class="title-version">v0.47</span>
+        <span class="title-version">v0.49</span>
         <span class="title-dev">dev by Grisha Tsvetkov</span>
       </div>
+
+      <div class="preset-group">
+        <button class="preset-btn preset-active" type="button" data-preset="1">1</button>
+        <button class="preset-btn" type="button" data-preset="2">2</button>
+        <button class="preset-btn" type="button" data-preset="3">3</button>
+      </div>
+
       <div class="toolbar">
         <div class="toolbar-group">
           <button class="btn btn-pill" id="btnOpen" type="button">OPEN</button>
@@ -657,24 +694,24 @@
         <button class="btn btn-ghost" id="btnHelpClose" type="button">CLOSE</button>
       </div>
       <div class="help-body">
-        <p><strong>Что это.</strong> Мини-лаборатория для HTML/JS-скетчей. Вставляешь код сверху, нажимаешь <code>RUN</code>, смотришь результат снизу.</p>
+        <p><strong>Что это.</strong> Мини лаборатория для HTML/JS скетчей. Вставляешь код сверху, нажимаешь <code>RUN</code>, смотришь результат снизу.</p>
         <p><strong>Базовый сценарий.</strong></p>
         <ul>
           <li><code>OPEN</code> — загрузить .html / .txt файл с устройства</li>
-          <li><code>SAVE</code> — сохранить текущий код в .html (имя можно задать)</li>
+          <li><code>SAVE</code> — сохранить текущий код в .html</li>
           <li><code>PASTE / COPY / CLEAR</code> — работа с буфером и очистка</li>
           <li><code>DEMO</code> — случайная демо-страница из папки <code>/demo</code></li>
-          <li><code>RUN</code> — запускает / перезапускает превью</li>
+          <li><code>RUN</code> — запускает или перезапускает превью</li>
           <li><code>FULL</code> — полноэкранное превью, выход по квадратику в углу</li>
           <li><code>OPEN PAGE</code> — открыть результат в новой вкладке</li>
           <li><code>EXPORT APP</code> — сохранить текущий код как отдельный .html без интерфейса PocketLab</li>
         </ul>
-        <p><strong>Поиск.</strong> Вводишь строку в поле <code>search in code</code>, жмешь <code>SEARCH</code> или Enter: курсор прыгает по вхождениям.</p>
-        <p><strong>Структура HTML.</strong> Если вставляешь полный документ с <code>&lt;html&gt;</code>, он запускается как есть. Если вставлен только фрагмент, PocketLab оборачивает его в минимальный HTML-каркас.</p>
+        <p><strong>Поиск.</strong> Вводишь строку в поле <code>search in code</code>, жмешь <code>SEARCH</code> или Enter.</p>
+        <p><strong>HTML режим.</strong> Если вставлен полный документ с <code>&lt;html&gt;</code>, он запускается как есть. Если фрагмент, PocketLab оборачивает его в минимальный HTML каркас.</p>
       </div>
       <div class="help-footer">
         <span style="font-size:10px;color:var(--c-muted);letter-spacing:0.12em;text-transform:uppercase;">
-          v0.47 · pocketlab
+          v0.49 · pocketlab
         </span>
       </div>
     </div>
@@ -714,6 +751,7 @@
       const lineNumbersEl = document.getElementById("lineNumbers");
       const fileInput = document.getElementById("fileInput");
       const codeScroll = document.getElementById("codeScroll");
+      const presetButtons = document.querySelectorAll(".preset-btn");
 
       let isDragging = false;
       let dragStartY = 0;
@@ -736,8 +774,8 @@
         "<!doctype html>",
         "<html>",
         "<head>",
-        '  <meta charset=\"utf-8\">',
-        '  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">',
+        "  <meta charset=\"utf-8\">",
+        "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">",
         "  <title>PocketLab example</title>",
         "  <style>",
         "    * { box-sizing: border-box; }",
@@ -828,6 +866,10 @@
         "</html>"
       ].join("\n");
 
+      const preset2 = "<!doctype html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <title>PocketLab preset 2</title>\n  <style>\n    *{box-sizing:border-box;} html,body{margin:0;padding:0;height:100%;width:100%;background:#020204;color:#f5f5f7;font-family:system-ui,-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-serif;} body{display:flex;align-items:center;justify-content:center;} .dot{width:18px;height:18px;border-radius:50%;border:2px solid #35f2a3;box-shadow:0 0 18px rgba(53,242,163,0.7);animation:pulse 1.4s infinite.ease-in-out;} @keyframes pulse{0%{transform:scale(0.9);opacity:0.7;}50%{transform:scale(1.1);opacity:1;}100%{transform:scale(0.9);opacity:0.7;}}\n  </style>\n</head>\n<body>\n  <div class=\"dot\"></div>\n</body>\n</html>\n";
+
+      const preset3 = "<!doctype html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <title>PocketLab preset 3</title>\n  <style>\n    *{box-sizing:border-box;} html,body{margin:0;padding:0;height:100%;width:100%;background:#000;color:#f5f5f7;font-family:system-ui,-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-serif;} canvas{display:block;width:100%;height:100%;}\n  </style>\n</head>\n<body>\n  <canvas id=\"c\"></canvas>\n  <script>\n    var c = document.getElementById('c');\n    var ctx = c.getContext('2d');\n    function resize(){ c.width = window.innerWidth; c.height = window.innerHeight; }\n    window.addEventListener('resize', resize); resize();\n    var t = 0;\n    function loop(){\n      t += 0.01;\n      ctx.clearRect(0,0,c.width,c.height);\n      var cx = c.width/2, cy = c.height/2;\n      for (var i=0;i<80;i++){\n        var a = i/80 * Math.PI * 2 + t;\n        var r = 40 + i*4;\n        var x = cx + Math.cos(a)*r;\n        var y = cy + Math.sin(a)*r*0.5;\n        ctx.fillStyle = 'hsl(' + (180 + i*2) + ',70%,' + (40 + i*0.3) + '%)';\n        ctx.fillRect(x, y, 2, 2);\n      }\n      requestAnimationFrame(loop);\n    }\n    loop();\n  <\\/script>\n</body>\n</html>\n";
+
       function looksLikeFullDocument(html) {
         const lower = html.toLowerCase();
         if (lower.includes("<!doctype html")) return true;
@@ -842,8 +884,8 @@
           "<!doctype html>",
           "<html>",
           "<head>",
-          '  <meta charset=\"utf-8\">',
-          '  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">',
+          "  <meta charset=\"utf-8\">",
+          "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">",
           "  <title>PocketLab fragment</title>",
           "</head>",
           "<body>",
@@ -878,7 +920,7 @@
           "<!doctype html>",
           "<html>",
           "<head>",
-          '  <meta charset=\"utf-8\">',
+          "  <meta charset=\"utf-8\">",
           "  <title>PocketLab stopped</title>",
           "  <style>",
           "    html, body {",
@@ -1246,6 +1288,32 @@
         URL.revokeObjectURL(url);
       }
 
+      function applyPreset(id) {
+        let content;
+        if (id === "1") {
+          content = defaultExample;
+        } else if (id === "2") {
+          content = preset2;
+        } else if (id === "3") {
+          content = preset3;
+        } else {
+          return;
+        }
+        codeEl.value = content;
+        resetSearchState();
+        autoResizeCode();
+        updateLineNumbers();
+        runPreview();
+
+        presetButtons.forEach(function (btn) {
+          if (btn.getAttribute("data-preset") === id) {
+            btn.classList.add("preset-active");
+          } else {
+            btn.classList.remove("preset-active");
+          }
+        });
+      }
+
       function pickRandomDemoName() {
         const list = demoConfig.files || [];
         if (!list.length) return null;
@@ -1256,10 +1324,7 @@
       function loadRandomDemo() {
         const name = pickRandomDemoName();
         if (!name) {
-          codeEl.value = defaultExample;
-          autoResizeCode();
-          updateLineNumbers();
-          runPreview();
+          applyPreset("1");
           return;
         }
         const url = demoConfig.basePath + name;
@@ -1278,10 +1343,7 @@
             runPreview();
           })
           .catch(function () {
-            codeEl.value = defaultExample;
-            autoResizeCode();
-            updateLineNumbers();
-            runPreview();
+            applyPreset("1");
           });
       }
 
@@ -1318,6 +1380,13 @@
         if (event.target === helpOverlay) closeHelp();
       });
 
+      presetButtons.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          const id = btn.getAttribute("data-preset");
+          applyPreset(id);
+        });
+      });
+
       searchInput.addEventListener("keydown", function (event) {
         if (event.key === "Enter") {
           event.preventDefault();
@@ -1352,8 +1421,7 @@
 
       function init() {
         setInitialSplitHeight();
-        loadRandomDemo();
-        autoResizeCode();
+        applyPreset("1");
         updateRunButtonState();
       }
 
