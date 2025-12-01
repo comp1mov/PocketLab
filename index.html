@@ -515,15 +515,14 @@
     }
 
     body.full-preview #previewPanel {
-    position: fixed;
-    inset: 0;
-    padding-top: calc(6px + env(safe-area-inset-top));
-    padding-bottom: calc(8px + env(safe-area-inset-bottom));
-    z-index: 10;
-    border-radius: 0;
-    border: none;
-  }
-
+      position: fixed;
+      inset: 0;
+      padding-top: calc(6px + env(safe-area-inset-top));
+      padding-bottom: calc(8px + env(safe-area-inset-bottom));
+      z-index: 10;
+      border-radius: 0;
+      border: none;
+    }
 
     body.full-preview .preview-wrapper,
     body.full-preview .preview-inner,
@@ -557,7 +556,8 @@
       }
     }
   </style>
-    <!-- PWA meta -->
+
+  <!-- PWA meta -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#04040a">
 
@@ -566,15 +566,13 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="apple-touch-icon" href="icons/pocketlab-192.png">
 </head>
-
-</head>
 <body>
   <div class="app">
     <div class="top-bar">
       <div class="title-line">
         <span class="title-dot"></span>
         <span class="title-name">POCKETLAB</span>
-        <span class="title-version">v0.46</span>
+        <span class="title-version">v0.47</span>
         <span class="title-dev">dev by Grisha Tsvetkov</span>
       </div>
       <div class="toolbar">
@@ -590,6 +588,7 @@
           <button class="btn btn-primary btn-pill" id="btnRunToggle" type="button">RUN</button>
           <button class="btn btn-pill" id="btnFull" type="button">FULL</button>
           <button class="btn btn-pill" id="btnPopout" type="button">OPEN PAGE</button>
+          <button class="btn btn-pill" id="btnExportApp" type="button">EXPORT APP</button>
           <button class="btn btn-ghost" id="btnHelp" type="button">?</button>
         </div>
       </div>
@@ -668,13 +667,14 @@
           <li><code>RUN</code> — запускает / перезапускает превью</li>
           <li><code>FULL</code> — полноэкранное превью, выход по квадратику в углу</li>
           <li><code>OPEN PAGE</code> — открыть результат в новой вкладке</li>
+          <li><code>EXPORT APP</code> — сохранить текущий код как отдельный .html без интерфейса PocketLab</li>
         </ul>
         <p><strong>Поиск.</strong> Вводишь строку в поле <code>search in code</code>, жмешь <code>SEARCH</code> или Enter: курсор прыгает по вхождениям.</p>
         <p><strong>Структура HTML.</strong> Если вставляешь полный документ с <code>&lt;html&gt;</code>, он запускается как есть. Если вставлен только фрагмент, PocketLab оборачивает его в минимальный HTML-каркас.</p>
       </div>
       <div class="help-footer">
         <span style="font-size:10px;color:var(--c-muted);letter-spacing:0.12em;text-transform:uppercase;">
-          v0.46 · pocketlab
+          v0.47 · pocketlab
         </span>
       </div>
     </div>
@@ -699,6 +699,7 @@
       const btnSave = document.getElementById("btnSave");
       const btnFind = document.getElementById("btnFind");
       const btnPopout = document.getElementById("btnPopout");
+      const btnExportApp = document.getElementById("btnExportApp");
       const btnExitFull = document.getElementById("btnExitFull");
       const btnHelp = document.getElementById("btnHelp");
       const btnHelpClose = document.getElementById("btnHelpClose");
@@ -852,6 +853,13 @@
         ].join("\n");
       }
 
+      function getCurrentDocumentHtml() {
+        const raw = codeEl.value || "";
+        const trimmed = raw.trim();
+        if (!trimmed) return "";
+        return looksLikeFullDocument(trimmed) ? raw : wrapFragment(trimmed);
+      }
+
       function updateRunButtonState() {
         if (!btnRunToggle) return;
         if (isPreviewLive) {
@@ -888,13 +896,6 @@
         previewEl.srcdoc = blank;
         isPreviewLive = false;
         updateRunButtonState();
-      }
-
-      function getCurrentDocumentHtml() {
-        const raw = codeEl.value || "";
-        const trimmed = raw.trim();
-        if (!trimmed) return "";
-        return looksLikeFullDocument(trimmed) ? raw : wrapFragment(trimmed);
       }
 
       function runPreview() {
@@ -961,8 +962,8 @@
       function manualPastePrompt() {
         const existing = codeEl.value;
         const hint = existing ? "\n\n(current content will be replaced)" : "";
-        thePasted = window.prompt("Paste your HTML here:" + hint, "");
-        const pasted = thePasted; // слегка обходим линтеры
+        const thePasted = window.prompt("Paste your HTML here:" + hint, "");
+        const pasted = thePasted;
         if (pasted != null) {
           codeEl.value = pasted;
           resetSearchState();
@@ -1215,6 +1216,36 @@
         URL.revokeObjectURL(url);
       }
 
+      function exportAsApp() {
+        const html = getCurrentDocumentHtml();
+        if (!html) return;
+
+        const now = new Date();
+        const pad = n => n.toString().padStart(2, "0");
+        const defaultName = "p.lab_app_" +
+          pad(now.getDate()) +
+          pad(now.getMonth() + 1) +
+          String(now.getFullYear()).slice(-2) +
+          "_" +
+          pad(now.getHours()) +
+          pad(now.getMinutes()) +
+          ".html";
+
+        const inputName = window.prompt("App file name:", defaultName);
+        if (inputName === null) return;
+        const finalName = inputName.trim() || defaultName;
+
+        const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = finalName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
       function pickRandomDemoName() {
         const list = demoConfig.files || [];
         if (!list.length) return null;
@@ -1279,6 +1310,7 @@
       btnSave.addEventListener("click", saveCode);
       btnDemo.addEventListener("click", loadRandomDemo);
       btnPopout.addEventListener("click", openPreviewInNewTab);
+      btnExportApp.addEventListener("click", exportAsApp);
       btnExitFull.addEventListener("click", exitFullPreview);
       btnHelp.addEventListener("click", openHelp);
       btnHelpClose.addEventListener("click", closeHelp);
@@ -1340,6 +1372,6 @@
         });
       });
     }
-  </script>  
+  </script>
 </body>
 </html>
