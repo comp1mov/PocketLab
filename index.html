@@ -4,25 +4,33 @@
   <meta charset="utf-8">
   <title>PocketLab</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <style>
-    :root {
-      color-scheme: dark;
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+  <style>    :root {
+      color-scheme: light;
 
-      /* PALETTE */
-      --c-bg:            #04040a;
-      --c-surface-top:   #090a12;
-      --c-surface:       #05060c;
-      --c-surface-soft:  #080a14;
-      --c-border:        #2a3040;
-      --c-border-soft:   #1d2232;
-      --c-text:          #f5f5f7;
-      --c-muted:         #9a9fb3;
-      --c-accent:        #35f2a3;
-      --c-accent-soft:   rgba(53, 242, 163, 0.20);
-      --c-danger:        #ff4f6a;
-      --c-danger-soft:   rgba(255, 79, 106, 0.18);
+      /* MONOCHROME PALETTE (patched) */
+      --c-bg:            #bdbdbd; /* page background */
+      --c-surface-top:   #cfcfcf; /* window panels */
+      --c-surface:       #cfcfcf;
+      --c-surface-soft:  #cfcfcf;
+      --c-border:        #000000; /* hard lines */
+      --c-border-soft:   #000000;
+      --c-text:          #000000;
+      --c-muted:         #222222;
 
-      --radius: 1px;
+      /* keep semantics, but no color accents */
+      --c-accent:        #000000;
+      --c-accent-soft:   rgba(0, 0, 0, 0.14);
+      --c-danger:        #000000;
+      --c-danger-soft:   #ffffff;
+
+      --radius: 0px;
+
+      /* UPDATE flash feedback */
+      --update-flash: #35f2a3;
+      --update-flash-ms: 3000ms;
     }
 
     * { box-sizing: border-box; }
@@ -34,29 +42,30 @@
       width: 100%;
       background: var(--c-bg);
       color: var(--c-text);
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
-                   "Segoe UI", sans-serif;
+      font-family: "Roboto", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       -webkit-font-smoothing: antialiased;
       text-rendering: optimizeLegibility;
     }
-
     body {
       display: flex;
       flex-direction: column;
+
+      padding-top: calc(env(safe-area-inset-top) + 10px);
+      padding-right: calc(env(safe-area-inset-right) + 10px);
+      padding-bottom: calc(env(safe-area-inset-bottom) + 10px);
+      padding-left: calc(env(safe-area-inset-left) + 10px);
+
+      overflow: hidden;
     }
 
     .app {
       flex: 1;
       display: flex;
       flex-direction: column;
-      padding: 8px 8px 12px;
+      padding: 0;
       gap: 6px;
       min-height: 0;
-      background-image:
-        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-      background-size: 16px 16px;
-      background-position: -1px -1px;
+      background-image: none;
     }
 
     .top-bar {
@@ -156,7 +165,7 @@
     }
 
     .toolbar-group + .toolbar-group {
-      margin-left: 4px;
+      margin-left: 10px;
     }
 
     .btn {
@@ -198,7 +207,39 @@
       background: #4df7b5;
     }
 
-    .btn-danger {
+
+/* UPDATE flash overlay: additive-ish glow without breaking :hover !important */
+#btnRunToggle{
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+#btnRunToggle::before{
+  content: "";
+  position: absolute;
+  inset: -2px;
+  background: var(--update-flash);
+  opacity: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  filter: blur(8px);
+  transform: scale(1.05);
+}
+#btnRunToggle.flash::before{
+  opacity: 1;
+  animation: updateFlashFade var(--update-flash-ms) ease-out forwards;
+}
+#btnRunToggle.flash{
+  border-color: var(--update-flash) !important;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0), 0 0 18px var(--update-flash);
+}
+@keyframes updateFlashFade{
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+
+.btn-danger {
       border-color: var(--c-danger);
       background: var(--c-danger-soft);
       color: #ffdce1;
@@ -275,7 +316,7 @@
     }
 
     .search-input {
-      background: #02030a;
+      background: var(--c-surface-soft);
       border-radius: 0;
       border: 1px solid var(--c-border-soft);
       padding: 3px 7px;
@@ -315,7 +356,7 @@
       position: relative;
       border-radius: 0;
       border: 1px solid var(--c-border-soft);
-      background: #02030a;
+      background: var(--c-surface-soft);
       overflow: hidden;
       min-height: 0;
     }
@@ -338,7 +379,7 @@
       line-height: 1.4;
       text-align: right;
       color: rgba(160,160,178,0.7);
-      background: #02030a;
+      background: var(--c-surface-soft);
       flex: 0 0 auto;
       pointer-events: none;
     }
@@ -377,7 +418,7 @@
 
     .divider {
       height: 24px;
-      background: #05060d;
+      background: var(--c-surface-top);
       position: relative;
       cursor: ns-resize;
       touch-action: none;
@@ -394,7 +435,7 @@
       width: 90px;
       height: 18px;
       border-radius: 0;
-      background: #02030a;
+      background: var(--c-surface-soft);
       border: 1px solid var(--c-border-soft);
       display: flex;
       align-items: center;
@@ -454,33 +495,34 @@
 
     .fullscreen-exit {
       position: absolute;
-      top: calc(12px + env(safe-area-inset-top));
-      right: 14px;
+      bottom: calc(36px + env(safe-area-inset-bottom));
+      right: 42px;
+      top: auto;
       width: 22px;
       height: 22px;
       border-radius: 0;
-      border: 1px solid rgba(255,255,255,0.6);
-      background: rgba(0,0,0,0.65);
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(0,0,0,0);
       display: none;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       z-index: 5;
       padding: 0;
-    }
-
+      opacity: 1;
+}
     .fullscreen-exit-icon {
       width: 12px;
       height: 12px;
       border-radius: 0;
-      border: 1px solid #ffffff;
+      border: 1px solid rgba(255,255,255,0.1);
       box-sizing: border-box;
     }
 
     .help-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.78);
+      background: rgba(0,0,0,0.55);
       display: none;
       align-items: center;
       justify-content: center;
@@ -490,7 +532,7 @@
     .help-card {
       width: min(520px, 92vw);
       max-height: 80vh;
-      background: #05060d;
+      background: var(--c-surface-top);
       border: 1px solid var(--c-border);
       padding: 14px 14px 12px;
       display: flex;
@@ -523,7 +565,7 @@
     .help-body code {
       font-family: "SF Mono", ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-size: 11px;
-      background: #02030a;
+      background: var(--c-surface-soft);
       padding: 2px 4px;
       border-radius: 0;
       border: 1px solid var(--c-border-soft);
@@ -585,6 +627,115 @@
         scroll-behavior: auto !important;
       }
     }
+
+    /* === PATCH v0.52 STYLE: flat monochrome window === */
+    .top-bar,
+    .split {
+      border: 2px solid #000 !important;
+      background: #cfcfcf !important;
+    }
+
+    .panel-header {
+      background: #cfcfcf !important;
+      border-bottom: 2px solid #000 !important;
+      border-top: 0 !important;
+      border-left: 0 !important;
+      border-right: 0 !important;
+      color: #000 !important;
+    }
+
+    .title-line { color: #000 !important; }
+    .title-name { color: #000 !important; }
+    .title-version { border: 2px solid #000 !important; background: #fff !important; color: #000 !important; }
+    .title-dev { color: #000 !important; opacity: 0.7 !important; }
+
+    .title-dot {
+      background: #000 !important;
+      box-shadow: none !important;
+      width: 6px !important;
+      height: 6px !important;
+    }
+
+    .app {
+      background-image: none !important;
+    }
+
+    .btn,
+    .preset-btn,
+    .search-input {
+      border: 2px solid #000 !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      background: #cfcfcf !important;
+      color: #000 !important;
+    }
+
+    .btn:hover,
+    .preset-btn:hover {
+      background: #9a9a9a !important;
+    }
+
+    .btn-primary {
+      background: #000 !important;
+      color: #fff !important;
+      border-color: #000 !important;
+    }
+
+    .btn-danger {
+      background: #fff !important;
+      color: #000 !important;
+      border-color: #000 !important;
+    }
+
+    .btn-ghost {
+      background: #cfcfcf !important;
+      color: #000 !important;
+    }
+
+    .preset-btn.preset-active {
+      background: #000 !important;
+      color: #fff !important;
+      border-color: #000 !important;
+    }
+
+    .search-input::placeholder { color: rgba(0,0,0,0.55) !important; }
+    .search-hit { color: rgba(0,0,0,0.75) !important; }
+
+    .code-area { background: #cfcfcf !important; }
+
+    .code-shell {
+      border: 2px solid #000 !important;
+      background: #fff !important;
+    }
+
+    .code-scroll,
+    textarea#code,
+    .line-numbers {
+      background: #fff !important;
+      color: #000 !important;
+    }
+
+    textarea#code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+    }
+
+    .line-numbers { border-right: 2px solid #000 !important; color: rgba(0,0,0,0.55) !important; }
+
+    .line-number.active { background: #000 !important; color: #fff !important; }
+
+    .divider {
+      background: #9a9a9a !important;
+      border-top: 2px solid #000 !important;
+      border-bottom: 2px solid #000 !important;
+    }
+
+    .divider-hit {
+      border: 2px solid #000 !important;
+      background: #fff !important;
+    }
+
+    .divider-dot { background: #000 !important; }
+
   </style>
 
   <!-- PWA meta -->
@@ -602,7 +753,7 @@
       <div class="title-line">
         <span class="title-dot"></span>
         <span class="title-name">POCKETLAB</span>
-        <span class="title-version">v0.49</span>
+        <span class="title-version">v0.52</span>
         <span class="title-dev">dev by Grisha Tsvetkov</span>
       </div>
 
@@ -616,13 +767,17 @@
         <div class="toolbar-group">
           <button class="btn btn-pill" id="btnOpen" type="button">OPEN</button>
           <button class="btn btn-pill" id="btnSave" type="button">SAVE</button>
-          <button class="btn btn-pill" id="btnPaste" type="button">PASTE</button>
-          <button class="btn btn-pill" id="btnCopy" type="button">COPY</button>
-          <button class="btn btn-pill" id="btnClear" type="button">CLEAR</button>
           <button class="btn btn-pill" id="btnDemo" type="button">DEMO</button>
         </div>
         <div class="toolbar-group">
-          <button class="btn btn-primary btn-pill" id="btnRunToggle" type="button">RUN</button>
+          <button class="btn btn-pill" id="btnPaste" type="button">PASTE</button>
+          <button class="btn btn-pill" id="btnCopy" type="button">COPY</button>
+          <button class="btn btn-pill" id="btnClear" type="button">CLEAR</button>
+        </div>
+        <div class="toolbar-group">
+          <button class="btn btn-primary btn-pill" id="btnRunToggle" type="button">UPDATE</button>
+        </div>
+        <div class="toolbar-group">
           <button class="btn btn-pill" id="btnFull" type="button">FULL</button>
           <button class="btn btn-pill" id="btnPopout" type="button">OPEN PAGE</button>
           <button class="btn btn-pill" id="btnExportApp" type="button">EXPORT APP</button>
@@ -694,14 +849,14 @@
         <button class="btn btn-ghost" id="btnHelpClose" type="button">CLOSE</button>
       </div>
       <div class="help-body">
-        <p><strong>Что это.</strong> Мини лаборатория для HTML/JS скетчей. Вставляешь код сверху, нажимаешь <code>RUN</code>, смотришь результат снизу.</p>
+        <p><strong>Что это.</strong> Мини лаборатория для HTML/JS скетчей. Вставляешь код сверху, нажимаешь <code>UPDATE</code>, смотришь результат снизу.</p>
         <p><strong>Базовый сценарий.</strong></p>
         <ul>
           <li><code>OPEN</code> — загрузить .html / .txt файл с устройства</li>
           <li><code>SAVE</code> — сохранить текущий код в .html</li>
           <li><code>PASTE / COPY / CLEAR</code> — работа с буфером и очистка</li>
           <li><code>DEMO</code> — случайная демо-страница из папки <code>/demo</code></li>
-          <li><code>RUN</code> — запускает или перезапускает превью</li>
+          <li><code>UPDATE</code> — обновляет превью (рендер текущего кода)</li>
           <li><code>FULL</code> — полноэкранное превью, выход по квадратику в углу</li>
           <li><code>OPEN PAGE</code> — открыть результат в новой вкладке</li>
           <li><code>EXPORT APP</code> — сохранить текущий код как отдельный .html без интерфейса PocketLab</li>
@@ -711,7 +866,7 @@
       </div>
       <div class="help-footer">
         <span style="font-size:10px;color:var(--c-muted);letter-spacing:0.12em;text-transform:uppercase;">
-          v0.49 · pocketlab
+          v0.52 · pocketlab
         </span>
       </div>
     </div>
@@ -762,6 +917,38 @@
       let lastSearchCount = 0;
       let isPreviewLive = true;
 
+      // PATCH: persistence (localStorage)
+      const LS_CODE_KEY = "pocketlab.lastCode.v052";
+
+      function loadCodeFromLocal() {
+        try {
+          const saved = localStorage.getItem(LS_CODE_KEY);
+          if (saved && saved.trim()) codeEl.value = saved;
+        } catch (e) {}
+      }
+
+      let saveTimer = null;
+      function saveCodeToLocalDebounced() {
+        if (saveTimer) clearTimeout(saveTimer);
+        saveTimer = setTimeout(function () {
+          try { localStorage.setItem(LS_CODE_KEY, codeEl.value || ""); } catch (e) {}
+        }, 200);
+      }
+
+      // PATCH: PAGE mode vs EDIT mode
+      let editorMode = false;
+      function setMode(isEdit) { editorMode = !!isEdit; }
+
+      codeEl.addEventListener("focus", function () { setMode(true); });
+
+      document.addEventListener("pointerdown", function (e) {
+        const inside = (e && e.target) ? codeEl.contains(e.target) : false;
+        if (!inside) {
+          setMode(false);
+          try { codeEl.blur(); } catch (err) {}
+        }
+      });
+
       const demoConfig = {
         basePath: "./demo/",
         files: [
@@ -770,101 +957,291 @@
         ]
       };
 
-      const defaultExample = [
-        "<!doctype html>",
-        "<html>",
-        "<head>",
-        "  <meta charset=\"utf-8\">",
-        "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">",
-        "  <title>PocketLab example</title>",
-        "  <style>",
-        "    * { box-sizing: border-box; }",
-        "    html, body {",
-        "      margin: 0;",
-        "      padding: 0;",
-        "      height: 100%;",
-        "      width: 100%;",
-        "      background: #020204;",
-        "      color: #f5f5f7;",
-        "      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;",
-        "    }",
-        "    body {",
-        "      display: flex;",
-        "      align-items: center;",
-        "      justify-content: center;",
-        "    }",
-        "    .card {",
-        "      border-radius: 1px;",
-        "      border: 1px solid rgba(255,255,255,0.12);",
-        "      padding: 18px 18px 16px;",
-        "      background: rgba(5,5,18,0.86);",
-        "      box-shadow: 0 18px 45px rgba(0,0,0,0.7);",
-        "      text-align: center;",
-        "      min-width: 240px;",
-        "      max-width: 320px;",
-        "      cursor: pointer;",
-        "      -webkit-tap-highlight-color: transparent;",
-        "      transition: transform 160ms ease-out, box-shadow 160ms ease-out, border-color 160ms ease-out;",
-        "    }",
-        "    .card.active {",
-        "      transform: translateY(-4px) scale(1.02);",
-        "      box-shadow: 0 30px 80px rgba(0,0,0,0.9);",
-        "      border-color: #4da3ff;",
-        "    }",
-        "    .label {",
-        "      font-size: 11px;",
-        "      text-transform: uppercase;",
-        "      letter-spacing: 0.16em;",
-        "      color: rgba(245,245,247,0.55);",
-        "      margin-bottom: 4px;",
-        "    }",
-        "    .value {",
-        "      font-size: 32px;",
-        "      font-variant-numeric: tabular-nums;",
-        "      margin-bottom: 6px;",
-        "    }",
-        "    .hint {",
-        "      font-size: 12px;",
-        "      color: rgba(245,245,247,0.7);",
-        "    }",
-        "    .hint span {",
-        "      opacity: 0.85;",
-        "    }",
-        "  </style>",
-        "</head>",
-        "<body>",
-        "  <div class=\"card\" id=\"card\">",
-        "    <div class=\"label\">tap or click</div>",
-        "    <div class=\"value\" id=\"count\">0</div>",
-        "    <div class=\"hint\"><span>works with mouse and touch</span></div>",
-        "  </div>",
-        "  <script>",
-        "    (function () {",
-        "      var count = 0;",
-        "      var card = document.getElementById('card');",
-        "      var countEl = document.getElementById('count');",
-        "      function increment() {",
-        "        count += 1;",
-        "        countEl.textContent = count;",
-        "        card.classList.add('active');",
-        "        clearTimeout(card._t);",
-        "        card._t = setTimeout(function () {",
-        "          card.classList.remove('active');",
-        "        }, 130);",
-        "      }",
-        "      card.addEventListener('click', function (event) {",
-        "        event.preventDefault();",
-        "        increment();",
-        "      });",
-        "      card.addEventListener('touchend', function (event) {",
-        "        event.preventDefault();",
-        "        increment();",
-        "      }, { passive: false });",
-        "    })();",
-        "  <\/script>",
-        "</body>",
-        "</html>"
-      ].join("\n");
+      const defaultExample = `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>PocketLab demo · ink</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg: #f4f5f7;
+      --stroke: rgba(0,0,0,0.12);
+      --text: rgba(0,0,0,0.82);
+      --muted: rgba(0,0,0,0.58);
+      --card: rgba(255,255,255,0.86);
+    }
+    *{ box-sizing:border-box; }
+    html, body { margin:0; padding:0; height:100%; width:100%; background:var(--bg); overflow:hidden; }
+    body{
+      font-family: Roboto, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+    canvas{ position:fixed; inset:0; width:100%; height:100%; display:block; touch-action:none; }
+
+    .hud{
+      position:fixed;
+      left:12px;
+      top:12px;
+      padding:10px 10px 9px;
+      border:1px solid var(--stroke);
+      background:var(--card);
+      border-radius:1px;
+      user-select:none;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+    .hud-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:6px;
+    }
+    .title{
+      font-size:11px;
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+      color:var(--text);
+      line-height:1;
+      white-space:nowrap;
+    }
+    .picker{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      color:var(--muted);
+      font-size:11px;
+      letter-spacing:0.02em;
+      white-space:nowrap;
+    }
+    input[type="color"]{
+      width:22px;
+      height:18px;
+      padding:0;
+      border:1px solid rgba(0,0,0,0.14);
+      border-radius:1px;
+      background:transparent;
+      cursor:pointer;
+    }
+    .hint{
+      font-size:12px;
+      line-height:1.35;
+      color:var(--muted);
+      max-width: 280px;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="c"></canvas>
+
+  <div class="hud">
+    <div class="hud-head">
+      <div class="title">Ink Trail</div>
+      <div class="picker">
+        <span>ink</span>
+        <input id="inkColor" type="color" value="#11111a" aria-label="Ink color">
+      </div>
+    </div>
+    <div class="hint">
+      drag or draw with finger<br>
+      double tap to clear
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      var canvas = document.getElementById('c');
+      var ctx = canvas.getContext('2d', { alpha: false });
+
+      var buf = document.createElement('canvas');
+      var bctx = buf.getContext('2d', { alpha: false });
+
+      var W = 0, H = 0;
+      function resize(){
+        var dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+        W = Math.floor(window.innerWidth * dpr);
+        H = Math.floor(window.innerHeight * dpr);
+        canvas.width = W; canvas.height = H;
+        buf.width = W; buf.height = H;
+        ctx.setTransform(1,0,0,1,0,0);
+        bctx.setTransform(1,0,0,1,0,0);
+        ctx.imageSmoothingEnabled = true;
+        bctx.imageSmoothingEnabled = true;
+        clearAll();
+      }
+      window.addEventListener('resize', resize, { passive: true });
+
+      function clearAll(){
+        ctx.save();
+        ctx.fillStyle = '#f4f5f7';
+        ctx.fillRect(0,0,W,H);
+        ctx.restore();
+      }
+
+      function hexToRgb(hex){
+        var h = (hex || '').replace('#','').trim();
+        if (h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+        var n = parseInt(h, 16);
+        if (!isFinite(n)) return {r:17,g:17,b:26};
+        return { r:(n>>16)&255, g:(n>>8)&255, b:n&255 };
+      }
+
+      var inkInput = document.getElementById('inkColor');
+      var ink = hexToRgb(inkInput ? inkInput.value : '#11111a');
+      if (inkInput){
+        inkInput.addEventListener('input', function(){
+          ink = hexToRgb(inkInput.value);
+        });
+      }
+
+      function rgba(a){
+        return 'rgba(' + ink.r + ',' + ink.g + ',' + ink.b + ',' + a + ')';
+      }
+
+      var down = false;
+      var px = 0, py = 0;
+      var lastTapAt = 0;
+
+      function toCanvasXY(ev){
+        var r = canvas.getBoundingClientRect();
+        var dpr = W / Math.max(1, r.width);
+        return {
+          x: (ev.clientX - r.left) * dpr,
+          y: (ev.clientY - r.top) * dpr
+        };
+      }
+
+      function splat(x,y,r,alpha){
+        ctx.save();
+        ctx.globalCompositeOperation = 'multiply';
+        ctx.globalAlpha = alpha;
+
+        var g = ctx.createRadialGradient(x,y,0, x,y,r);
+        g.addColorStop(0, rgba(0.62));
+        g.addColorStop(0.35, rgba(0.30));
+        g.addColorStop(1, rgba(0.0));
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(x,y,r,0,Math.PI*2);
+        ctx.fill();
+
+        // micro-bleed
+        for (var i=0;i<3;i++){
+          var ang = Math.random() * Math.PI * 2;
+          var rr = r * (0.35 + Math.random()*0.35);
+          var ox = Math.cos(ang) * r * (0.25 + Math.random()*0.45);
+          var oy = Math.sin(ang) * r * (0.25 + Math.random()*0.45);
+          var g2 = ctx.createRadialGradient(x+ox,y+oy,0, x+ox,y+oy,rr);
+          g2.addColorStop(0, rgba(0.22));
+          g2.addColorStop(1, rgba(0.0));
+          ctx.fillStyle = g2;
+          ctx.beginPath();
+          ctx.arc(x+ox,y+oy,rr,0,Math.PI*2);
+          ctx.fill();
+        }
+
+        ctx.restore();
+      }
+
+      function drawSegment(x0,y0,x1,y1){
+        var dx = x1 - x0;
+        var dy = y1 - y0;
+        var dist = Math.sqrt(dx*dx + dy*dy);
+        var steps = Math.max(1, Math.ceil(dist / 3));
+        for (var i=0;i<=steps;i++){
+          var t = i / steps;
+          var x = x0 + dx * t;
+          var y = y0 + dy * t;
+
+          var r = 10 + Math.min(26, dist * 0.18);
+          var a = 0.40;
+          splat(x,y,r,a);
+        }
+      }
+
+      function onDown(ev){
+        ev.preventDefault();
+        var now = performance.now();
+        if (now - lastTapAt < 280){
+          clearAll();
+          lastTapAt = 0;
+          return;
+        }
+        lastTapAt = now;
+
+        down = true;
+        try { canvas.setPointerCapture(ev.pointerId); } catch(e){}
+        var p = toCanvasXY(ev);
+        px = p.x; py = p.y;
+        splat(px,py,18,0.55);
+      }
+
+      function onMove(ev){
+        if (!down) return;
+        ev.preventDefault();
+        var p = toCanvasXY(ev);
+        drawSegment(px,py,p.x,p.y);
+        px = p.x; py = p.y;
+      }
+
+      function onUp(ev){
+        down = false;
+        try { canvas.releasePointerCapture(ev.pointerId); } catch(e){}
+      }
+
+      canvas.addEventListener('pointerdown', onDown, { passive:false });
+      canvas.addEventListener('pointermove', onMove, { passive:false });
+      canvas.addEventListener('pointerup', onUp, { passive:true });
+      canvas.addEventListener('pointercancel', onUp, { passive:true });
+
+      // ---- FEEDBACK CONFIG (tweak here) ----
+      var BLUR_PX    = 2.2;
+      var FEED_A     = 0.55;
+      var DRIFT_X    = -1.2;
+      var DRIFT_Y    = -0.9;
+      var PAPER_FADE = 0.0007;
+      // -------------------------------------
+
+      function tick(){
+        // copy current frame into buffer
+        bctx.setTransform(1,0,0,1,0,0);
+        bctx.filter = 'none';
+        bctx.globalCompositeOperation = 'copy';
+        bctx.globalAlpha = 1;
+        bctx.drawImage(canvas, 0, 0);
+
+        // blurred feedback back onto main canvas
+        ctx.save();
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.globalAlpha = FEED_A;
+        ctx.filter = 'blur(' + BLUR_PX + 'px)';
+        ctx.drawImage(buf, DRIFT_X, DRIFT_Y, W - 2*DRIFT_X, H - 2*DRIFT_Y);
+        ctx.restore();
+
+        // very slow fade to paper
+        ctx.save();
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.fillStyle = 'rgba(244,245,247,' + PAPER_FADE + ')';
+        ctx.fillRect(0,0,W,H);
+        ctx.restore();
+
+        requestAnimationFrame(tick);
+      }
+
+      resize();
+      requestAnimationFrame(tick);
+    })();
+  <\/script>
+</body>
+</html>`
+
 
       const preset2 = "<!doctype html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <title>PocketLab preset 2</title>\n  <style>\n    *{box-sizing:border-box;} html,body{margin:0;padding:0;height:100%;width:100%;background:#020204;color:#f5f5f7;font-family:system-ui,-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-serif;} body{display:flex;align-items:center;justify-content:center;} .dot{width:18px;height:18px;border-radius:50%;border:2px solid #35f2a3;box-shadow:0 0 18px rgba(53,242,163,0.7);animation:pulse 1.4s infinite.ease-in-out;} @keyframes pulse{0%{transform:scale(0.9);opacity:0.7;}50%{transform:scale(1.1);opacity:1;}100%{transform:scale(0.9);opacity:0.7;}}\n  </style>\n</head>\n<body>\n  <div class=\"dot\"></div>\n</body>\n</html>\n";
 
@@ -904,16 +1281,37 @@
 
       function updateRunButtonState() {
         if (!btnRunToggle) return;
-        if (isPreviewLive) {
-          btnRunToggle.textContent = "STOP";
-          btnRunToggle.classList.remove("btn-primary");
-          btnRunToggle.classList.add("btn-danger");
-        } else {
-          btnRunToggle.textContent = "RUN";
-          btnRunToggle.classList.remove("btn-danger");
-          btnRunToggle.classList.add("btn-primary");
-        }
+        btnRunToggle.textContent = "UPDATE";
+        btnRunToggle.classList.remove("btn-danger");
+        btnRunToggle.classList.add("btn-primary");
       }
+
+      function flashUpdateButton() {
+  if (!btnRunToggle) return;
+
+  // restart flash (hover styles are allowed underneath)
+  btnRunToggle.classList.remove("flash");
+  void btnRunToggle.offsetHeight;
+  btnRunToggle.classList.add("flash");
+
+  // remove class after animation duration (read from CSS var)
+  if (btnRunToggle._flashT) clearTimeout(btnRunToggle._flashT);
+
+  let ms = 3000;
+  try {
+    const raw = getComputedStyle(document.documentElement)
+      .getPropertyValue("--update-flash-ms")
+      .trim();
+    if (raw.endsWith("ms")) ms = parseFloat(raw);
+    else if (raw.endsWith("s")) ms = parseFloat(raw) * 1000;
+  } catch (e) {}
+
+  btnRunToggle._flashT = setTimeout(function () {
+    btnRunToggle.classList.remove("flash");
+  }, ms + 80);
+}
+
+
 
       function stopPreview() {
         const blank = [
@@ -950,17 +1348,43 @@
         isPreviewLive = true;
         updateRunButtonState();
       }
-
       function clearCode() {
-        codeEl.value = "";
+        if (editorMode) {
+          const a = codeEl.selectionStart || 0;
+          const b = codeEl.selectionEnd || 0;
+
+          if (b > a) {
+            codeEl.value = codeEl.value.slice(0, a) + codeEl.value.slice(b);
+            codeEl.setSelectionRange(a, a);
+          } else if (a > 0) {
+            codeEl.value = codeEl.value.slice(0, a - 1) + codeEl.value.slice(a);
+            codeEl.setSelectionRange(a - 1, a - 1);
+          } else {
+            // at start: do nothing
+          }
+        } else {
+          codeEl.value = "";
+        }
+
         resetSearchState();
         autoResizeCode();
         updateLineNumbers();
+        saveCodeToLocalDebounced();
+        runPreview();
       }
-
       function copyCode() {
-        const text = codeEl.value;
+        const a = codeEl.selectionStart || 0;
+        const b = codeEl.selectionEnd || 0;
+
+        let text = "";
+        if (editorMode) {
+          text = (b > a) ? codeEl.value.slice(a, b) : "";
+        } else {
+          text = codeEl.value;
+        }
+
         if (!text) return;
+
         if (navigator.clipboard && navigator.clipboard.writeText) {
           navigator.clipboard.writeText(text).catch(function () {
             fallbackCopy(text);
@@ -982,16 +1406,12 @@
         try { document.execCommand("copy"); } catch (e) {}
         document.body.removeChild(temp);
       }
-
       function pasteCode() {
         if (navigator.clipboard && navigator.clipboard.readText) {
           navigator.clipboard.readText()
             .then(function (text) {
               if (!text) return;
-              codeEl.value = text;
-              resetSearchState();
-              autoResizeCode();
-              updateLineNumbers();
+              applyPasteText(text);
             })
             .catch(function () {
               manualPastePrompt();
@@ -1001,18 +1421,34 @@
         }
       }
 
-      function manualPastePrompt() {
-        const existing = codeEl.value;
-        const hint = existing ? "\n\n(current content will be replaced)" : "";
-        const thePasted = window.prompt("Paste your HTML here:" + hint, "");
-        const pasted = thePasted;
-        if (pasted != null) {
-          codeEl.value = pasted;
-          resetSearchState();
-          autoResizeCode();
-          updateLineNumbers();
+      function applyPasteText(text) {
+        if (editorMode) {
+          const a = codeEl.selectionStart || 0;
+          const b = codeEl.selectionEnd || 0;
+          codeEl.value = codeEl.value.slice(0, a) + text + codeEl.value.slice(b);
+          const p = a + text.length;
+          codeEl.focus();
+          codeEl.setSelectionRange(p, p);
+        } else {
+          codeEl.value = text;
         }
+
+        resetSearchState();
+        autoResizeCode();
+        updateLineNumbers();
+        saveCodeToLocalDebounced();
+        runPreview();
       }
+function manualPastePrompt() {
+        const hint = editorMode
+          ? "\n\n(paste inserts at cursor or replaces selection)"
+          : "\n\n(current content will be replaced)";
+        const pasted = window.prompt("Paste your HTML here:" + hint, "");
+        if (pasted == null) return;
+        applyPasteText(pasted);
+      }
+
+      let fsHideTimer = null;
 
       function toggleFullPreview() {
         document.body.classList.toggle("full-preview");
@@ -1021,8 +1457,7 @@
       function exitFullPreview() {
         document.body.classList.remove("full-preview");
       }
-
-      function openHelp() {
+function openHelp() {
         helpOverlay.classList.add("visible");
       }
 
@@ -1223,6 +1658,7 @@
           resetSearchState();
           autoResizeCode();
           updateLineNumbers();
+          saveCodeToLocalDebounced();
           runPreview();
         };
         reader.readAsText(file);
@@ -1304,6 +1740,7 @@
         autoResizeCode();
         updateLineNumbers();
         runPreview();
+        saveCodeToLocalDebounced();
 
         presetButtons.forEach(function (btn) {
           if (btn.getAttribute("data-preset") === id) {
@@ -1340,6 +1777,7 @@
             resetSearchState();
             autoResizeCode();
             updateLineNumbers();
+            saveCodeToLocalDebounced();
             runPreview();
           })
           .catch(function () {
@@ -1356,11 +1794,8 @@
       }
 
       btnRunToggle.addEventListener("click", function () {
-        if (isPreviewLive) {
-          stopPreview();
-        } else {
-          runPreview();
-        }
+        flashUpdateButton();
+        runPreview();
       });
 
       btnClear.addEventListener("click", clearCode);
@@ -1374,7 +1809,7 @@
       btnPopout.addEventListener("click", openPreviewInNewTab);
       btnExportApp.addEventListener("click", exportAsApp);
       btnExitFull.addEventListener("click", exitFullPreview);
-      btnHelp.addEventListener("click", openHelp);
+btnHelp.addEventListener("click", openHelp);
       btnHelpClose.addEventListener("click", closeHelp);
       helpOverlay.addEventListener("click", function (event) {
         if (event.target === helpOverlay) closeHelp();
@@ -1398,6 +1833,7 @@
         resetSearchState();
         autoResizeCode();
         updateLineNumbers();
+        saveCodeToLocalDebounced();
       });
 
       document.addEventListener("keydown", function (event) {
@@ -1421,7 +1857,17 @@
 
       function init() {
         setInitialSplitHeight();
-        applyPreset("1");
+
+        loadCodeFromLocal();
+        if (!codeEl.value || !codeEl.value.trim()) {
+          applyPreset("1");
+        } else {
+          resetSearchState();
+          autoResizeCode();
+          updateLineNumbers();
+          runPreview();
+        }
+
         updateRunButtonState();
       }
 
@@ -1435,9 +1881,11 @@
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {
-        navigator.serviceWorker.register("./sw.js").catch(function (err) {
-          console.error("Service worker registration failed", err);
-        });
+        if (location.protocol === "http:" || location.protocol === "https:") {
+          navigator.serviceWorker.register("./sw.js").catch(function (err) {
+            console.error("Service worker registration failed", err);
+          });
+        }
       });
     }
   </script>
