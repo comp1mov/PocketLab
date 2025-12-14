@@ -596,6 +596,10 @@
       border: none;
     }
 
+    body.full-preview.is-standalone #previewPanel {
+      inset: env(safe-area-inset-top) 0 0;
+    }
+
     body.full-preview .preview-wrapper,
     body.full-preview .preview-inner,
     body.full-preview #preview {
@@ -628,7 +632,7 @@
       }
     }
 
-    /* === PATCH v0.52 STYLE: flat monochrome window === */
+    /* === PATCH v0.53 STYLE: flat monochrome window === */
     .top-bar,
     .split {
       border: 2px solid #000 !important;
@@ -753,7 +757,7 @@
       <div class="title-line">
         <span class="title-dot"></span>
         <span class="title-name">POCKETLAB</span>
-        <span class="title-version">v0.52</span>
+        <span class="title-version">v0.53</span>
         <span class="title-dev">dev by Grisha Tsvetkov</span>
       </div>
 
@@ -788,6 +792,29 @@
 
     <div class="layout">
       <div class="split" id="split">
+        <section class="panel" id="previewPanel">
+          <div class="preview-wrapper">
+            <div class="preview-inner">
+              <iframe
+                id="preview"
+                title="PocketLab preview"
+                sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-downloads allow-modals allow-popups"
+                allow="camera; microphone; autoplay; fullscreen"></iframe>
+              <div class="preview-watermark">&lt;3</div>
+              <button class="fullscreen-exit" id="btnExitFull" type="button">
+                <div class="fullscreen-exit-icon"></div>
+              </button>
+            </div>
+          </div>
+        </section>
+      <div class="divider" id="divider">
+          <div class="divider-hit">
+            <div class="divider-dot"></div>
+            <div class="divider-dot"></div>
+            <div class="divider-dot"></div>
+          </div>
+        </div>
+
         <section class="panel" id="editorPanel">
           <header class="panel-header">
             <div class="panel-header-left">
@@ -814,30 +841,7 @@
           </div>
         </section>
 
-        <div class="divider" id="divider">
-          <div class="divider-hit">
-            <div class="divider-dot"></div>
-            <div class="divider-dot"></div>
-            <div class="divider-dot"></div>
-          </div>
         </div>
-
-        <section class="panel" id="previewPanel">
-          <div class="preview-wrapper">
-            <div class="preview-inner">
-              <iframe
-                id="preview"
-                title="PocketLab preview"
-                sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-downloads allow-modals allow-popups"
-                allow="camera; microphone; autoplay; fullscreen"></iframe>
-              <div class="preview-watermark">&lt;3</div>
-              <button class="fullscreen-exit" id="btnExitFull" type="button">
-                <div class="fullscreen-exit-icon"></div>
-              </button>
-            </div>
-          </div>
-        </section>
-      </div>
     </div>
   </div>
 
@@ -866,7 +870,7 @@
       </div>
       <div class="help-footer">
         <span style="font-size:10px;color:var(--c-muted);letter-spacing:0.12em;text-transform:uppercase;">
-          v0.52 · pocketlab
+          v0.53 · pocketlab
         </span>
       </div>
     </div>
@@ -910,29 +914,60 @@
 
       let isDragging = false;
       let dragStartY = 0;
-      let editorStartHeight = 0;
+      let previewStartHeight = 0;
 
       let lastSearchTerm = "";
       let lastSearchIndex = -1;
       let lastSearchCount = 0;
       let isPreviewLive = true;
 
-      // PATCH: persistence (localStorage)
-      const LS_CODE_KEY = "pocketlab.lastCode.v052";
+      // PATCH: pin persistence (localStorage) — v0.53
+      const LS_PREFIX = "pocketlab.v053.";
+      const LS_ACTIVE_PIN = LS_PREFIX + "activePin";
+      function pinKey(id){ return LS_PREFIX + "pin" + id + ".code"; }
 
-      function loadCodeFromLocal() {
-        try {
-          const saved = localStorage.getItem(LS_CODE_KEY);
-          if (saved && saved.trim()) codeEl.value = saved;
-        } catch (e) {}
+      let activePin = "1";
+      let saveTimer = null;
+
+      function savePinNow() {
+        try { localStorage.setItem(pinKey(activePin), codeEl.value || ""); } catch (e) {}
       }
 
-      let saveTimer = null;
-      function saveCodeToLocalDebounced() {
+      function savePinDebounced() {
         if (saveTimer) clearTimeout(saveTimer);
-        saveTimer = setTimeout(function () {
-          try { localStorage.setItem(LS_CODE_KEY, codeEl.value || ""); } catch (e) {}
-        }, 200);
+        saveTimer = setTimeout(savePinNow, 200);
+      }
+
+      function getStoredPinCode(id) {
+        try { return localStorage.getItem(pinKey(id)) || ""; } catch (e) { return ""; }
+      }
+
+      function setActivePin(id) {
+        activePin = String(id || "1");
+        try { localStorage.setItem(LS_ACTIVE_PIN, activePin); } catch (e) {}
+      }
+
+
+      function loadActivePinFromLocal() {
+        try {
+          const stored = localStorage.getItem(LS_ACTIVE_PIN);
+          if (stored === "1" || stored === "2" || stored === "3") return stored;
+        } catch (e) {}
+        return "1";
+      }
+
+      function loadPinOrDefault(id) {
+        const stored = getStoredPinCode(id);
+        if (stored && stored.trim()) {
+          codeEl.value = stored;
+          resetSearchState();
+          autoResizeCode();
+          updateLineNumbers();
+          runPreview();
+          return;
+        }
+        applyPreset(id); // falls back to built-in defaults for this pin
+        savePinNow();
       }
 
       // PATCH: PAGE mode vs EDIT mode
@@ -1369,7 +1404,7 @@
         resetSearchState();
         autoResizeCode();
         updateLineNumbers();
-        saveCodeToLocalDebounced();
+        savePinDebounced();
         runPreview();
       }
       function copyCode() {
@@ -1436,7 +1471,7 @@
         resetSearchState();
         autoResizeCode();
         updateLineNumbers();
-        saveCodeToLocalDebounced();
+        savePinDebounced();
         runPreview();
       }
 function manualPastePrompt() {
@@ -1534,31 +1569,30 @@ function openHelp() {
         updateActiveLineHighlight();
       }
 
-      function setInitialSplitHeight() {
-        const rect = split.getBoundingClientRect();
-        const initialEditorRatio = 0.55;
-        const editorHeight = rect.height * initialEditorRatio;
-        editorPanel.style.flex = "0 0 " + editorHeight + "px";
-        previewPanel.style.flex = "1 1 auto";
-      }
-
-      function onDividerPointerDown(clientY) {
+      function setInitialSplitHeight(){
+  const splitRect = split.getBoundingClientRect();
+  // Preview on top, editor on bottom
+  const initialPreviewRatio = 0.62;
+  const previewHeight = Math.max(140, Math.min(splitRect.height - 160, Math.floor(splitRect.height * initialPreviewRatio)));
+  previewPanel.style.flex = `0 0 ${previewHeight}px`;
+  editorPanel.style.flex = `1 1 auto`;
+}function onDividerPointerDown(clientY) {
         isDragging = true;
         divider.classList.add("dragging");
         dragStartY = clientY;
-        const panelRect = editorPanel.getBoundingClientRect();
-        editorStartHeight = panelRect.height;
+        const panelRect = previewPanel.getBoundingClientRect();
+        previewStartHeight = panelRect.height;
       }
 
       function onDividerPointerMove(clientY) {
         if (!isDragging) return;
         const delta = clientY - dragStartY;
-        const newHeight = Math.max(80, editorStartHeight + delta);
+        const newHeight = Math.max(80, previewStartHeight + delta);
         const splitRect = split.getBoundingClientRect();
         const maxHeight = splitRect.height - 80;
         const clamped = Math.min(maxHeight, newHeight);
-        editorPanel.style.flex = "0 0 " + clamped + "px";
-        previewPanel.style.flex = "1 1 auto";
+        previewPanel.style.flex = "0 0 " + clamped + "px";
+        editorPanel.style.flex = "1 1 auto";
       }
 
       function onDividerPointerUp() {
@@ -1658,7 +1692,7 @@ function openHelp() {
           resetSearchState();
           autoResizeCode();
           updateLineNumbers();
-          saveCodeToLocalDebounced();
+          savePinDebounced();
           runPreview();
         };
         reader.readAsText(file);
@@ -1740,16 +1774,8 @@ function openHelp() {
         autoResizeCode();
         updateLineNumbers();
         runPreview();
-        saveCodeToLocalDebounced();
-
-        presetButtons.forEach(function (btn) {
-          if (btn.getAttribute("data-preset") === id) {
-            btn.classList.add("preset-active");
-          } else {
-            btn.classList.remove("preset-active");
-          }
-        });
-      }
+        savePinDebounced();
+}
 
       function pickRandomDemoName() {
         const list = demoConfig.files || [];
@@ -1777,7 +1803,7 @@ function openHelp() {
             resetSearchState();
             autoResizeCode();
             updateLineNumbers();
-            saveCodeToLocalDebounced();
+            savePinDebounced();
             runPreview();
           })
           .catch(function () {
@@ -1818,11 +1844,14 @@ btnHelp.addEventListener("click", openHelp);
       presetButtons.forEach(function (btn) {
         btn.addEventListener("click", function () {
           const id = btn.getAttribute("data-preset");
-          applyPreset(id);
+          // Save current pin before switching
+          savePinNow();
+          setActivePin(id);
+          loadPinOrDefault(id);
         });
       });
 
-      searchInput.addEventListener("keydown", function (event) {
+searchInput.addEventListener("keydown", function (event) {
         if (event.key === "Enter") {
           event.preventDefault();
           performSearch();
@@ -1833,7 +1862,7 @@ btnHelp.addEventListener("click", openHelp);
         resetSearchState();
         autoResizeCode();
         updateLineNumbers();
-        saveCodeToLocalDebounced();
+        savePinDebounced();
       });
 
       document.addEventListener("keydown", function (event) {
@@ -1858,15 +1887,17 @@ btnHelp.addEventListener("click", openHelp);
       function init() {
         setInitialSplitHeight();
 
-        loadCodeFromLocal();
-        if (!codeEl.value || !codeEl.value.trim()) {
-          applyPreset("1");
-        } else {
-          resetSearchState();
-          autoResizeCode();
-          updateLineNumbers();
-          runPreview();
-        }
+        // PATCH: detect standalone (Add to Home Screen / PWA)
+        try {
+          const isStandalone = (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) ||
+                               (typeof navigator !== "undefined" && navigator.standalone === true);
+          if (isStandalone) document.body.classList.add("is-standalone");
+        } catch (e) {}
+
+        // Load last active pin and its code
+        const savedPin = loadActivePinFromLocal();
+        setActivePin(savedPin);
+        loadPinOrDefault(savedPin);
 
         updateRunButtonState();
       }
