@@ -142,13 +142,15 @@
     }
 
     .preset-btn:hover {
-      background: #080b18;
+      background: #9a9a9a;
+      color: #000;
+      border-color: rgba(0,0,0,0.35);
     }
 
     .preset-btn.preset-active {
-      border-color: var(--c-accent);
-      color: var(--c-accent);
-      background: rgba(53,242,163,0.14);
+      background: #000;
+      color: #fff;
+      border-color: rgba(255,255,255,0.25);
     }
 
     .toolbar {
@@ -517,6 +519,28 @@
       border-radius: 0;
       border: 1px solid rgba(255,255,255,0.1);
       box-sizing: border-box;
+    }
+
+
+    /* iOS: prevent auto-zoom on focus (font-size must be >=16px) */
+    @supports (-webkit-touch-callout: none) {
+      #code {
+        font-size: 16px;
+        line-height: 1.35;
+      }
+    }
+
+    /* When resizing split, don't let iframe steal pointer events */
+    body.dragging-split #preview {
+      pointer-events: none !important;
+    }
+    body.dragging-split, body.dragging-split #divider {
+      cursor: ns-resize;
+    }
+
+    /* When editing on mobile, allow tap outside to dismiss keyboard by disabling iframe interactions */
+    body.is-editing #preview {
+      pointer-events: none !important;
     }
 
     .help-overlay {
@@ -948,7 +972,15 @@
       }
 
 
-      function loadActivePinFromLocal() {
+      
+      function setPresetActiveUI(id) {
+        const target = String(id || "1");
+        presetButtons.forEach(function (b) {
+          if (b.getAttribute("data-preset") === target) b.classList.add("preset-active");
+          else b.classList.remove("preset-active");
+        });
+      }
+function loadActivePinFromLocal() {
         try {
           const stored = localStorage.getItem(LS_ACTIVE_PIN);
           if (stored === "1" || stored === "2" || stored === "3") return stored;
@@ -1578,6 +1610,7 @@ function openHelp() {
   editorPanel.style.flex = `1 1 auto`;
 }function onDividerPointerDown(clientY) {
         isDragging = true;
+        document.body.classList.add('dragging-split');
         divider.classList.add("dragging");
         dragStartY = clientY;
         const panelRect = previewPanel.getBoundingClientRect();
@@ -1598,6 +1631,7 @@ function openHelp() {
       function onDividerPointerUp() {
         if (!isDragging) return;
         isDragging = false;
+        document.body.classList.remove('dragging-split');
         divider.classList.remove("dragging");
       }
 
@@ -1847,6 +1881,7 @@ btnHelp.addEventListener("click", openHelp);
           // Save current pin before switching
           savePinNow();
           setActivePin(id);
+          setPresetActiveUI(id);
           loadPinOrDefault(id);
         });
       });
@@ -1897,6 +1932,7 @@ searchInput.addEventListener("keydown", function (event) {
         // Load last active pin and its code
         const savedPin = loadActivePinFromLocal();
         setActivePin(savedPin);
+        setPresetActiveUI(savedPin);
         loadPinOrDefault(savedPin);
 
         updateRunButtonState();
