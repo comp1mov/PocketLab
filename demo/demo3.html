@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>PocketLab demo · ink</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg: #f4f5f7;
+      --ink: rgba(0,0,0,0.30);
+      --ink-deep: rgba(0,0,0,0.55);
+      --stroke: rgba(0,0,0,0.12);
+      --text: rgba(0,0,0,0.80);
+      --muted: rgba(0,0,0,0.55);
+      --card: rgba(255,255,255,0.82);
+    }
+    *{ box-sizing:border-box; }
+    html, body { margin:0; padding:0; height:100%; width:100%; background:var(--bg); overflow:hidden; }
+    body{
+      font-family: Roboto, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+    canvas{ position:fixed; inset:0; width:100%; height:100%; display:block; touch-action:none; }
+    .hud{
+      position:fixed;
+      left:12px;
+      top:12px;
+      padding:10px 10px 9px;
+      border:1px solid var(--stroke);
+      background:var(--card);
+      border-radius:1px;
+      user-select:none;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+    .hud .title{
+      font-size:11px;
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+      color:var(--text);
+      margin-bottom:5px;
+    }
+    .hud .hint{
+      font-size:12px;
+      line-height:1.35;
+      color:var(--muted);
+      max-width: 280px;
+    }
+    .hud code{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 11px;
+      background: rgba(0,0,0,0.06);
+      border: 1px solid rgba(0,0,0,0.10);
+      padding: 1px 4px;
+      border-radius: 1px;
+      color: rgba(0,0,0,0.75);
+    }
+  </style>
+</head>
+<body>
+  <canvas id="c"></canvas>
+
+  <div class="hud">
+    <div class="title">Ink Trail</div>
+    <div class="hint">
+            drag or draw with finger<br>
+      double tap to clear
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      var canvas = document.getElementById('c');
+      var ctx = canvas.getContext('2d', { alpha: false });
+
+      // feedback buffer
+      var buf = document.createElement('canvas');
+      var bctx = buf.getContext('2d', { alpha: false });
+
+      var W = 0, H = 0, DPR = 1;
+
+
+      // ---- INK COLOR CONFIG (tweak here) ----
+      // When true, the ink hue is randomized on each page load.
+      // Set to false to keep classic black ink.
+      var RANDOM_INK = true;
+
+      // Used when RANDOM_INK is false
+      var INK_FIXED_RGBA = [0, 0, 0];
+
+      // Randomized HSL (used when RANDOM_INK is true)
+      var inkHue = 0;
+      var inkSat = 0;
+      var inkLum = 0;
+
+      (function pickInk(){
+        if (!RANDOM_INK) return;
+        inkHue = Math.floor(Math.random() * 360);
+        inkSat = 55 + Math.random() * 35; // %
+        inkLum = 18 + Math.random() * 10; // %
+      })();
+
+      function ink(alpha, lumOffset){
+        if (lumOffset === undefined) lumOffset = 0;
+        alpha = Math.max(0, Math.min(1, alpha));
+        if (!RANDOM_INK) {
+          return 'rgba(' + INK_FIXED_RGBA[0] + ',' + INK_FIXED_RGBA[1] + ',' + INK_FIXED_RGBA[2] + ',' + alpha + ')';
+        }
+        var l = Math.max(6, Math.min(38, inkLum + lumOffset));
+        return 'hsla(' + inkHue + ',' + inkSat + '%,' + l + '%,' + alpha + ')';
+      }
+      // ----------------------------------------
+
+      function resize(){
+        DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+        W = Math.floor(window.innerWidth * DPR);
+        H = Math.floor(window.innerHeight * DPR);
+        canvas.width = W; canvas.height = H;
+        buf.width = W; buf.height = H;
+
+        ctx.setTransform(1,0,0,1,0,0);
+        bctx.setTransform(1,0,0,1,0,0);
+        ctx.imageSmoothingEnabled = true;
+        bctx.imageSmoothingEnabled = true;
+
+        clearAll();
+      }
+      window.addEventListener('resize', resize, { passive: true });
+
+      function clearAll(){
+        ctx.save();
+        ctx.fillStyle = '#f4f5f7';
+        ctx.fillRect(0,0,W,H);
+        ctx.restore();
+      }
+
+      var down = false;
+      var px = 0, py = 0;
+      var lastTapAt = 0;
+
+      function toCanvasXY(ev){
+        var r = canvas.getBoundingClientRect();
+        var sx = W / Math.max(1, r.width);
+        var sy = H / Math.max(1, r.height);
+        return {
+          x: (ev.clientX - r.left) * sx,
+          y: (ev.clientY - r.top) * sy
+        };
+      }
+
+      function splat(x,y,r,alpha){
+        ctx.save();
+        ctx.globalCompositeOperation = 'multiply';
+        ctx.globalAlpha = alpha;
+
+        var g = ctx.createRadialGradient(x,y,0, x,y,r);
+        g.addColorStop(0, ink(0.95, 2));
+        g.addColorStop(0.35, ink(0.65, 0));
+        g.addColorStop(1, ink(0.0, 0));
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(x,y,r,0,Math.PI*2);
+        ctx.fill();
+
+        // micro-bleed
+        for (var i=0;i<3;i++){
+          var a = Math.random() * Math.PI * 2;
+          var rr = r * (0.35 + Math.random()*0.35);
+          var ox = Math.cos(a) * r * (0.25 + Math.random()*0.45);
+          var oy = Math.sin(a) * r * (0.25 + Math.random()*0.45);
+          var g2 = ctx.createRadialGradient(x+ox,y+oy,0, x+ox,y+oy,rr);
+          g2.addColorStop(0, ink(0.55, -2));
+          g2.addColorStop(1, ink(0.0, 0));
+          ctx.fillStyle = g2;
+          ctx.beginPath();
+          ctx.arc(x+ox,y+oy,rr,0,Math.PI*2);
+          ctx.fill();
+        }
+
+        ctx.restore();
+      }
+
+      function drawSegment(x0,y0,x1,y1){
+        var dx = x1 - x0;
+        var dy = y1 - y0;
+        var dist = Math.sqrt(dx*dx + dy*dy);
+        var steps = Math.max(1, Math.ceil(dist / 3));
+        for (var i=0;i<=steps;i++){
+          var t = i / steps;
+          var x = x0 + dx * t;
+          var y = y0 + dy * t;
+
+          // speed -> size (simple)
+          var r = 10 + Math.min(26, dist * 0.18);
+          var a = 0.40;
+          splat(x,y,r,a);
+        }
+      }
+
+      function onDown(ev){
+        ev.preventDefault();
+        var now = performance.now();
+        if (now - lastTapAt < 280){
+          clearAll();
+          lastTapAt = 0;
+          return;
+        }
+        lastTapAt = now;
+
+        down = true;
+        try { canvas.setPointerCapture(ev.pointerId); } catch(e){}
+        var p = toCanvasXY(ev);
+        px = p.x; py = p.y;
+        splat(px,py,18,0.55);
+      }
+
+      function onMove(ev){
+        if (!down) return;
+        ev.preventDefault();
+        var p = toCanvasXY(ev);
+        drawSegment(px,py,p.x,p.y);
+        px = p.x; py = p.y;
+      }
+
+      function onUp(ev){
+        down = false;
+        try { canvas.releasePointerCapture(ev.pointerId); } catch(e){}
+      }
+
+      canvas.addEventListener('pointerdown', onDown, { passive:false });
+      canvas.addEventListener('pointermove', onMove, { passive:false });
+      canvas.addEventListener('pointerup', onUp, { passive:true });
+      canvas.addEventListener('pointercancel', onUp, { passive:true });
+
+      // ---- FEEDBACK CONFIG (tweak here) ----
+      var BLUR_PX    = 2.2;     // more = softer / more diffusion
+      var FEED_A     = 0.55;    // feedback strength
+      var DRIFT_X    = -1.2;    // drift creates "flow"
+      var DRIFT_Y    = -0.9;
+      var PAPER_FADE = 0.0007;  // smaller = lasts longer
+      // -------------------------------------
+
+      function tick(){
+        // copy current frame into buffer
+        bctx.setTransform(1,0,0,1,0,0);
+        bctx.filter = 'none';
+        bctx.globalCompositeOperation = 'copy';
+        bctx.globalAlpha = 1;
+        bctx.drawImage(canvas, 0, 0);
+
+        // draw blurred feedback back onto main canvas
+        ctx.save();
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.globalAlpha = FEED_A;
+        ctx.filter = 'blur(' + BLUR_PX + 'px)';
+        ctx.drawImage(buf, DRIFT_X, DRIFT_Y, W - 2*DRIFT_X, H - 2*DRIFT_Y);
+        ctx.restore();
+
+        // very slow fade to paper
+        ctx.save();
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.fillStyle = 'rgba(244,245,247,' + PAPER_FADE + ')';
+        ctx.fillRect(0,0,W,H);
+        ctx.restore();
+
+        requestAnimationFrame(tick);
+      }
+
+      resize();
+      requestAnimationFrame(tick);
+    })();
+  </script>
+</body>
+</html>
