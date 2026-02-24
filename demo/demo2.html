@@ -1,196 +1,347 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Input Test Canvas</title>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>PocketLab demo · ink</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
+      rel="stylesheet"
+    />
+
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            overflow: hidden;
-            background: #0a0a0a;
-            font-family: monospace;
-        }
-        canvas {
-            display: block;
-        }
-        #info {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            color: #00ff88;
-            font-size: 12px;
-            line-height: 1.6;
-            pointer-events: none;
-            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
-        }
+      :root {
+        --bg: #f4f5f7;
+        --stroke: rgba(0, 0, 0, 0.12);
+        --text: rgba(0, 0, 0, 0.82);
+        --muted: rgba(0, 0, 0, 0.58);
+        --card: rgba(255, 255, 255, 0.86);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        width: 100%;
+        background: var(--bg);
+        overflow: hidden;
+      }
+
+      body {
+        font-family: Roboto, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+      }
+
+      canvas {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+        touch-action: none;
+      }
+
+      .hud {
+        position: fixed;
+        left: 12px;
+        top: 12px;
+        padding: 10px 10px 9px;
+        border: 1px solid var(--stroke);
+        background: var(--card);
+        border-radius: 1px;
+        user-select: none;
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+      }
+
+      .hud-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 6px;
+      }
+
+      .title {
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text);
+        line-height: 1;
+        white-space: nowrap;
+      }
+
+      .picker {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--muted);
+        font-size: 11px;
+        letter-spacing: 0.02em;
+        white-space: nowrap;
+      }
+
+      input[type="color"] {
+        width: 22px;
+        height: 18px;
+        padding: 0;
+        border: 1px solid rgba(0, 0, 0, 0.14);
+        border-radius: 1px;
+        background: transparent;
+        cursor: pointer;
+      }
+
+      .hint {
+        font-size: 12px;
+        line-height: 1.35;
+        color: var(--muted);
+        max-width: 280px;
+      }
     </style>
-</head>
-<body>
-    <canvas id="canvas"></canvas>
-    <div id="info">
-        POCKET VIEWER TEST<br>
-        move: trail particles<br>
-        click: spawn burst<br>
-        hold: continuous spawn<br>
-        touch: full support
+  </head>
+
+  <body>
+    <canvas id="c"></canvas>
+
+    <div class="hud">
+      <div class="hud-head">
+        <div class="title">Ink Trail</div>
+        <div class="picker">
+          <span>ink</span>
+          <input id="inkColor" type="color" value="#11111a" aria-label="Ink color" />
+        </div>
+      </div>
+
+      <div class="hint">
+        drag or draw with finger<br />
+        double tap to clear
+      </div>
     </div>
 
     <script>
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        
-        let w = canvas.width = window.innerWidth;
-        let h = canvas.height = window.innerHeight;
-        
-        // Particle system
-        const particles = [];
-        let mouse = { x: w / 2, y: h / 2, isDown: false };
-        
-        class Particle {
-            constructor(x, y, vx = 0, vy = 0) {
-                this.x = x;
-                this.y = y;
-                this.vx = vx + (Math.random() - 0.5) * 2;
-                this.vy = vy + (Math.random() - 0.5) * 2;
-                this.life = 1;
-                this.decay = Math.random() * 0.01 + 0.005;
-                this.size = Math.random() * 3 + 1;
-                this.hue = (Date.now() / 20) % 360;
-            }
-            
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-                this.vy += 0.1; // gravity
-                this.vx *= 0.99;
-                this.vy *= 0.99;
-                this.life -= this.decay;
-            }
-            
-            draw() {
-                ctx.globalAlpha = this.life;
-                ctx.fillStyle = `hsl(${this.hue}, 80%, 60%)`;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
-            }
+      (function () {
+        var canvas = document.getElementById("c");
+        var ctx = canvas.getContext("2d", { alpha: false });
+
+        var buf = document.createElement("canvas");
+        var bctx = buf.getContext("2d", { alpha: false });
+
+        var W = 0;
+        var H = 0;
+
+        function resize() {
+          var dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+          W = Math.floor(window.innerWidth * dpr);
+          H = Math.floor(window.innerHeight * dpr);
+
+          canvas.width = W;
+          canvas.height = H;
+          buf.width = W;
+          buf.height = H;
+
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          bctx.setTransform(1, 0, 0, 1, 0, 0);
+
+          ctx.imageSmoothingEnabled = true;
+          bctx.imageSmoothingEnabled = true;
+
+          clearAll();
         }
-        
-        // Mouse trail particles
-        let lastMouse = { x: mouse.x, y: mouse.y };
-        
-        function spawnTrailParticle() {
-            const dx = mouse.x - lastMouse.x;
-            const dy = mouse.y - lastMouse.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            
-            if (dist > 2) {
-                particles.push(new Particle(
-                    mouse.x,
-                    mouse.y,
-                    -dx * 0.1,
-                    -dy * 0.1
-                ));
-                lastMouse = { ...mouse };
-            }
+
+        window.addEventListener("resize", resize, { passive: true });
+
+        function clearAll() {
+          ctx.save();
+          ctx.fillStyle = "#f4f5f7";
+          ctx.fillRect(0, 0, W, H);
+          ctx.restore();
         }
-        
-        // Click burst
-        function spawnBurst(x, y) {
-            const count = 20;
-            for (let i = 0; i < count; i++) {
-                const angle = (Math.PI * 2 * i) / count;
-                const speed = Math.random() * 3 + 2;
-                particles.push(new Particle(
-                    x,
-                    y,
-                    Math.cos(angle) * speed,
-                    Math.sin(angle) * speed
-                ));
-            }
+
+        function hexToRgb(hex) {
+          var h = (hex || "").replace("#", "").trim();
+          if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+
+          var n = parseInt(h, 16);
+          if (!isFinite(n)) return { r: 17, g: 17, b: 26 };
+
+          return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
         }
-        
-        // Animation loop
-        function animate() {
-            // Trail effect
-            ctx.fillStyle = 'rgba(10, 10, 10, 0.1)';
-            ctx.fillRect(0, 0, w, h);
-            
-            // Spawn particles on movement
-            spawnTrailParticle();
-            
-            // Spawn on hold
-            if (mouse.isDown && Math.random() > 0.7) {
-                particles.push(new Particle(mouse.x, mouse.y));
-            }
-            
-            // Update and draw particles
-            for (let i = particles.length - 1; i >= 0; i--) {
-                const p = particles[i];
-                p.update();
-                p.draw();
-                
-                if (p.life <= 0) {
-                    particles.splice(i, 1);
-                }
-            }
-            
-            // Draw cursor indicator
-            ctx.globalAlpha = 0.5;
-            ctx.strokeStyle = '#00ff88';
-            ctx.lineWidth = 2;
+
+        var inkInput = document.getElementById("inkColor");
+        var ink = hexToRgb(inkInput ? inkInput.value : "#11111a");
+
+        if (inkInput) {
+          inkInput.addEventListener("input", function () {
+            ink = hexToRgb(inkInput.value);
+          });
+        }
+
+        function rgba(a) {
+          return "rgba(" + ink.r + "," + ink.g + "," + ink.b + "," + a + ")";
+        }
+
+        var down = false;
+        var px = 0;
+        var py = 0;
+        var lastTapAt = 0;
+
+        function toCanvasXY(ev) {
+          var r = canvas.getBoundingClientRect();
+          var dpr = W / Math.max(1, r.width);
+
+          return {
+            x: (ev.clientX - r.left) * dpr,
+            y: (ev.clientY - r.top) * dpr,
+          };
+        }
+
+        function splat(x, y, r, alpha) {
+          ctx.save();
+          ctx.globalCompositeOperation = "multiply";
+          ctx.globalAlpha = alpha;
+
+          var g = ctx.createRadialGradient(x, y, 0, x, y, r);
+          g.addColorStop(0, rgba(0.62));
+          g.addColorStop(0.35, rgba(0.3));
+          g.addColorStop(1, rgba(0.0));
+
+          ctx.fillStyle = g;
+          ctx.beginPath();
+          ctx.arc(x, y, r, 0, Math.PI * 2);
+          ctx.fill();
+
+          // micro-bleed
+          for (var i = 0; i < 3; i++) {
+            var ang = Math.random() * Math.PI * 2;
+            var rr = r * (0.35 + Math.random() * 0.35);
+            var ox = Math.cos(ang) * r * (0.25 + Math.random() * 0.45);
+            var oy = Math.sin(ang) * r * (0.25 + Math.random() * 0.45);
+
+            var g2 = ctx.createRadialGradient(x + ox, y + oy, 0, x + ox, y + oy, rr);
+            g2.addColorStop(0, rgba(0.22));
+            g2.addColorStop(1, rgba(0.0));
+
+            ctx.fillStyle = g2;
             ctx.beginPath();
-            ctx.arc(mouse.x, mouse.y, 20 + Math.sin(Date.now() / 200) * 5, 0, Math.PI * 2);
-            ctx.stroke();
-            
-            ctx.globalAlpha = 1;
-            
-            requestAnimationFrame(animate);
+            ctx.arc(x + ox, y + oy, rr, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          ctx.restore();
         }
-        
-        // Event handlers
-        function updateMouse(e) {
-            const rect = canvas.getBoundingClientRect();
-            const touches = e.touches ? e.touches[0] : e;
-            mouse.x = (touches.clientX || e.clientX) - rect.left;
-            mouse.y = (touches.clientY || e.clientY) - rect.top;
+
+        function drawSegment(x0, y0, x1, y1) {
+          var dx = x1 - x0;
+          var dy = y1 - y0;
+          var dist = Math.sqrt(dx * dx + dy * dy);
+
+          var steps = Math.max(1, Math.ceil(dist / 3));
+          for (var i = 0; i <= steps; i++) {
+            var t = i / steps;
+            var x = x0 + dx * t;
+            var y = y0 + dy * t;
+
+            var r = 10 + Math.min(26, dist * 0.18);
+            var a = 0.4;
+            splat(x, y, r, a);
+          }
         }
-        
-        canvas.addEventListener('mousemove', updateMouse);
-        canvas.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            updateMouse(e);
-        }, { passive: false });
-        
-        canvas.addEventListener('mousedown', (e) => {
-            mouse.isDown = true;
-            updateMouse(e);
-            spawnBurst(mouse.x, mouse.y);
-        });
-        
-        canvas.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            mouse.isDown = true;
-            updateMouse(e);
-            spawnBurst(mouse.x, mouse.y);
-        }, { passive: false });
-        
-        canvas.addEventListener('mouseup', () => mouse.isDown = false);
-        canvas.addEventListener('touchend', () => mouse.isDown = false);
-        
-        // Resize handler
-        window.addEventListener('resize', () => {
-            w = canvas.width = window.innerWidth;
-            h = canvas.height = window.innerHeight;
-        });
-        
-        // Start
-        animate();
+
+        function onDown(ev) {
+          ev.preventDefault();
+
+          var now = performance.now();
+          if (now - lastTapAt < 280) {
+            clearAll();
+            lastTapAt = 0;
+            return;
+          }
+          lastTapAt = now;
+
+          down = true;
+          try {
+            canvas.setPointerCapture(ev.pointerId);
+          } catch (e) {}
+
+          var p = toCanvasXY(ev);
+          px = p.x;
+          py = p.y;
+
+          splat(px, py, 18, 0.55);
+        }
+
+        function onMove(ev) {
+          if (!down) return;
+          ev.preventDefault();
+
+          var p = toCanvasXY(ev);
+          drawSegment(px, py, p.x, p.y);
+          px = p.x;
+          py = p.y;
+        }
+
+        function onUp(ev) {
+          down = false;
+          try {
+            canvas.releasePointerCapture(ev.pointerId);
+          } catch (e) {}
+        }
+
+        canvas.addEventListener("pointerdown", onDown, { passive: false });
+        canvas.addEventListener("pointermove", onMove, { passive: false });
+        canvas.addEventListener("pointerup", onUp, { passive: true });
+        canvas.addEventListener("pointercancel", onUp, { passive: true });
+
+        // ---- FEEDBACK CONFIG (tweak here) ----
+        var BLUR_PX = 2.2;
+        var FEED_A = 0.55;
+        var DRIFT_X = -1.2;
+        var DRIFT_Y = -0.9;
+        var PAPER_FADE = 0.0007;
+        // -------------------------------------
+
+        function tick() {
+          // copy current frame into buffer
+          bctx.setTransform(1, 0, 0, 1, 0, 0);
+          bctx.filter = "none";
+          bctx.globalCompositeOperation = "copy";
+          bctx.globalAlpha = 1;
+          bctx.drawImage(canvas, 0, 0);
+
+          // blurred feedback back onto main canvas
+          ctx.save();
+          ctx.globalCompositeOperation = "source-over";
+          ctx.globalAlpha = FEED_A;
+          ctx.filter = "blur(" + BLUR_PX + "px)";
+          ctx.drawImage(buf, DRIFT_X, DRIFT_Y, W - 2 * DRIFT_X, H - 2 * DRIFT_Y);
+          ctx.restore();
+
+          // very slow fade to paper
+          ctx.save();
+          ctx.globalCompositeOperation = "source-over";
+          ctx.fillStyle = "rgba(244,245,247," + PAPER_FADE + ")";
+          ctx.fillRect(0, 0, W, H);
+          ctx.restore();
+
+          requestAnimationFrame(tick);
+        }
+
+        resize();
+        requestAnimationFrame(tick);
+      })();
     </script>
-</body>
+  </body>
 </html>
